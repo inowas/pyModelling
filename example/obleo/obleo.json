@@ -6,8 +6,8 @@
         "packages" : ["mf", "dis", "bcf", "bas", "wel", "pcg", "oc"],
         "mf": {
             "modelname": "obleo",
-            "exe_name": "mf2005",   // name of the executable
-            "workspace": "ascii",   // folder relative to the folder of execution
+            "exe_name": "mf2005",
+            "workspace": "ascii",
             "version": "mf2005"
         },
         "dis": {
@@ -63,14 +63,9 @@
                 "1": [[0, 5, 6, -4e+10]]
             } 
         },
-        "pcg": {
-            // use default values
-        },
-        "oc": {
-            // use default values
-        },
+        "pcg": {},
+        "oc": {},
         "write_input": true,
         "run_model": true
-        // some more options could be possible to postprocess data 
     }
 }
