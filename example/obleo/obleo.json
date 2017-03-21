@@ -18,7 +18,6 @@
             "nper": 2,
             "delr": 100000,
             "delc": 100000,
-            "laycbd": 0,
             "top": 100,
             "botm": -900,
             "perlen": 30,
@@ -26,42 +25,9 @@
             "tsmult": 1,
             "steady": true,
             "itmuni": 5,
-            "lenuni": 2,
-            "extension": "dis",
-            "unitnumber": 11,
-            "xul": null,
-            "yul": null,
-            "rotation": 0.0,
-            "proj4_str": null,
-            "start_datetime": null
+            "lenuni": 2
         },
-        "lpf": {
-            "laytyp": 0,
-            "layavg": 0,
-            "chani": 1.0,
-            "layvka": 0,
-            "laywet": 0,
-            "ipakcb": 53,
-            "hdry": -1E+30,
-            "iwdflg": 0,
-            "wetfct": 0.1,
-            "iwetit": 1,
-            "ihdwet": 0,
-            "hk": 1.0,
-            "hani": 1.0,
-            "vka": 1.0,
-            "ss": 1E-5,
-            "sy": 0.15,
-            "vkcb": 0.0,
-            "wetdry": -0.01,
-            "storagecoefficient": false,
-            "constantcv": false,
-            "thickstrt": false,
-            "nocvcorrection": false,
-            "novfc": false,
-            "extension": "lpf",
-            "unitnumber": 15
-        },
+        "lpf": {},
         "bas": {
             "ibound": [[
                 [-1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1],
@@ -88,52 +54,17 @@
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-            ]],
-            "ifrefm": true,
-            "ixsec": false,
-            "ichflg": false,
-            "stoper": null,
-            "hnoflo": -999.99,
-            "extension": "bas",
-            "unitnumber": 13
+            ]]
         },
         "wel": {
-            "ipakcb": 0,
             "stress_period_data": { 
                 "0": [[0, 5, 6, 0]],
                 "1": [[0, 5, 6, -4e+10]]
-            },
-            "dtype": null,
-            "extension": "wel",
-            "unitnumber": 20,
-            "options": null
+            }
         },
-        "pcg": {
-            "mxiter": 50,
-            "iter1": 30,
-            "npcond": 1,
-            "hclose": 1E-5,
-            "rclose": 1E-5,
-            "relax": 1.0,
-            "nbpol": 0,
-            "iprpcg": 0,
-            "mutpcg": 3,
-            "damp": 1.0,
-            "dampt": 1.0,
-            "ihcofadd": 0,
-            "extension": "pcg",
-            "unitnumber": 27
-        },
+        "pcg": {},
         "oc": {
-            "iddnfm": 0,
-            "ihedfm": 0,
-            "chedfm": null,
-            "cddnfm": null,
-            "cboufm": null,
-            "compact": true,
-            "stress_period_data": [{ "stressPeriod": 0, "timeStep":0,  "type": ["save head"]}],
-            "extension": ["oc", "hds", "ddn", "cbc"],
-            "unitnumber": [14, 51, 52, 53]
+            "stress_period_data": [{ "stressPeriod": 1, "timeStep":0,  "type": ["save head"]}]
         },
         "write_input": true,
         "run_model": true

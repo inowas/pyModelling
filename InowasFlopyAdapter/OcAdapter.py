@@ -26,6 +26,10 @@ class OcAdapter:
         default = self.default()
         for key in self._data:
             default[key] = self._data[key]
+
+        if 'stress_period_data' in self._data:
+            default['stress_period_data'] = self.get_stress_period_data(self._data['stress_period_data'])
+
         return default
 
     def get_package(self, _mf):
@@ -38,7 +42,7 @@ class OcAdapter:
                 cddnfm=content['cddnfm'],
                 cboufm=content['cboufm'],
                 compact=content['compact'],
-                stress_period_data=self.get_stress_period_data(content['stress_period_data']),
+                stress_period_data=content['stress_period_data'],
                 extension=content['extension'],
                 unitnumber=content['unitnumber']
             )
