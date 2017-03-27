@@ -3,8 +3,12 @@
 import json
 import numpy
 import pika
+import warnings
 from InowasInterpolation import Gaussian
 from InowasInterpolation import Mean
+
+
+warnings.filterwarnings("ignore")
 
 connection = pika.BlockingConnection(pika.ConnectionParameters(
         host='localhost'))
@@ -28,15 +32,15 @@ def process(content):
     print('Version: %s' % version)
 
     if m_type == 'interpolation':
-        print('Running interpolation:')
-
         if 'gaussian' in data['methods']:
+            print('Running gaussian interpolation...')
             interpolation = Gaussian.Gaussian(data)
             result = interpolation.calculate()
             if isinstance(result, numpy.ndarray):
                 return result.tolist()
 
         if 'mean' in data['methods']:
+            print('Running mean interpolation...')
             interpolation = Mean.Mean(data)
             result = interpolation.calculate()
             if isinstance(result, numpy.ndarray):
