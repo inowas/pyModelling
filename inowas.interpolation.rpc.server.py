@@ -36,6 +36,7 @@ def process(content):
             print('Running gaussian interpolation...')
             interpolation = Gaussian.Gaussian(data)
             result = interpolation.calculate()
+            print('Finished ...')
             if isinstance(result, numpy.ndarray):
                 return result.tolist()
 
@@ -43,9 +44,9 @@ def process(content):
             print('Running mean interpolation...')
             interpolation = Mean.Mean(data)
             result = interpolation.calculate()
+            print('Finished ...')
             if isinstance(result, numpy.ndarray):
                 return result.tolist()
-
     return result
 
 
