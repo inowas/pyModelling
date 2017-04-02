@@ -41,6 +41,7 @@ class InowasFlopyAdapter:
 
         if data.get("run_model"):
             self.run_model()
+
         pass
 
     def read_packages(self):

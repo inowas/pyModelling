@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 
 import json
-import numpy
 import pika
 import warnings
-from InowasInterpolation import Gaussian
-from InowasInterpolation import Mean
+from InowasFlopyAdapter.InowasFlopyAdapter import InowasFlopyAdapter
 
 
 warnings.filterwarnings("ignore")
@@ -14,7 +12,7 @@ connection = pika.BlockingConnection(pika.ConnectionParameters(
         host='localhost'))
 
 channel = connection.channel()
-channel.queue_declare(queue='rpc_interpolation_queue')
+channel.queue_declare(queue='rpc_flopy_calculation_queue')
 
 
 def process(content):
@@ -25,34 +23,24 @@ def process(content):
     data = content.get("data")
     result = False
 
+    print(content)
+
     print('Summary:')
     print('Author: %s' % author)
     print('Project: %s' % project)
     print('Type: %s' % m_type)
     print('Version: %s' % version)
 
-    if m_type == 'interpolation':
-        if 'gaussian' in data['methods']:
-            print('Running gaussian interpolation...')
-            interpolation = Gaussian.Gaussian(data)
-            result = interpolation.calculate()
-            print('Finished ...')
-            if isinstance(result, numpy.ndarray):
-                return result.tolist()
-
-        if 'mean' in data['methods']:
-            print('Running mean interpolation...')
-            interpolation = Mean.Mean(data)
-            result = interpolation.calculate()
-            print('Finished ... with result: %s' % result)
-            return result
+    if m_type == 'flopy':
+        print('Running flopy:')
+        result = InowasFlopyAdapter(version, data)
 
     return result
 
 
 def on_request(ch, method, props, body):
     content = json.loads(body.decode("utf-8"))
-    response = json.dumps(process(content))
+    response = process(content)
 
     ch.basic_publish(exchange='',
                      routing_key=props.reply_to,
@@ -61,7 +49,7 @@ def on_request(ch, method, props, body):
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
 channel.basic_qos(prefetch_count=1)
-channel.basic_consume(on_request, queue='rpc_interpolation_queue')
+channel.basic_consume(on_request, queue='rpc_flopy_calculation_queue')
 
 print(" [x] Awaiting RPC requests")
 channel.start_consuming()

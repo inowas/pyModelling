@@ -37,5 +37,4 @@ class Mean:
     @staticmethod
     def mean(nx, ny, values):
         mean_value = np.mean(values)
-        grid = mean_value * np.ones((ny, nx))
-        return grid
+        return mean_value
