@@ -33,7 +33,10 @@ def process(content):
 
     if m_type == 'flopy':
         print('Running flopy:')
-        result = InowasFlopyAdapter(version, data)
+        try:
+            result = InowasFlopyAdapter(version, data)
+        except:
+            result = False
 
     return result
 
