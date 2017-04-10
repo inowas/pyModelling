@@ -29,7 +29,7 @@ class BasAdapter:
         return default
 
     def get_package(self, _mf):
-        content = self.merge()
+        content = self.default()
         return mf.ModflowBas(
                 _mf,
                 ibound=content['ibound'],

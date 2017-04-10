@@ -17,6 +17,9 @@ from .PcgAdapter import PcgAdapter
 from .RchAdapter import RchAdapter
 from .RivAdapter import RivAdapter
 from .WelAdapter import WelAdapter
+from .ReadHead import ReadHead
+from .ReadDrawdown import ReadDrawdown
+from .ReadBudget import ReadBudget
 
 
 class InowasFlopyAdapter:
@@ -41,12 +44,11 @@ class InowasFlopyAdapter:
 
         if data.get("run_model"):
             self.run_model()
-
         pass
 
     def read_packages(self):
         for package in self._packages:
-            print('Create Flopy Package: %s' % package)
+            print('Read Flopy Package: %s' % package)
             self._packageContent[package] = self._data[package]
 
     def create_model(self):
@@ -88,3 +90,10 @@ class InowasFlopyAdapter:
             ChdAdapter(content).get_package(self._mf)
         if name == 'ghb':
             GhbAdapter(content).get_package(self._mf)
+
+    def response(self):
+        heads = ReadHead(self._packageContent['mf']['model_ws'], self._packageContent['mf']['modelname'])
+        drawdowns = ReadDrawdown(self._packageContent['mf']['model_ws'], self._packageContent['mf']['modelname'])
+        budgets = ReadBudget(self._packageContent['mf']['model_ws'], self._packageContent['mf']['modelname'])
+        response = dict(heads=heads.read_times(), drawdowns=drawdowns.read_times(), budgets=budgets.read_times())
+        return response

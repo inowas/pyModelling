@@ -1,42 +1,48 @@
 #!/usr/bin/env python
 
 import json
+import os
+import sys
 import pika
 import warnings
 from InowasFlopyAdapter.InowasFlopyAdapter import InowasFlopyAdapter
 
 
 warnings.filterwarnings("ignore")
-
 connection = pika.BlockingConnection(pika.ConnectionParameters(
         host='localhost'))
 
 channel = connection.channel()
 channel.queue_declare(queue='rpc_flopy_calculation_queue')
+datafolder = os.path.realpath(sys.argv[1])
+
+print(datafolder)
 
 
 def process(content):
     author = content.get("author")
     project = content.get("project")
+    uuid = content.get("id")
     m_type = content.get("type")
     version = content.get("version")
     data = content.get("data")
-    result = False
 
-    print(content)
+    result = False
 
     print('Summary:')
     print('Author: %s' % author)
     print('Project: %s' % project)
+    print('Uuid: %s' % uuid)
     print('Type: %s' % m_type)
     print('Version: %s' % version)
 
     if m_type == 'flopy':
         print('Running flopy:')
-        try:
-            result = InowasFlopyAdapter(version, data)
-        except:
-            result = False
+        target_directory = os.path.join(datafolder, uuid)
+        print(target_directory)
+        data['mf']['model_ws'] = target_directory
+        flopy = InowasFlopyAdapter(version, data)
+        result = flopy.response()
 
     return result
 
