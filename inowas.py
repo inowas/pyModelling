@@ -2,17 +2,17 @@ import numpy
 import json
 import os
 import sys
-from InowasFlopyAdapter.InowasFlopyAdapter import InowasFlopyAdapter
+from InowasFlopyAdapter.InowasFlopyCalculationAdapter import InowasFlopyCalculationAdapter
+from InowasFlopyAdapter.InowasFlopyReadAdapter import InowasFlopyReadAdapter
 from InowasInterpolation import Gaussian
 
 
 def process(content, datafolder):
     author = content.get("author")
     project = content.get("project")
-    uuid = content.get("uuid")
+    uuid = content.get("id")
     m_type = content.get("type")
     version = content.get("version")
-    data = content.get("data")
 
     print('Summary:')
     print('Author: %s' % author)
@@ -21,20 +21,25 @@ def process(content, datafolder):
     print('Type: %s' % m_type)
     print('Version: %s' % version)
 
-    if m_type == 'flopy':
+    if m_type == 'flopy_calculation':
         print('Running flopy:')
+        print(uuid)
         target_directory = os.path.join(datafolder, uuid)
         data['mf']['model_ws'] = target_directory
-        flopy = InowasFlopyAdapter(version, data)
-        response = flopy.response()
-        print(str(response))
-        return response
+        flopy = InowasFlopyCalculationAdapter(version, content.get("data"))
+        return flopy.response()
+
+    if m_type == 'flopy_read_data':
+        print('Read flopy data:')
+        project_folder = os.path.join(datafolder, uuid)
+        flopy = InowasFlopyReadAdapter(version, project_folder, content.get("request"))
+        print(flopy.response())
+        return flopy.response()
 
     if m_type == 'interpolation':
         print('Running interpolation:')
-
-        if 'gaussian' in data['methods']:
-            interpolation = Gaussian.Gaussian(data)
+        if 'gaussian' in content.get("data")['methods']:
+            interpolation = Gaussian.Gaussian(content.get("data"))
             result = interpolation.calculate()
             if isinstance(result, numpy.ndarray):
                 print(result)

@@ -22,7 +22,7 @@ from .ReadDrawdown import ReadDrawdown
 from .ReadBudget import ReadBudget
 
 
-class InowasFlopyAdapter:
+class InowasFlopyCalculationAdapter:
     """The Flopy Class"""
 
     _version = None
@@ -92,8 +92,13 @@ class InowasFlopyAdapter:
             GhbAdapter(content).get_package(self._mf)
 
     def response(self):
-        heads = ReadHead(self._packageContent['mf']['model_ws'], self._packageContent['mf']['modelname'])
-        drawdowns = ReadDrawdown(self._packageContent['mf']['model_ws'], self._packageContent['mf']['modelname'])
-        budgets = ReadBudget(self._packageContent['mf']['model_ws'], self._packageContent['mf']['modelname'])
-        response = dict(heads=heads.read_times(), drawdowns=drawdowns.read_times(), budgets=budgets.read_times())
-        return response
+        heads = ReadHead(self._packageContent['mf']['model_ws'])
+        drawdowns = ReadDrawdown(self._packageContent['mf']['model_ws'])
+        budgets = ReadBudget(self._packageContent['mf']['model_ws'])
+
+        return dict(
+            status_code=200,
+            heads=heads.read_times(),
+            drawdowns=drawdowns.read_times(),
+            budgets=budgets.read_times()
+        )

@@ -1,0 +1,12 @@
+{
+   "id": "123-test-456",
+   "type":"flopy_read_data",
+   "version":"3.2.6",
+   "request":{
+      "layerdata": {
+         "type": "drawdown",
+         "totim": 1094,
+         "layer": 0
+      }
+   }
+}

@@ -1,4 +1,4 @@
-from InowasFlopyAdapter import InowasFlopyAdapter
+from InowasFlopyAdapter import InowasFlopyCalculationAdapter
 from .BasAdapter import BasAdapter
 from .ChdAdapter import ChdAdapter
 from .DisAdapter import DisAdapter

@@ -3,20 +3,23 @@ from flopy.utils.mflistfile import MfListBudget
 
 
 class ReadBudget:
-    _filename = ""
 
-    def __init__(self, workspace, modelname):
-        self._filename = os.path.join(workspace, modelname + '.list')
+    _filename = None
+
+    def __init__(self, workspace):
+        for file in os.listdir(workspace):
+            if file.endswith(".list"):
+                self._filename = os.path.join(workspace, file)
         pass
 
     def read_times(self):
-        if not os.path.exists(self._filename):
+        if not self._filename:
             return []
         mf_list = MfListBudget(self._filename)
         return mf_list.get_times()
 
     def read_cumulative_budget(self, totim):
-        if not os.path.exists(self._filename):
+        if not self._filename:
             return []
         mf_list = MfListBudget(self._filename)
         budget = mf_list.get_data(totim=totim, incremental=False)
@@ -27,7 +30,7 @@ class ReadBudget:
         return values
 
     def read_incremental_budget(self, totim):
-        if not os.path.exists(self._filename):
+        if not self._filename:
             return []
         mf_list = MfListBudget(self._filename)
         budget = mf_list.get_data(totim=totim, incremental=True)

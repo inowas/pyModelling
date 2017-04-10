@@ -1,8 +1,8 @@
 {
-   "author":"",
-   "project":"",
+   "author":"Ralf Junghanns",
+   "project":"Hanoi",
    "id": "123-test-456",
-   "type":"flopy",
+   "type":"flopy_calculation",
    "version":"3.2.6",
    "data":{
       "packages":[
