@@ -1,0 +1,2 @@
+[program:inowas.interpolation.rpc.server]
+command=python3 /var/www/pyModelling/inowas.interpolation.rpc.server.py
