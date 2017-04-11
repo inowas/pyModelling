@@ -19,6 +19,14 @@ class ReadHead:
         except:
             return []
 
+    def read_number_of_layers(self):
+        try:
+            heads = bf.HeadFile(filename=self._filename, precision='single')
+            number_of_layers = heads.get_data().shape[0]
+            return number_of_layers
+        except:
+            return 0
+
 
     def read_layer(self, totim, layer):
         try:

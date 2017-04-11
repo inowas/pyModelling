@@ -98,10 +98,12 @@ class InowasFlopyCalculationAdapter:
         drawdowns = ReadDrawdown(self._packageContent['mf']['model_ws'])
         budgets = ReadBudget(self._packageContent['mf']['model_ws'])
 
-        return dict(
-            status_code=200,
-            id=self._uuid,
-            heads=heads.read_times(),
-            drawdowns=drawdowns.read_times(),
-            budgets=budgets.read_times()
-        )
+        response = {}
+        response['status_code'] = "200"
+        response['id'] = self._uuid
+        response['heads'] = heads.read_times()
+        response['drawdowns'] = drawdowns.read_times()
+        response['budgets'] = budgets.read_times()
+        response['number_of_layers'] = heads.read_number_of_layers()
+
+        return response

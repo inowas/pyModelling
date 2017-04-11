@@ -51,10 +51,12 @@ def on_request(ch, method, props, body):
     content = json.loads(body.decode("utf-8"))
     ch.basic_ack(delivery_tag=method.delivery_tag)
     response = process(content)
+    response = str(response).replace('\'', '"')
+
     write_channel.basic_publish(
         exchange='',
         routing_key='flopy_calculation_finished_queue',
-        body=str(response),
+        body=response,
         properties=pika.BasicProperties(
             delivery_mode=2  # make message persistent
         ))
