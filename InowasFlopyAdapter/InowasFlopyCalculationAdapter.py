@@ -29,13 +29,15 @@ class InowasFlopyCalculationAdapter:
     _data = None
     _packages = []
     _packageContent = {}
+    _uuid = None
 
     _mf = None
 
-    def __init__(self, version, data):
-        self._version = version
+    def __init__(self, version, data, uuid):
         self._data = data
         self._packages = data.get("packages")
+        self._version = version
+        self._uuid = uuid
         self.read_packages()
         self.create_model()
 
@@ -98,6 +100,7 @@ class InowasFlopyCalculationAdapter:
 
         return dict(
             status_code=200,
+            id=self._uuid,
             heads=heads.read_times(),
             drawdowns=drawdowns.read_times(),
             budgets=budgets.read_times()
