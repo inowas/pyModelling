@@ -18,6 +18,7 @@ write_channel.queue_declare(queue='flopy_calculation_finished_queue', durable=Tr
 
 datafolder = os.path.realpath(sys.argv[1])
 
+
 def process(content):
     author = content.get("author")
     project = content.get("project")
