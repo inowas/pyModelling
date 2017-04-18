@@ -25,8 +25,9 @@ def process(content, datafolder):
         print('Running flopy:')
         print(uuid)
         target_directory = os.path.join(datafolder, uuid)
+        data = content.get("data")
         data['mf']['model_ws'] = target_directory
-        flopy = InowasFlopyCalculationAdapter(version, content.get("data"))
+        flopy = InowasFlopyCalculationAdapter(version, data, uuid)
         return flopy.response()
 
     if m_type == 'flopy_read_data':
