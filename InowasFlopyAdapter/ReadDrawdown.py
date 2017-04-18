@@ -30,13 +30,13 @@ class ReadDrawdown:
     def read_layer(self, totim, layer):
         try:
             heads = bf.HeadFile(filename=self._filename, text='drawdown', precision='single')
-            return heads.get_data(totim=totim, mflay=layer)
+            return heads.get_data(totim=totim, mflay=layer).tolist()
         except:
             return []
 
     def read_ts(self, layer, row, column):
         try:
             heads = bf.HeadFile(filename=self._filename, text='drawdown', precision='single')
-            return heads.get_ts(idx=(layer, row, column))
+            return heads.get_ts(idx=(layer, row, column)).tolist()
         except:
             return []
