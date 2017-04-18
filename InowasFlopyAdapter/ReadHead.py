@@ -30,7 +30,13 @@ class ReadHead:
     def read_layer(self, totim, layer):
         try:
             heads = bf.HeadFile(filename=self._filename, precision='single')
-            return heads.get_data(totim=totim, mflay=layer).tolist()
+            data = heads.get_data(totim=totim, mflay=layer).tolist()
+            for i in range(len(data)):
+                for j in range(len(data[i])):
+                    data[i][j] = round(data[i][j], 2)
+                    if data[i][j] < -999:
+                        data[i][j] = None
+            return data
         except:
             return []
 

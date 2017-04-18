@@ -34,7 +34,6 @@ def process(content, datafolder):
         print('Read flopy data:')
         project_folder = os.path.join(datafolder, uuid)
         flopy = InowasFlopyReadAdapter(version, project_folder, content.get("request"))
-        print(flopy.response())
         return flopy.response()
 
     if m_type == 'interpolation':

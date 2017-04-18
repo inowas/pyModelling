@@ -1,0 +1,12 @@
+{
+   "id": "9702bf3a-de2b-49c8-9740-7392793d55bb",
+   "type":"flopy_read_data",
+   "version":"3.2.6",
+   "request": {
+      "layerdata": {
+         "type": "head",
+         "totim": 577,
+         "layer": 0
+      }
+   }
+}
