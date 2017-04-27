@@ -17,6 +17,7 @@ write_channel = connection.channel()
 write_channel.queue_declare(queue='flopy_calculation_finished_queue', durable=True)
 
 datafolder = os.path.realpath(sys.argv[1])
+binfolder = os.path.join(os.getcwd(), 'bin')
 
 
 def process(content):
@@ -41,6 +42,7 @@ def process(content):
         target_directory = os.path.join(datafolder, uuid)
         print(target_directory)
         data['mf']['model_ws'] = target_directory
+        data['mf']['exe_name'] = os.path.join(binfolder, sys.platform, data['mf']['exe_name'])
         flopy = InowasFlopyCalculationAdapter(version, data, uuid)
         result = flopy.response()
 
