@@ -22,9 +22,18 @@ def process(content, datafolder, binfolder):
     print('Version: %s' % version)
 
     if m_type == 'flopy_calculation':
-        print('Running flopy:')
-        print(uuid)
+        print('Running flopy calculation with id %s' % uuid)
+
         target_directory = os.path.join(datafolder, uuid)
+        print('The target directory is %s' % target_directory)
+        
+        print('Write config to %s' % os.path.join(target_directory, 'configuration.json'))
+        if not os.path.exists(target_directory):
+            os.makedirs(target_directory)
+
+        with open(os.path.join(target_directory, 'configuration.json'), 'w') as outfile:
+            json.dump(content, outfile)
+
         data = content.get("data")
         data['mf']['model_ws'] = target_directory
         data['mf']['exe_name'] = os.path.join(binfolder, sys.platform, data['mf']['exe_name'])
