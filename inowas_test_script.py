@@ -6,8 +6,11 @@ from InowasFlopyAdapter.InowasFlopyCalculationAdapter import InowasFlopyCalculat
 from InowasFlopyAdapter.InowasFlopyReadAdapter import InowasFlopyReadAdapter
 from InowasInterpolation import Gaussian
 
+scriptfolder = os.path.dirname(os.path.realpath(__file__))
+binfolder = os.path.join(scriptfolder, 'bin')
 
-def process(content, datafolder, binfolder):
+
+def process(content, datafolder):
     author = content.get("author")
     project = content.get("project")
     uuid = content.get("id")
@@ -22,7 +25,7 @@ def process(content, datafolder, binfolder):
     print('Version: %s' % version)
 
     if m_type == 'flopy_calculation':
-        print('Running flopy calculation with id %s' % uuid)
+        print('Running flopy calculation with id: %s' % uuid)
 
         target_directory = os.path.join(datafolder, uuid)
         print('The target directory is %s' % target_directory)
@@ -57,7 +60,6 @@ def process(content, datafolder, binfolder):
 
 
 def main():
-    binfolder = os.path.join(os.getcwd(), 'bin')
     datafolder = os.path.realpath(sys.argv[1])
 
     filename = os.path.realpath(sys.argv[2])
@@ -70,7 +72,7 @@ def main():
     with open(filename) as data_file:
         content = json.load(data_file)
 
-    process(content, datafolder, binfolder)
+    process(content, datafolder)
 
 if __name__ == '__main__':
     main()

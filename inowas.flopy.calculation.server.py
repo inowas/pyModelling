@@ -17,7 +17,9 @@ write_channel = connection.channel()
 write_channel.queue_declare(queue='flopy_calculation_finished_queue', durable=True)
 
 datafolder = os.path.realpath(sys.argv[1])
-binfolder = os.path.join(os.getcwd(), 'bin')
+
+scriptfolder = os.path.dirname(os.path.realpath(__file__))
+binfolder = os.path.join(scriptfolder, 'bin')
 
 
 def process(content):
