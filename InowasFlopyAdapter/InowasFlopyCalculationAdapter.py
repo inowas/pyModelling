@@ -16,10 +16,11 @@ from .OcAdapter import OcAdapter
 from .PcgAdapter import PcgAdapter
 from .RchAdapter import RchAdapter
 from .RivAdapter import RivAdapter
-from .WelAdapter import WelAdapter
-from .ReadHead import ReadHead
-from .ReadDrawdown import ReadDrawdown
 from .ReadBudget import ReadBudget
+from .ReadDrawdown import ReadDrawdown
+from .ReadHead import ReadHead
+from .UpwAdapter import UpwAdapter
+from .WelAdapter import WelAdapter
 
 
 class InowasFlopyCalculationAdapter:
@@ -78,6 +79,8 @@ class InowasFlopyCalculationAdapter:
             BasAdapter(content).get_package(self._mf)
         if name == 'lpf':
             LpfAdapter(content).get_package(self._mf)
+        if name == 'upw':
+            UpwAdapter(content).get_package(self._mf)
         if name == 'pcg':
             PcgAdapter(content).get_package(self._mf)
         if name == 'oc':
