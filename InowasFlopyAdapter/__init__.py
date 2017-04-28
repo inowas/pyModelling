@@ -9,4 +9,5 @@ from .OcAdapter import OcAdapter
 from .PcgAdapter import PcgAdapter
 from .RchAdapter import RchAdapter
 from .RivAdapter import RivAdapter
+from .UpwAdapter import UpwAdapter
 from .WelAdapter import WelAdapter
