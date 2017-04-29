@@ -12,6 +12,7 @@ from .DisAdapter import DisAdapter
 from .GhbAdapter import GhbAdapter
 from .LpfAdapter import LpfAdapter
 from .MfAdapter import MfAdapter
+from .NwtAdapter import NwtAdapter
 from .OcAdapter import OcAdapter
 from .PcgAdapter import PcgAdapter
 from .RchAdapter import RchAdapter
@@ -83,6 +84,8 @@ class InowasFlopyCalculationAdapter:
             UpwAdapter(content).get_package(self._mf)
         if name == 'pcg':
             PcgAdapter(content).get_package(self._mf)
+        if name == 'nwt':
+            NwtAdapter(content).get_package(self._mf)
         if name == 'oc':
             OcAdapter(content).get_package(self._mf)
         if name == 'riv':
