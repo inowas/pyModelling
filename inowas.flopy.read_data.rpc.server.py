@@ -32,8 +32,15 @@ def process(content):
     if m_type == 'flopy_read_data':
         print('Read flopy data:')
         project_folder = os.path.join(datafolder, uuid)
-        flopy = InowasFlopyReadAdapter(version, project_folder, content.get("request"))
-        return flopy.response()
+
+        try:
+            flopy = InowasFlopyReadAdapter(version, project_folder, content.get("request"))
+            return flopy.response()
+        except:
+            return dict(
+                status_code=500,
+                message="Something went wrong reading."
+            )
 
     return dict(
         status_code=500,
