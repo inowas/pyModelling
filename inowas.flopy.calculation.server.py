@@ -7,9 +7,15 @@ import pika
 import warnings
 from InowasFlopyAdapter.InowasFlopyCalculationAdapter import InowasFlopyCalculationAdapter
 
-
 warnings.filterwarnings("ignore")
-connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost', heartbeat_interval=0))
+connection = pika.BlockingConnection(
+    pika.ConnectionParameters(
+        host=sys.argv[2],
+        port=int(sys.argv[3]),
+        virtual_host=sys.argv[4],
+        credentials=pika.PlainCredentials(sys.argv[5], sys.argv[6]),
+        heartbeat_interval=0
+    ))
 read_channel = connection.channel()
 read_channel.queue_declare(queue='flopy_calculation_queue', durable=True)
 

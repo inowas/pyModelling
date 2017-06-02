@@ -9,8 +9,15 @@ from InowasFlopyAdapter.InowasFlopyReadAdapter import InowasFlopyReadAdapter
 
 
 warnings.filterwarnings("ignore")
-connection = pika.BlockingConnection(pika.ConnectionParameters(
-        host='localhost'))
+connection = pika.BlockingConnection(
+    pika.ConnectionParameters(
+        host=sys.argv[2],
+        port=int(sys.argv[3]),
+        virtual_host=sys.argv[4],
+        credentials=pika.PlainCredentials(sys.argv[5], sys.argv[6]),
+        heartbeat_interval=0
+    )
+)
 
 channel = connection.channel()
 channel.queue_declare(queue='rpc_flopy_read_data_queue')
