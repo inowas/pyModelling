@@ -2,9 +2,11 @@
 
 import json
 import os
-import sys
 import pika
+import sys
+import traceback
 import warnings
+
 from InowasFlopyAdapter.InowasFlopyCalculationAdapter import InowasFlopyCalculationAdapter
 
 warnings.filterwarnings("ignore")
@@ -36,8 +38,6 @@ def process(content):
     version = content.get("version")
     data = content.get("data")
 
-    result = False
-
     print('Summary:')
     print('Author: %s' % author)
     print('Project: %s' % project)
@@ -60,10 +60,21 @@ def process(content):
 
         data['mf']['model_ws'] = target_directory
         data['mf']['exe_name'] = os.path.join(binfolder, sys.platform, data['mf']['exe_name'])
-        flopy = InowasFlopyCalculationAdapter(version, data, uuid)
-        result = flopy.response()
 
-    return result
+        try:
+            flopy = InowasFlopyCalculationAdapter(version, data, uuid)
+            result = flopy.response()
+            return result
+        except:
+            return dict(
+                status_code=500,
+                message=traceback.format_exc()
+            )
+
+    return dict(
+        status_code=500,
+        message="Internal Server Error. Request data does not fit. \"m_type\" should have the content \"flopy_calculation\""
+    )
 
 
 def on_request(ch, method, props, body):

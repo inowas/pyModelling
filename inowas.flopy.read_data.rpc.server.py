@@ -2,8 +2,9 @@
 
 import json
 import os
-import sys
 import pika
+import sys
+import traceback
 import warnings
 from InowasFlopyAdapter.InowasFlopyReadAdapter import InowasFlopyReadAdapter
 
@@ -46,7 +47,7 @@ def process(content):
         except:
             return dict(
                 status_code=500,
-                message="Something went wrong reading."
+                message=traceback.format_exc()
             )
 
     return dict(
