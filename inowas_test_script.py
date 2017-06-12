@@ -2,6 +2,7 @@ import numpy
 import json
 import os
 import sys
+import traceback
 from InowasFlopyAdapter.InowasFlopyCalculationAdapter import InowasFlopyCalculationAdapter
 from InowasFlopyAdapter.InowasFlopyReadAdapter import InowasFlopyReadAdapter
 from InowasInterpolation import Gaussian
@@ -41,13 +42,24 @@ def process(content, datafolder):
         data['mf']['model_ws'] = target_directory
         data['mf']['exe_name'] = os.path.join(binfolder, sys.platform, data['mf']['exe_name'])
         print(data['mf']['exe_name'])
-        flopy = InowasFlopyCalculationAdapter(version, data, uuid)
-        return flopy.response()
+
+        try:
+            flopy = InowasFlopyCalculationAdapter(version, data, uuid)
+            return flopy.response()
+        except:
+            response = dict(
+                status_code=500,
+                calculation_id=uuid,
+                message=str(traceback.format_exc()).replace('"', '\"')
+            )
+            print(json.dumps(response))
+            return response
 
     if m_type == 'flopy_read_data':
         print('Read flopy data:')
         project_folder = os.path.join(datafolder, uuid)
         flopy = InowasFlopyReadAdapter(version, project_folder, content.get("request"))
+        print(json.dumps(flopy.response()))
         return flopy.response()
 
     if m_type == 'interpolation':

@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import sys
+import os
 import json
 import numpy
 import pika
@@ -9,12 +11,19 @@ from InowasInterpolation import Mean
 
 
 warnings.filterwarnings("ignore")
-
-connection = pika.BlockingConnection(pika.ConnectionParameters(
-        host='localhost'))
+connection = pika.BlockingConnection(
+    pika.ConnectionParameters(
+        host=sys.argv[2],
+        port=int(sys.argv[3]),
+        virtual_host=sys.argv[4],
+        credentials=pika.PlainCredentials(sys.argv[5], sys.argv[6]),
+        heartbeat_interval=0
+    )
+)
 
 channel = connection.channel()
-channel.queue_declare(queue='rpc_interpolation_queue')
+channel.queue_declare(queue=sys.argv[7])
+datafolder = os.path.realpath(sys.argv[1])
 
 
 def process(content):
@@ -61,7 +70,7 @@ def on_request(ch, method, props, body):
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
 channel.basic_qos(prefetch_count=1)
-channel.basic_consume(on_request, queue='rpc_interpolation_queue')
+channel.basic_consume(on_request, queue=sys.argv[7])
 
 print(" [x] Awaiting RPC requests")
 channel.start_consuming()

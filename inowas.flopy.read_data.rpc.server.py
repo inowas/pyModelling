@@ -8,6 +8,7 @@ import traceback
 import warnings
 from InowasFlopyAdapter.InowasFlopyReadAdapter import InowasFlopyReadAdapter
 
+print(sys.argv)
 
 warnings.filterwarnings("ignore")
 connection = pika.BlockingConnection(
@@ -21,7 +22,7 @@ connection = pika.BlockingConnection(
 )
 
 channel = connection.channel()
-channel.queue_declare(queue='rpc_flopy_read_data_queue')
+channel.queue_declare(queue=sys.argv[7])
 datafolder = os.path.realpath(sys.argv[1])
 
 print(datafolder)
@@ -67,7 +68,7 @@ def on_request(ch, method, props, body):
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
 channel.basic_qos(prefetch_count=1)
-channel.basic_consume(on_request, queue='rpc_flopy_read_data_queue')
+channel.basic_consume(on_request, queue=sys.argv[7])
 
 print(" [x] Awaiting RPC requests")
 channel.start_consuming()

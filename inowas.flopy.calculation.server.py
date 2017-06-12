@@ -64,15 +64,18 @@ def process(content):
         try:
             flopy = InowasFlopyCalculationAdapter(version, data, uuid)
             result = flopy.response()
+            result = str(result).replace('\'', '"')
             return result
         except:
             return dict(
                 status_code=500,
-                message=traceback.format_exc()
+                calculation_id=uuid,
+                message=str(traceback.format_exc()).replace('"', '\"')
             )
 
     return dict(
         status_code=500,
+        calculation_id=uuid,
         message="Internal Server Error. Request data does not fit. \"m_type\" should have the content \"flopy_calculation\""
     )
 
@@ -81,7 +84,6 @@ def on_request(ch, method, props, body):
     content = json.loads(body.decode("utf-8"))
     ch.basic_ack(delivery_tag=method.delivery_tag)
     response = process(content)
-    response = str(response).replace('\'', '"')
 
     write_channel.basic_publish(
         exchange='',
