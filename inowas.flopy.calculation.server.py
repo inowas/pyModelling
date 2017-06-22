@@ -33,7 +33,8 @@ binfolder = os.path.join(scriptfolder, 'bin')
 def process(content):
     author = content.get("author")
     project = content.get("project")
-    uuid = content.get("id")
+    calculation_id = content.get("calculation_id")
+    model_id = content.get("model_id")
     m_type = content.get("type")
     version = content.get("version")
     data = content.get("data")
@@ -41,14 +42,15 @@ def process(content):
     print('Summary:')
     print('Author: %s' % author)
     print('Project: %s' % project)
-    print('Uuid: %s' % uuid)
+    print('Model Id: %s' % model_id)
+    print('Calculation Id: %s' % calculation_id)
     print('Type: %s' % m_type)
     print('Version: %s' % version)
 
     if m_type == 'flopy_calculation':
-        print('Running flopy calculation with id %s' % uuid)
 
-        target_directory = os.path.join(datafolder, uuid)
+        print("Running flopy calculation for model-id '{0}' with calculation-id '{1}'".format(model_id, calculation_id))
+        target_directory = os.path.join(datafolder, calculation_id)
         print('The target directory is %s' % target_directory)
 
         print('Write config to %s' % os.path.join(target_directory, 'configuration.json'))
@@ -58,24 +60,31 @@ def process(content):
         with open(os.path.join(target_directory, 'configuration.json'), 'w') as outfile:
             json.dump(content, outfile)
 
-        data['mf']['model_ws'] = target_directory
-        data['mf']['exe_name'] = os.path.join(binfolder, sys.platform, data['mf']['exe_name'])
+        data['packages']['mf']['model_ws'] = target_directory
+        data['packages']['mf']['exe_name'] = os.path.join(binfolder, sys.platform, data['packages']['mf']['exe_name'])
 
         try:
-            flopy = InowasFlopyCalculationAdapter(version, data, uuid)
-            result = flopy.response()
-            result = str(result).replace('\'', '"')
-            return result
+            flopy = InowasFlopyCalculationAdapter(version, data, calculation_id)
+            response = {}
+            response['status_code'] = "200"
+            response['model_id'] = model_id
+            response['calculation_id'] = calculation_id
+            response['data'] = flopy.response()
+            response['message'] = ""
+            response = str(response).replace('\'', '"')
+            return response
         except:
             return dict(
                 status_code=500,
-                calculation_id=uuid,
-                message=str(traceback.format_exc()).replace('"', '\"')
+                model_id=model_id,
+                calculation_id=calculation_id,
+                message=traceback.format_exc()
             )
 
     return dict(
         status_code=500,
-        calculation_id=uuid,
+        model_id=model_id,
+        calculation_id=calculation_id,
         message="Internal Server Error. Request data does not fit. \"m_type\" should have the content \"flopy_calculation\""
     )
 

@@ -29,7 +29,7 @@ class InowasFlopyCalculationAdapter:
 
     _version = None
     _data = None
-    _packages = []
+    _selected_packages = []
     _packageContent = {}
     _uuid = None
 
@@ -37,7 +37,7 @@ class InowasFlopyCalculationAdapter:
 
     def __init__(self, version, data, uuid):
         self._data = data
-        self._packages = data.get("packages")
+        self._selected_packages = data.get("selected_packages")
         self._version = version
         self._uuid = uuid
         self.read_packages()
@@ -51,12 +51,12 @@ class InowasFlopyCalculationAdapter:
         pass
 
     def read_packages(self):
-        for package in self._packages:
+        for package in self._selected_packages:
             print('Read Flopy Package: %s' % package)
-            self._packageContent[package] = self._data[package]
+            self._packageContent[package] = self._data["packages"][package]
 
     def create_model(self):
-        for package in self._packages:
+        for package in self._selected_packages:
             print('Create Flopy Package: %s' % package)
             self.create_package(package, self._packageContent[package])
 
@@ -105,8 +105,6 @@ class InowasFlopyCalculationAdapter:
         budgets = ReadBudget(self._packageContent['mf']['model_ws'])
 
         response = {}
-        response['status_code'] = "200"
-        response['id'] = self._uuid
         response['heads'] = heads.read_times()
         response['drawdowns'] = drawdowns.read_times()
         response['budgets'] = budgets.read_times()

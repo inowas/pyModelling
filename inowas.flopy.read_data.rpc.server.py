@@ -29,18 +29,18 @@ print(datafolder)
 
 
 def process(content):
-    uuid = content.get("id")
+    calculation_id = content.get("calculation_id")
     m_type = content.get("type")
     version = content.get("version")
 
     print('Summary:')
-    print('Uuid: %s' % uuid)
+    print('Calculation Id: %s' % calculation_id)
     print('Type: %s' % m_type)
     print('Version: %s' % version)
 
     if m_type == 'flopy_read_data':
         print('Read flopy data:')
-        project_folder = os.path.join(datafolder, uuid)
+        project_folder = os.path.join(datafolder, calculation_id)
 
         try:
             flopy = InowasFlopyReadAdapter(version, project_folder, content.get("request"))

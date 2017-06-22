@@ -15,7 +15,10 @@ class ReadBudget:
     def read_times(self):
         try:
             mf_list = MfListBudget(self._filename)
-            return mf_list.get_times()
+            if mf_list.get_times():
+                return mf_list.get_times()
+            else:
+                return []
         except:
             return []
 

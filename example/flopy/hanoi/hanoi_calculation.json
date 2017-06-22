@@ -1,7 +1,8 @@
 {
    "author":"Ralf Junghanns",
    "project":"Hanoi",
-   "id": "123-test-456",
+   "model_id": "123-test-456",
+   "calculation_id": "123-test-456",
    "type":"flopy_calculation",
    "version":"3.2.6",
    "data":{
