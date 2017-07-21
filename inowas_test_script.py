@@ -43,15 +43,24 @@ def process(content, datafolder):
         data['packages']['mf']['model_ws'] = target_directory
         data['packages']['mf']['exe_name'] = os.path.join(binfolder, sys.platform, data['packages']['mf']['exe_name'])
 
-        flopy = InowasFlopyCalculationAdapter(version, data, calculation_id)
-        response = {}
-        response['status_code'] = "200"
-        response['model_id'] = model_id
-        response['calculation_id'] = calculation_id
-        response['data'] = flopy.response()
-        response['message'] = ""
-        response = str(response).replace('\'', '"')
-        return response
+        try:
+            flopy = InowasFlopyCalculationAdapter(version, data, calculation_id)
+            response = {}
+            response['status_code'] = "200"
+            response['model_id'] = model_id
+            response['calculation_id'] = calculation_id
+            response['data'] = flopy.response()
+            response['message'] = ""
+            response = str(response).replace('\'', '"')
+            return response
+        except:
+            response = {}
+            response['status_code'] = "500"
+            response['model_id'] = model_id
+            response['calculation_id'] = calculation_id
+            response['message'] = traceback.format_exc(limit=1)
+            response = json.dumps(response)
+            return response
 
     if m_type == 'flopy_read_data':
         print('Read flopy data:')
@@ -82,7 +91,8 @@ def main():
     with open(filename) as data_file:
         content = json.load(data_file)
 
-    process(content, datafolder)
+    response = process(content, datafolder)
+    print(response)
 
 if __name__ == '__main__':
     main()

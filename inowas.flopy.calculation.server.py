@@ -74,12 +74,13 @@ def process(content):
             response = str(response).replace('\'', '"')
             return response
         except:
-            return dict(
-                status_code=500,
-                model_id=model_id,
-                calculation_id=calculation_id,
-                message=traceback.format_exc()
-            )
+            response = {}
+            response['status_code'] = "500"
+            response['model_id'] = model_id
+            response['calculation_id'] = calculation_id
+            response['message'] = traceback.format_exc(limit=1)
+            response = json.dumps(response)
+            return response
 
     return dict(
         status_code=500,
