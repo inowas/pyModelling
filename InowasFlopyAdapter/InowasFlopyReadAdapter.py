@@ -6,9 +6,10 @@ Author: Ralf Junghanns
 EMail: ralf.junghanns@gmail.com
 """
 
-from .ReadHead import ReadHead
-from .ReadDrawdown import ReadDrawdown
 from .ReadBudget import ReadBudget
+from .ReadDrawdown import ReadDrawdown
+from .ReadHead import ReadHead
+from .ReadFile import ReadFile
 
 
 class InowasFlopyReadAdapter:
@@ -48,9 +49,28 @@ class InowasFlopyReadAdapter:
         budget_file = ReadBudget(self._projectfolder)
         return budget_file.read_incremental_budget(totim=totim)
 
+    def read_file(self, extension):
+        namfile = ReadFile(self._projectfolder)
+        return namfile.read_file(extension)
+
+    def read_file_list(self):
+        namfile = ReadFile(self._projectfolder)
+        return namfile.read_file_list()
+
     def response(self):
+
         data = None
         request = self._request
+
+        if 'budget' in request:
+            if request['budget']['type'] == 'cumulative':
+                totim = request['budget']['totim']
+                data = self.read_cumulative_budget(totim=totim)
+
+            if request['budget']['type'] == 'incremental':
+                totim = self._request['totim']
+                data = self.read_incremental_budget(totim=totim)
+
         if 'layerdata' in request:
             if request['layerdata']['type'] == 'head':
                 totim = request['layerdata']['totim']
@@ -61,6 +81,12 @@ class InowasFlopyReadAdapter:
                 totim = request['layerdata']['totim']
                 layer = request['layerdata']['layer']
                 data = self.read_drawdown(totim=totim, layer=layer)
+
+        if 'file' in request:
+            data = [self.read_file(request['file'])]
+
+        if 'filelist' in request:
+            data = self.read_file_list()
 
         if 'timeseries' in request:
             if request['timeseries']['type'] == 'head':
@@ -74,15 +100,6 @@ class InowasFlopyReadAdapter:
                 row = request['timeseries']['row']
                 column = request['timeseries']['column']
                 data = self.read_drawdown_ts(layer=layer, row=row, column=column)
-
-        if 'budget' in request:
-            if request['budget']['type'] == 'cumulative':
-                totim = request['budget']['totim']
-                data = self.read_cumulative_budget(totim=totim)
-
-            if request['budget']['type'] == 'incremental':
-                totim = self._request['totim']
-                data = self.read_incremental_budget(totim=totim)
 
         if data is not None:
             return dict(

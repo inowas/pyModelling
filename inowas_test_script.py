@@ -64,7 +64,8 @@ def process(content, datafolder):
 
     if m_type == 'flopy_read_data':
         print('Read flopy data:')
-        project_folder = os.path.join(datafolder, uuid)
+        calculation_id = content.get("calculation_id")
+        project_folder = os.path.join(datafolder, calculation_id)
         flopy = InowasFlopyReadAdapter(version, project_folder, content.get("request"))
         print(json.dumps(flopy.response()))
         return flopy.response()

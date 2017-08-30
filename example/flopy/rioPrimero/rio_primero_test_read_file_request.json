@@ -1,0 +1,8 @@
+{
+   "calculation_id": "1683226f348827f231696a1180e0e878",
+   "type":"flopy_read_data",
+   "version":"3.2.6",
+   "request": {
+      "file": "lst"
+   }
+}
