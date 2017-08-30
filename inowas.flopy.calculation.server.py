@@ -70,7 +70,7 @@ def process(content):
             response['model_id'] = model_id
             response['calculation_id'] = calculation_id
             response['data'] = flopy.response()
-            response['message'] = ""
+            response['message'] = flopy.response_message()
             response = str(response).replace('\'', '"')
             return response
         except:

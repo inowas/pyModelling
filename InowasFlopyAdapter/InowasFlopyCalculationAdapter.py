@@ -34,6 +34,7 @@ class InowasFlopyCalculationAdapter:
     _uuid = None
 
     _mf = None
+    _report = ''
 
     def __init__(self, version, data, uuid):
         self._data = data
@@ -66,7 +67,8 @@ class InowasFlopyCalculationAdapter:
 
     def run_model(self):
         print('Run the model')
-        self._mf.run_model()
+        success, report = self._mf.run_model(report=True)
+        self._report = ''.join(str(e) + "\r\n" for e in report)
 
     def check_model(self):
         self._mf.check()
@@ -111,3 +113,6 @@ class InowasFlopyCalculationAdapter:
         response['number_of_layers'] = heads.read_number_of_layers()
 
         return response
+
+    def response_message(self):
+        return self._report
