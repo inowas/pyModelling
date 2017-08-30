@@ -41,6 +41,8 @@ def process(content):
     if m_type == 'flopy_read_data':
         print('Read flopy data:')
         project_folder = os.path.join(datafolder, calculation_id)
+        print('Project folder: ' + str(project_folder))
+        print('Request: ' + str(content.get("request")))
 
         try:
             flopy = InowasFlopyReadAdapter(version, project_folder, content.get("request"))
