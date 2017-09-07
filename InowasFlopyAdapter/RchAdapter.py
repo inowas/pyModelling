@@ -46,7 +46,7 @@ class RchAdapter:
         default = {
             "nrchop": 3,
             "ipakcb": 0,
-            "rech": 1e-3,
+            "rech": 0,
             "irch": 0,
             "extension": 'rch',
             "unitnumber": 19
