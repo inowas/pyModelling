@@ -30,11 +30,12 @@ class RchAdapter:
 
     def get_package(self, _mf):
         content = self.merge()
+        print(content)
         return mf.ModflowRch(
                 _mf,
                 nrchop=content['nrchop'],
                 ipakcb=content['ipakcb'],
-                rech=content['rech'],
+                rech=content['stress_period_data'],
                 irch=content['irch'],
                 extension=content['extension'],
                 unitnumber=content['unitnumber']
