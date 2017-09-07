@@ -30,7 +30,6 @@ class RchAdapter:
 
     def get_package(self, _mf):
         content = self.merge()
-        print(content)
         return mf.ModflowRch(
                 _mf,
                 nrchop=content['nrchop'],
