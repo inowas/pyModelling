@@ -4,11 +4,9 @@ import json
 import os
 import pika
 import sys
-import traceback
 import warnings
-from InowasFlopyAdapter.InowasFlopyReadAdapter import InowasFlopyReadAdapter
 
-print(sys.argv)
+from InowasGeoProcessing.InowasGeoProcessing import InowasGeoProcessing
 
 warnings.filterwarnings("ignore")
 connection = pika.BlockingConnection(
@@ -25,38 +23,28 @@ channel = connection.channel()
 channel.queue_declare(queue=sys.argv[7])
 datafolder = os.path.realpath(sys.argv[1])
 
-print(datafolder)
-
 
 def process(content):
-    calculation_id = content.get("calculation_id")
+    author = content.get("author")
+    project = content.get("project")
     m_type = content.get("type")
     version = content.get("version")
+    data = content.get("data")
+    result = False
 
     print('Summary:')
-    print('Calculation Id: %s' % calculation_id)
+    print('Author: %s' % author)
+    print('Project: %s' % project)
     print('Type: %s' % m_type)
     print('Version: %s' % version)
 
-    if m_type == 'flopy_read_data':
-        print('Read flopy data:')
-        project_folder = os.path.join(datafolder, calculation_id)
-        print('Project folder: ' + str(project_folder))
-        print('Request: ' + str(content.get("request")))
+    if m_type == 'geoProcessing':
+        print('Running geoProcessing:')
+        gp = InowasGeoProcessing(datafolder, data)
+        result = gp.response()
+        print('Finished ...')
 
-        try:
-            flopy = InowasFlopyReadAdapter(version, project_folder, content.get("request"))
-            return flopy.response()
-        except:
-            return dict(
-                status_code=500,
-                message=traceback.format_exc()
-            )
-
-    return dict(
-        status_code=500,
-        message="Internal Server Error. Request data does not fit."
-    )
+    return result
 
 
 def on_request(ch, method, props, body):
