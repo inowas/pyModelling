@@ -20,28 +20,20 @@ class RasterFile:
         if not self.is_valid():
             raise FileNotFoundError('File not valid.')
 
-        info = ""
-        info += "Driver: {}/{}{}".format(
-            self._dataset.GetDriver().ShortName,
-            self._dataset.GetDriver().LongName,
-            "\r\n"
-        )
-
-        info += "Size: {} x {} x {}{}".format(
-            self._dataset.RasterXSize,
-            self._dataset.RasterYSize,
-            self._dataset.RasterCount,
-            "\r\n"
-        )
-
-        info += "Projection: {}{}".format(self._dataset.GetProjection(), "\r\n")
+        metadata = {
+            'driver': self._dataset.GetDriver().ShortName,
+            'rasterXSize': self._dataset.RasterXSize,
+            'rasterYSize': self._dataset.RasterYSize,
+            'rasterCount': self._dataset.RasterCount,
+            'projection': self._dataset.GetProjection()
+        }
 
         geotransform = self._dataset.GetGeoTransform()
         if geotransform:
-            info += "Origin = ({}, {}){}".format(geotransform[0], geotransform[3], "\r\n")
-            info += "Pixel Size = ({}, {}){}".format(geotransform[1], geotransform[5], "\r\n")
+            metadata['origin'] = [geotransform[0], geotransform[3]]
+            metadata['pixelSize'] = [geotransform[1], geotransform[5]]
 
-        return info
+        return metadata
 
     def get_data(self):
         if not self.is_valid():

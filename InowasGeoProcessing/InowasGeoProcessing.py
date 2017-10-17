@@ -35,7 +35,7 @@ class InowasGeoProcessing:
             return dict(
                 status_code=200,
                 body={
-                    'info': file.get_metadata(),
+                    'metadata': file.get_metadata(),
                     'data': file.get_data()
                 }
             )
