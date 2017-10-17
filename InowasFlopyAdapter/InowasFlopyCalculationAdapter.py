@@ -57,9 +57,16 @@ class InowasFlopyCalculationAdapter:
             self._packageContent[package] = self._data["packages"][package]
 
     def create_model(self):
-        for package in self._selected_packages:
-            print('Create Flopy Package: %s' % package)
-            self.create_package(package, self._packageContent[package])
+        package_order = [
+            'mf', 'dis', 'bas',
+            'riv', 'wel', 'rch', 'chd', 'ghb',
+            'lpf', 'upw', 'pcg', 'nwt', 'oc'
+        ]
+
+        for package in package_order:
+            if package in self._selected_packages:
+                print('Create Flopy Package: %s' % package)
+                self.create_package(package, self._packageContent[package])
 
     def write_input_model(self):
         print('Write input files')

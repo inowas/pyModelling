@@ -1,12 +1,8 @@
 {
-    "author": "",
-    "project": "",
-    "version": "",
-    "model_id": "443de95f-5fe8-4069-a943-e249edd9d4be",
     "type": "geoProcessing",
     "data": {
         "method": "extractRasterData",
-        "parameter": {
+        "parameters": {
             "file": "testRaster.tif"
         }
     }

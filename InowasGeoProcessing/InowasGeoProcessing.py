@@ -1,3 +1,4 @@
+import os
 from .RasterFile import RasterFile
 
 """
@@ -20,27 +21,26 @@ class InowasGeoProcessing:
 
     def response(self):
 
-        response = None
-
         if self._data['method'] == 'extractRasterData':
             print('Method: extractRasterData')
-            file = RasterFile(filename=self._data['parameter']['file'])
+            filename = os.path.join(self._datafolder, self._data['parameters']['file'])
+            file = RasterFile(filename=filename)
 
             if not file.is_valid():
                 return dict(
                     status_code=404,
-                    message="File not found or not valid."
+                    body="File not found or not valid."
                 )
 
-            response = {'info': file.get_metadata(), 'data': file.get_data()}
-
-        if response is not None:
             return dict(
                 status_code=200,
-                response=response
+                body={
+                    'info': file.get_metadata(),
+                    'data': file.get_data()
+                }
             )
 
         return dict(
             status_code=500,
-            message="Internal Server Error. Request data does not fit."
+            body="Internal Server Error. Request data does not fit."
         )

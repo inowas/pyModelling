@@ -25,18 +25,12 @@ datafolder = os.path.realpath(sys.argv[1])
 
 
 def process(content):
-    author = content.get("author")
-    project = content.get("project")
     m_type = content.get("type")
-    version = content.get("version")
     data = content.get("data")
     result = False
 
     print('Summary:')
-    print('Author: %s' % author)
-    print('Project: %s' % project)
     print('Type: %s' % m_type)
-    print('Version: %s' % version)
 
     if m_type == 'geoProcessing':
         print('Running geoProcessing:')
