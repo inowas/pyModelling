@@ -1,0 +1,12 @@
+{
+    "type": "geoProcessing",
+    "data": {
+        "method": "extractRasterData",
+        "parameters": {
+            "file": "FAS_Brazil1.2017289.terra.721.2km.tif",
+            "width": 10,
+            "height": 5,
+            "method": "nearest"
+        }
+    }
+}
