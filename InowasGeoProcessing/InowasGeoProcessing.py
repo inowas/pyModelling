@@ -56,7 +56,7 @@ class InowasGeoProcessing:
                 height = parameters['height']
 
             available_interpolation_methods = [
-                'nearest', 'linear', 'cubic'
+                'nearest', 'lanczos', 'bilinear', 'bicubic', 'cubic'
             ]
 
             method = available_interpolation_methods[0]

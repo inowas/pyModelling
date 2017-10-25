@@ -4,6 +4,7 @@ import json
 import os
 import pika
 import sys
+import traceback
 import warnings
 
 from InowasGeoProcessing.InowasGeoProcessing import InowasGeoProcessing
@@ -34,9 +35,15 @@ def process(content):
 
     if m_type == 'geoProcessing':
         print('Running geoProcessing:')
-        gp = InowasGeoProcessing(datafolder, data)
-        result = gp.response()
-        print('Finished ...')
+        try:
+            gp = InowasGeoProcessing(datafolder, data)
+            result = gp.response()
+            print('Finished ...')
+        except:
+            result = {'status_code': "500", 'message': traceback.format_exc()}
+            result = json.dumps(result)
+            print('Errored ...')
+            print(traceback.format_exc())
 
     return result
 

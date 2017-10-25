@@ -1,6 +1,5 @@
 import gdal
-import numpy as np
-from scipy.interpolate import griddata
+from scipy.misc import imresize
 
 
 class RasterFile:
@@ -52,19 +51,12 @@ class RasterFile:
             band_data = band.ReadAsArray()
 
             if width and height:
-                band_data = self.interpolate(data2d=band_data, width=width, height=height, method=method)
+                band_data = self.interpolate(data2d=band_data, target_width=width, target_height=height, method=method)
 
             data.append(band_data.tolist())
 
         return data
 
     @staticmethod
-    def interpolate(data2d, width, height, method):
-
-        if len(data2d) == height and len(data2d[0]) == width:
-            return data2d
-
-        grid_x, grid_y = np.mgrid[0:len(data2d[0]):complex(height), 0:len(data2d):complex(width)]
-        points = np.indices((len(data2d), len(data2d[0]))).T.reshape(-1, 2)
-        values = data2d.flatten('F')
-        return griddata(points, values, (grid_x, grid_y), method=method)
+    def interpolate(data2d, target_width, target_height, method):
+        return imresize(arr=data2d, size=(int(target_height), int(target_width)), interp=method)

@@ -29,7 +29,8 @@ def process(content, datafolder):
         print('Running geoProcessing:')
         gp = InowasGeoProcessing(datafolder, data)
         response = gp.response()
-        print(json.dumps(response))
+
+        print(response['body']['data'][0])
 
 
 def main():

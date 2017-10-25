@@ -1,0 +1,12 @@
+{
+    "type": "geoProcessing",
+    "data": {
+        "method": "extractRasterData",
+        "parameters": {
+            "file": "inowas_logo.png",
+            "width": 50,
+            "height": 25,
+            "method": "nearest"
+        }
+    }
+}
