@@ -1,0 +1,949 @@
+MODFLOW 3 layer(s), 130 row(s), 100 column(s), 71 stress period(s)
+warning: assuming SpatialReference units are meters
+[
+    MODFLOW Discretization Package Class.
+
+    Parameters
+    ----------
+    model : model object
+        The model object (of type :class:`flopy.modflow.Modflow`) to which
+        this package will be added.
+    nlay : int
+        Number of model layers (the default is 1).
+    nrow : int
+        Number of model rows (the default is 2).
+    ncol : int
+        Number of model columns (the default is 2).
+    nper : int
+        Number of model stress periods (the default is 1).
+    delr : float or array of floats (ncol), optional
+        An array of spacings along a row (the default is 1.0).
+    delc : float or array of floats (nrow), optional
+        An array of spacings along a column (the default is 0.0).
+    laycbd : int or array of ints (nlay), optional
+        An array of flags indicating whether or not a layer has a Quasi-3D
+        confining bed below it. 0 indicates no confining bed, and not zero
+        indicates a confining bed. LAYCBD for the bottom layer must be 0. (the
+        default is 0)
+    top : float or array of floats (nrow, ncol), optional
+        An array of the top elevation of layer 1. For the common situation in
+        which the top layer represents a water-table aquifer, it may be
+        reasonable to set Top equal to land-surface elevation (the default is
+        1.0)
+    botm : float or array of floats (nlay, nrow, ncol), optional
+        An array of the bottom elevation for each model cell (the default is
+        0.)
+    perlen : float or array of floats (nper)
+        An array of the stress period lengths.
+    nstp : int or array of ints (nper)
+        Number of time steps in each stress period (default is 1).
+    tsmult : float or array of floats (nper)
+        Time step multiplier (default is 1.0).
+    steady : boolean or array of boolean (nper)
+        true or False indicating whether or not stress period is steady state
+        (default is True).
+    itmuni : int
+        Time units, default is days (4)
+    lenuni : int
+        Length units, default is meters (2)
+    extension : string
+        Filename extension (default is 'dis')
+    unitnumber : int
+        File unit number (default is None).
+    filenames : str or list of str
+        Filenames to use for the package. If filenames=None the package name
+        will be created using the model name and package extension. If a
+        single string is passed the package will be set to the string.
+        Default is None.
+    xul : float
+        x coordinate of upper left corner of the grid, default is None
+    yul : float
+        y coordinate of upper left corner of the grid, default is None
+    rotation : float
+        clockwise rotation (in degrees) of the grid about the upper left
+        corner. default is 0.0
+    proj4_str : str
+        PROJ4 string that defines the xul-yul coordinate system
+        (.e.g. '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs ').
+        Can be an EPSG code (e.g. 'EPSG:4326'). Default is 'EPSG:4326'
+    start_dateteim : str
+        starting datetime of the simulation. default is '1/1/1970'
+
+    Attributes
+    ----------
+    heading : str
+        Text string written to top of package input file.
+
+    Methods
+    -------
+
+    See Also
+    --------
+
+    Notes
+    -----
+
+    Examples
+    --------
+
+    >>> import flopy
+    >>> m = flopy.modflow.Modflow()
+    >>> dis = flopy.modflow.ModflowDis(m)
+
+     _ModflowDis__thickness = <flopy.utils.util_array.Util3d object at 0x7fcc2116eba8> ('flopy.utils.util_array.Util3d)
+ acceptable_dtypes (list, items = 3
+ allowDuplicates = False ('bool)
+ botm = <flopy.utils.util_array.Util3d object at 0x7fcc2116e7f0> ('flopy.utils.util_array.Util3d)
+ delc = <flopy.utils.util_array.Util2d object at 0x7fcc2116e978> ('flopy.utils.util_array.Util2d)
+ delr = <flopy.utils.util_array.Util2d object at 0x7fcc2116e4e0> ('flopy.utils.util_array.Util2d)
+ extra = 
+ file_name = tuc1940q1.dis
+ fn_path = Input/tuc1940q1.dis ('str)
+ itmuni = 4 ('int)
+ itmuni_dict = {0: 'undefined', 1: 'seconds', 2: 'minutes', 3: 'hours', 4: 'days', 5: 'years'} ('dict)
+ laycbd = <flopy.utils.util_array.Util2d object at 0x7fcc2116e9b0> ('flopy.utils.util_array.Util2d)
+ lenuni = 1 ('int)
+ ncol = 100 ('int)
+ nlay = 3 ('int)
+ nper = 71 ('int)
+ nrow = 130 ('int)
+ nstp = <flopy.utils.util_array.Util2d object at 0x7fcc2116e940> ('flopy.utils.util_array.Util2d)
+ perlen = <flopy.utils.util_array.Util2d object at 0x7fcc2116e1d0> ('flopy.utils.util_array.Util2d)
+ sr = xul:0; yul:343200; rotation:0; proj4_str:+init=EPSG:4326; units:meters; lenuni:1; length_multiplier:1.0 ('flopy.utils.reference.SpatialReference)
+ start_datetime = 1/1/1970 ('str)
+ steady = <flopy.utils.util_array.Util2d object at 0x7fcc2116ea58> ('flopy.utils.util_array.Util2d)
+ top = <flopy.utils.util_array.Util2d object at 0x7fcc2116e6a0> ('flopy.utils.util_array.Util2d)
+ tsmult = <flopy.utils.util_array.Util2d object at 0x7fcc2116e668> ('flopy.utils.util_array.Util2d)
+ unit_number = 10
+, 
+    MODFLOW Basic Package Class.
+
+    Parameters
+    ----------
+    model : model object
+        The model object (of type :class:`flopy.modflow.mf.Modflow`) to which
+        this package will be added.
+    ibound : array of ints, optional
+        The ibound array (the default is 1).
+    strt : array of floats, optional
+        An array of starting heads (the default is 1.0).
+    ifrefm : bool, optional
+        Indication if data should be read using free format (the default is 
+        True).
+    ixsec : bool, optional
+        Indication of whether model is cross sectional or not (the default is
+        False).
+    ichflg : bool, optional
+        Flag indicating that flows between constant head cells should be
+        calculated (the default is False).
+    stoper : float
+        percent discrepancy that is compared to the budget percent discrepancy
+        continue when the solver convergence criteria are not met.  Execution
+        will unless the budget percent discrepancy is greater than stoper
+        (default is None). MODFLOW-2005 only
+    hnoflo : float
+        Head value assigned to inactive cells (default is -999.99).
+    extension : str, optional
+        File extension (default is 'bas').
+    unitnumber : int, optional
+        FORTRAN unit number for this package (default is None).
+    filenames : str or list of str
+        Filenames to use for the package. If filenames=None the package name
+        will be created using the model name and package extension. If a single
+        string is passed the package name will be set to the string.
+        Default is None.
+
+    Attributes
+    ----------
+    heading : str
+        Text string written to top of package input file.
+    options : list of str
+        Can be either or a combination of XSECTION, CHTOCH or FREE.
+    ifrefm : bool
+        Indicates whether or not packages will be written as free format.
+
+    Methods
+    -------
+
+    See Also
+    --------
+
+    Notes
+    -----
+
+    Examples
+    --------
+
+    >>> import flopy
+    >>> m = flopy.modflow.Modflow()
+    >>> bas = flopy.modflow.ModflowBas(m)
+
+     acceptable_dtypes (list, items = 3
+ allowDuplicates = False ('bool)
+ extra = 
+ file_name = tuc1940z.bas
+ fn_path = Input/tuc1940z.bas ('str)
+ hnoflo = 0.0 ('numpy.float32)
+ ibound = <flopy.utils.util_array.Util3d object at 0x7fcc2116eda0> ('flopy.utils.util_array.Util3d)
+ ichflg = False ('bool)
+ ixsec = False ('bool)
+ options =  ('str)
+ stoper = None ('NoneType)
+ strt = <flopy.utils.util_array.Util3d object at 0x7fcc2116ee48> ('flopy.utils.util_array.Util3d)
+ unit_number = 11
+, 
+    Upstream weighting package class
+
+
+    Parameters
+    ----------
+    model : model object
+        The model object (of type :class:`flopy.modflow.mf.Modflow`) to which
+        this package will be added.
+    ipakcb : int
+        A flag that is used to determine if cell-by-cell budget data should be
+        saved. If ipakcb is non-zero cell-by-cell budget data will be saved.
+        (default is 53)
+    hdry : float
+        Is the head that is assigned to cells that are converted to dry during
+        a simulation. Although this value plays no role in the model
+        calculations, it is useful as an indicator when looking at the
+        resulting heads that are output from the model. HDRY is thus similar
+        to HNOFLO in the Basic Package, which is the value assigned to cells
+        that are no-flow cells at the start of a model simulation. (default
+        is -1.e30).
+    iphdry : int
+        iphdry is a flag that indicates whether groundwater head will be set to
+        hdry when the groundwater head is less than 0.0001 above the cell bottom
+        (units defined by lenuni in the discretization package). If iphdry=0,
+        then head will not be set to hdry. If iphdry>0, then head will be set to
+        hdry. If the head solution from one simulation will be used as starting
+        heads for a subsequent simulation, or if the Observation Process is used
+        (Harbaugh and others, 2000), then hdry should not be printed to the output
+        file for dry cells (that is, the upw package input variable should be set
+        as iphdry=0). (default is 0)
+    noparcheck : bool
+        noparcheck turns off the checking that a value is defined for all cells
+        when parameters are used to define layer data.
+    laytyp : int or array of ints (nlay)
+        Layer type (default is 0).
+    layavg : int or array of ints (nlay)
+        Layer average (default is 0).
+        0 is harmonic mean
+        1 is logarithmic mean
+        2 is arithmetic mean of saturated thickness and logarithmic mean of
+        of hydraulic conductivity
+    chani : float or array of floats (nlay)
+        contains a value for each layer that is a flag or the horizontal
+        anisotropy. If CHANI is less than or equal to 0, then variable HANI
+        defines horizontal anisotropy. If CHANI is greater than 0, then CHANI
+        is the horizontal anisotropy for the entire layer, and HANI is not
+        read. If any HANI parameters are used, CHANI for all layers must be
+        less than or equal to 0. Use as many records as needed to enter a
+        value of CHANI for each layer. The horizontal anisotropy is the ratio
+        of the hydraulic conductivity along columns (the Y direction) to the
+        hydraulic conductivity along rows (the X direction).
+    layvka : float or array of floats (nlay)
+        a flag for each layer that indicates whether variable VKA is vertical
+        hydraulic conductivity or the ratio of horizontal to vertical
+        hydraulic conductivity.
+    laywet : float or array of floats (nlay)
+        contains a flag for each layer that indicates if wetting is active.
+        laywet should always be zero for the UPW Package because all cells
+        initially active are wettable.
+    hk : float or array of floats (nlay, nrow, ncol)
+        is the hydraulic conductivity along rows. HK is multiplied by
+        horizontal anisotropy (see CHANI and HANI) to obtain hydraulic
+        conductivity along columns. (default is 1.0).
+    hani : float or array of floats (nlay, nrow, ncol)
+        is the ratio of hydraulic conductivity along columns to hydraulic
+        conductivity along rows, where HK of item 10 specifies the hydraulic
+        conductivity along rows. Thus, the hydraulic conductivity along
+        columns is the product of the values in HK and HANI.
+        (default is 1.0).
+    vka : float or array of floats (nlay, nrow, ncol)
+        is either vertical hydraulic conductivity or the ratio of horizontal
+        to vertical hydraulic conductivity depending on the value of LAYVKA.
+        (default is 1.0).
+    ss : float or array of floats (nlay, nrow, ncol)
+        is specific storage unless the STORAGECOEFFICIENT option is used.
+        When STORAGECOEFFICIENT is used, Ss is confined storage coefficient.
+        (default is 1.e-5).
+    sy : float or array of floats (nlay, nrow, ncol)
+        is specific yield. (default is 0.15).
+    vkcb : float or array of floats (nlay, nrow, ncol)
+        is the vertical hydraulic conductivity of a Quasi-three-dimensional
+        confining bed below a layer. (default is 0.0).
+    extension : string
+        Filename extension (default is 'upw')
+    unitnumber : int
+        File unit number (default is None).
+    filenames : str or list of str
+        Filenames to use for the package and the output files. If
+        filenames=None the package name will be created using the model name
+        and package extension and the cbc output name will be created using
+        the model name and .cbc extension (for example, modflowtest.cbc),
+        if ipakcbc is a number greater than zero. If a single string is passed
+        the package will be set to the string and cbc output name will be
+        created using the model name and .cbc extension, if ipakcbc is a
+        number greater than zero. To define the names for all package files
+        (input and output) the length of the list of strings should be 2.
+        Default is None.
+
+
+    Attributes
+    ----------
+
+    Methods
+    -------
+
+    See Also
+    --------
+
+    Notes
+    -----
+
+    Examples
+    --------
+
+    >>> import flopy
+    >>> m = flopy.modflow.Modflow()
+    >>> lpf = flopy.modflow.ModflowLpf(m)
+
+     acceptable_dtypes (list, items = 3
+ allowDuplicates = False ('bool)
+ chani = <flopy.utils.util_array.Util2d object at 0x7fcc211b5390> ('flopy.utils.util_array.Util2d)
+ extra = 
+ file_name = tuc1940t.upw
+ fn_path = Input/tuc1940t.upw ('str)
+ hani = <flopy.utils.util_array.Util3d object at 0x7fcc211b5898> ('flopy.utils.util_array.Util3d)
+ hdry = -666.0 ('float)
+ hk = <flopy.utils.util_array.Util3d object at 0x7fcc211b5b70> ('flopy.utils.util_array.Util3d)
+ ipakcb = 39 ('int)
+ iphdry = 0 ('int)
+ layavg = <flopy.utils.util_array.Util2d object at 0x7fcc211b5e10> ('flopy.utils.util_array.Util2d)
+ laytyp = <flopy.utils.util_array.Util2d object at 0x7fcc211b5438> ('flopy.utils.util_array.Util2d)
+ layvka = <flopy.utils.util_array.Util2d object at 0x7fcc211b5940> ('flopy.utils.util_array.Util2d)
+ laywet = <flopy.utils.util_array.Util2d object at 0x7fcc211b5a58> ('flopy.utils.util_array.Util2d)
+ npupw = 0 ('int)
+ options =   ('str)
+ ss = <flopy.utils.util_array.Util3d object at 0x7fcc211bd160> ('flopy.utils.util_array.Util3d)
+ sy = <flopy.utils.util_array.Util3d object at 0x7fcc211b5470> ('flopy.utils.util_array.Util3d)
+ unit_number = 12
+ vka = <flopy.utils.util_array.Util3d object at 0x7fcc211b5f98> ('flopy.utils.util_array.Util3d)
+ vkcb = <flopy.utils.util_array.Util3d object at 0x7fcc211b5278> ('flopy.utils.util_array.Util3d)
+, 
+    MODFLOW Evapotranspiration Package Class.
+
+    Parameters
+    ----------
+    model : model object
+        The model object (of type :class:`flopy.modflow.mf.ModflowEvt`) to which
+        this package will be added.
+    ipakcb : int
+        A flag that is used to determine if cell-by-cell budget data should be
+        saved. If ipakcb is non-zero cell-by-cell budget data will be saved.
+        (default is 0).
+    nevtop : int
+        is the recharge option code.
+        1: ET is calculated only for cells in the top grid layer
+        2: ET to layer defined in ievt
+        3: ET to highest active cell (default is 3).
+    surf : float or filename or ndarray or dict keyed on kper (zero-based)
+        is the ET surface elevation. (default is 0.0, which is used for all
+        stress periods).
+    evtr: float or filename or ndarray or dict keyed on kper (zero-based)
+        is the maximum ET flux (default is 1e-3, which is used for all
+        stress periods).
+    exdp : float or filename or ndarray or dict keyed on kper (zero-based)
+        is the ET extinction depth (default is 1.0, which is used for all
+        stress periods).
+    ievt : int or filename or ndarray or dict keyed on kper (zero-based)
+        is the layer indicator variable (default is 1, which is used for all
+        stress periods).
+    extension : string
+        Filename extension (default is 'evt')
+    unitnumber : int
+        File unit number (default is None).
+    filenames : str or list of str
+        Filenames to use for the package and the output files. If
+        filenames=None the package name will be created using the model name
+        and package extension and the cbc output name will be created using
+        the model name and .cbc extension (for example, modflowtest.cbc),
+        if ipakcbc is a number greater than zero. If a single string is passed
+        the package will be set to the string and cbc output names will be
+        created using the model name and .cbc extension, if ipakcbc is a
+        number greater than zero. To define the names for all package files
+        (input and output) the length of the list of strings should be 2.
+        Default is None.
+
+    Attributes
+    ----------
+
+    Methods
+    -------
+
+    See Also
+    --------
+
+    Notes
+    -----
+    Parameters are not supported in FloPy.
+
+    Examples
+    --------
+
+    >>> import flopy
+    >>> m = flopy.modflow.Modflow()
+    >>> evt = flopy.modflow.ModflowEvt(m, nevtop=3, evtr=1.2e-4)
+
+     acceptable_dtypes (list, items = 3
+ allowDuplicates = False ('bool)
+ evtr = <flopy.utils.util_array.Transient2d object at 0x7fcc211ac080> ('flopy.utils.util_array.Transient2d)
+ exdp = <flopy.utils.util_array.Transient2d object at 0x7fcc211cc080> ('flopy.utils.util_array.Transient2d)
+ external = True ('bool)
+ extra = 
+ file_name = TUC1940d.EVT
+ fn_path = Input/TUC1940d.EVT ('str)
+ ievt = <flopy.utils.util_array.Transient2d object at 0x7fcc2116a048> ('flopy.utils.util_array.Transient2d)
+ ipakcb = 39 ('int)
+ nevtop = 1 ('int)
+ np = 0 ('int)
+ surf = <flopy.utils.util_array.Transient2d object at 0x7fcc211bd978> ('flopy.utils.util_array.Transient2d)
+ unit_number = 14
+, 
+    MODFLOW Constant Head Package Class.
+
+    Parameters
+    ----------
+    model : model object
+        The model object (of type :class:`flopy.modflow.mf.Modflow`) to which
+        this package will be added.
+    stress_period_data : list of boundaries, recarrays, or dictionary of
+        boundaries.
+
+        Each chd cell is defined through definition of
+        layer (int), row (int), column (int), shead (float), ehead (float)
+        shead is the head at the start of the stress period, and ehead is the
+        head at the end of the stress period.
+        The simplest form is a dictionary with a lists of boundaries for each
+        stress period, where each list of boundaries itself is a list of
+        boundaries. Indices of the dictionary are the numbers of the stress
+        period. This gives the form of::
+
+            stress_period_data =
+            {0: [
+                [lay, row, col, shead, ehead],
+                [lay, row, col, shead, ehead],
+                [lay, row, col, shead, ehead]
+                ],
+            1:  [
+                [lay, row, col, shead, ehead],
+                [lay, row, col, shead, ehead],
+                [lay, row, col, shead, ehead]
+                ], ...
+            kper:
+                [
+                [lay, row, col, shead, ehead],
+                [lay, row, col, shead, ehead],
+                [lay, row, col, shead, ehead]
+                ]
+            }
+
+        Note that if the number of lists is smaller than the number of stress
+        periods, then the last list of chds will apply until the end of the
+        simulation. Full details of all options to specify stress_period_data
+        can be found in the flopy3 boundaries Notebook in the basic
+        subdirectory of the examples directory.
+
+    extension : string
+        Filename extension (default is 'chd')
+    unitnumber : int
+        File unit number (default is None).
+    filenames : str or list of str
+        Filenames to use for the package. If filenames=None the package name
+        will be created using the model name and package extension. If a
+        single string is passed the package will be set to the string.
+        Default is None.
+
+    Attributes
+    ----------
+    mxactc : int
+        Maximum number of chds for all stress periods.  This is calculated
+        automatically by FloPy based on the information in
+        stress_period_data.
+
+    Methods
+    -------
+
+    See Also
+    --------
+
+    Notes
+    -----
+    Parameters are supported in Flopy only when reading in existing models.
+    Parameter values are converted to native values in Flopy and the
+    connection to "parameters" is thus nonexistent.
+
+    Examples
+    --------
+
+    >>> import flopy
+    >>> m = flopy.modflow.Modflow()
+    >>> lrcd = {0:[[2, 3, 4, 10., 10.1]]}   #this chd will be applied to all
+    >>>                                     #stress periods
+    >>> chd = flopy.modflow.ModflowChd(m, stress_period_data=lrcd)
+
+     acceptable_dtypes (list, items = 3
+ allowDuplicates = False ('bool)
+ dtype = [('k', '<i8'), ('i', '<i8'), ('j', '<i8'), ('shead', '<f4'), ('ehead', '<f4')] ('numpy.dtype)
+ extra = 
+ file_name = tuc2010a3.chd
+ fn_path = Input/tuc2010a3.chd ('str)
+ np = 0 ('int)
+ options (list, items = 0
+ stress_period_data = <flopy.utils.util_list.MfList object at 0x7fcc211bd278> ('flopy.utils.util_list.MfList)
+ unit_number = 15
+, 
+    MODFLOW Recharge Package Class.
+
+    Parameters
+    ----------
+    model : model object
+        The model object (of type :class:`flopy.modflow.mf.Modflow`) to which
+        this package will be added.
+    ipakcb : int
+        A flag that is used to determine if cell-by-cell budget data should be
+        saved. If ipakcb is non-zero cell-by-cell budget data will be saved.
+        (default is 0).
+    nrchop : int
+        is the recharge option code. 
+        1: Recharge to top grid layer only
+        2: Recharge to layer defined in irch
+        3: Recharge to highest active cell (default is 3).
+    rech : float or array of floats (nrow, ncol)
+        is the recharge flux. (default is 1.e-3).
+    irch : int or array of ints (nrow, ncol)
+        is the layer to which recharge is applied in each vertical
+        column (only used when nrchop=2). (default is 0).
+    extension : string
+        Filename extension (default is 'rch')
+    unitnumber : int
+        File unit number (default is None).
+    filenames : str or list of str
+        Filenames to use for the package and the output files. If
+        filenames=None the package name will be created using the model name
+        and package extension and the cbc output name will be created using
+        the model name and .cbc extension (for example, modflowtest.cbc),
+        if ipakcbc is a number greater than zero. If a single string is passed
+        the package will be set to the string and cbc output names will be
+        created using the model name and .cbc extension, if ipakcbc is a
+        number greater than zero. To define the names for all package files
+        (input and output) the length of the list of strings should be 2.
+        Default is None.
+
+    Attributes
+    ----------
+
+    Methods
+    -------
+
+    See Also
+    --------
+
+    Notes
+    -----
+    Parameters are supported in Flopy only when reading in existing models.
+    Parameter values are converted to native values in Flopy and the
+    connection to "parameters" is thus nonexistent.
+
+    Examples
+    --------
+
+    >>> #steady state
+    >>> import flopy
+    >>> m = flopy.modflow.Modflow()
+    >>> rch = flopy.modflow.ModflowRch(m, nrchop=3, rech=1.2e-4)
+
+    >>> #transient with time-varying recharge
+    >>> import flopy
+    >>> rech = {}
+    >>> rech[0] = 1.2e-4 #stress period 1 to 4
+    >>> rech[4] = 0.0 #stress period 5 and 6
+    >>> rech[6] = 1.2e-3 #stress preiod 7 to the end
+    >>> m = flopy.modflow.Modflow()
+    >>> rch = flopy.modflow.ModflowRch(m, nrchop=3, rech=rech)
+
+     acceptable_dtypes (list, items = 3
+ allowDuplicates = False ('bool)
+ extra = 
+ file_name = tuc2010n1.rch
+ fn_path = Input/tuc2010n1.rch ('str)
+ ipakcb = 39 ('int)
+ irch = None ('NoneType)
+ np = 0 ('int)
+ nrchop = 3 ('int)
+ rech = <flopy.utils.util_array.Transient2d object at 0x7fcc211829b0> ('flopy.utils.util_array.Transient2d)
+ unit_number = 16
+, 
+    MODFLOW Nwt Package Class.
+
+    Parameters
+    ----------
+    model : model object
+        The model object (of type :class:`flopy.modflow.mf.Modflow`) to which
+        this package will be added.
+    headtol : float
+        is the maximum head change between outer iterations for solution of the
+        nonlinear problem. (default is 1e-4).
+    fluxtol : float
+        is the maximum l2 norm for solution of the nonlinear problem.
+        (default is 500).
+    maxiterout : int
+        is the maximum number of iterations to be allowed for solution of the
+        outer (nonlinear) problem. (default is 100).
+    thickfact : float
+        is the portion of the cell thickness (length) used for smoothly
+        adjusting storage and conductance coefficients to zero.
+        (default is 1e-5).
+    linmeth : int
+        is a flag that determines which matrix solver will be used.
+        A value of 1 indicates GMRES will be used
+        A value of 2 indicates XMD will be used.
+        (default is 1).
+    iprnwt : int
+        is a flag that indicates whether additional information about solver
+        convergence will be printed to the main listing file.
+        (default is 0).
+    ibotavg : int
+        is a flag that indicates whether corrections will be made to groundwater
+        head relative to the cell-bottom altitude if the cell is surrounded by
+        dewatered cells (integer). A value of 1 indicates that a correction will
+        be made and a value of 0 indicates no correction will be made.
+        (default is 0).
+    options : string
+        SPECIFIED indicates that the optional solver input values listed for items 1
+        and 2 will be specified in the NWT input file by the user.
+        SIMPLE indicates that default solver input values will be defined that work
+        well for nearly linear models. This would be used for models that do not
+        include nonlinear stress packages, and models that are either confined or
+        consist of a single unconfined layer that is thick enough to contain the
+        water table within a single layer.
+        MODERATE indicates that default solver input values will be defined that work
+        well for moderately nonlinear models. This would be used for models that include
+        nonlinear stress packages, and models that consist of one or more unconfined
+        layers. The MODERATE option should be used when the SIMPLE option does not
+        result in successful convergence.
+        COMPLEX indicates that default solver input values will be defined that work
+        well for highly nonlinear models. This would be used for models that include
+        nonlinear stress packages, and models that consist of one or more unconfined
+        layers representing complex geology and sw/gw interaction. The COMPLEX option
+        should be used when the MODERATE option does not result in successful
+        convergence.
+        (default is COMPLEX).
+    Continue : bool
+        if the model fails to converge during a time step then it will continue to
+        solve the following time step. (default is False).  Note the capital
+        C on this option so that it doesn't conflict with a reserved Python
+        language word.
+    dbdtheta : float
+        is a coefficient used to reduce the weight applied to the head change between
+        nonlinear iterations. dbdtheta is used to control oscillations in head.
+        Values range between 0.0 and 1.0, and larger values increase the weight
+        (decrease under-relaxation) applied to the head change. (default is 0.4).
+    dbdkappa : float
+        is a coefficient used to increase the weight applied to the head change between
+        nonlinear iterations. dbdkappa is used to control oscillations in head. Values
+        range between 0.0 and 1.0, and larger values increase the weight applied to the
+        head change. (default is 1.e-5).
+    dbdgamma : float
+        is a factor (used to weight the head change for the previous and current
+        iteration. Values range between 0.0 and 1.0, and greater values apply more weight
+        to the head change calculated during the current iteration. (default is 0.)
+    momfact : float
+        is the momentum coefficient and ranges between 0.0 and 1.0. Greater values apply
+        more weight to the head change for the current iteration. (default is 0.1).
+    backflag : int
+        is a flag used to specify whether residual control will be used. A value of 1
+        indicates that residual control is active and a value of 0 indicates residual
+        control is inactive. (default is 1).
+    maxbackiter : int
+        is the maximum number of reductions (backtracks) in the head change between
+        nonlinear iterations (integer). A value between 10 and 50 works well.
+        (default is 50).
+    backtol : float
+        is the proportional decrease in the root-mean-squared error of the groundwater-
+        flow equation used to determine if residual control is required at the end of
+        a nonlinear iteration. (default is 1.1).
+    backreduce : float
+        is a reduction factor used for residual control that reduces the head change
+        between nonlinear iterations. Values should be between 0.0 and 1.0, where
+        smaller values result in smaller head-change values. (default 0.7).
+    maxitinner : int
+        (GMRES) is the maximum number of iterations for the linear solution.
+        (default is 50).
+    ilumethod : int
+        (GMRES) is the index for selection of the method for incomplete factorization
+        (ILU) used as a preconditioner. (default is 2).
+
+        ilumethod = 1 is ILU with drop tolerance and fill limit. Fill-in terms less
+        than drop tolerance times the diagonal are discarded. The number of fill-in
+        terms in each row of L and U is limited to the fill limit. The fill-limit
+        largest elements are kept in the L and U factors.
+
+        ilumethod=2 is ILU(k) order k incomplete LU factorization. Fill-in terms of
+        higher order than k in the factorization are discarded.
+    levfill : int
+        (GMRES) is the fill limit for ILUMETHOD = 1 and is the level of fill for
+        ilumethod = 2. Recommended values: 5-10 for method 1, 0-2 for method 2.
+        (default is 5).
+    stoptol : float
+        (GMRES) is the tolerance for convergence of the linear solver. This is the
+        residual of the linear equations scaled by the norm of the root mean squared
+        error. Usually 1.e-8 to 1.e-12 works well. (default is 1.e-10).
+    msdr : int
+        (GMRES) is the number of iterations between restarts of the GMRES Solver.
+        (default is 15).
+    iacl : int
+        (XMD) is a flag for the acceleration method: 0 is conjugate gradient, 1 is ORTHOMIN,
+        2 is Bi-CGSTAB. (default is 2).
+    norder : int
+        (XMD) is a flag for the scheme of ordering the unknowns: 0 is original ordering,
+        1 is RCM ordering, 2 is Minimum Degree ordering. (default is 1).
+    level : int
+        (XMD) is the level of fill for incomplete LU factorization. (default is 5).
+    north : int
+        (XMD) is the number of orthogonalization for the ORTHOMIN acceleration scheme.
+        A number between 4 and 10 is appropriate. Small values require less storage
+        but more iterations may be required. This number should equal 2 for the other
+        acceleration methods. (default is 7).
+    iredsys : int
+        (XMD) is a flag for reduced system preconditioning (integer): 0-do not apply
+        reduced system preconditioning, 1-apply reduced system preconditioning.
+        (default is 0)
+    rrctols : int
+        (XMD) is the residual reduction-convergence criteria. (default is 0.).
+    idroptol : int
+        (XMD) is a flag for using drop tolerance in the preconditioning: 0-don't
+        use drop tolerance, 1-use drop tolerance. (default is 1).
+    epsrn : float
+        (XMD) is the drop tolerance for preconditioning. (default is 1.e-4).
+    hclosexmd : float
+        (XMD) is the head closure criteria for inner (linear) iterations.
+        (default is 1.e-4).
+    mxiterxmd : int
+        (XMD) is the maximum number of iterations for the linear solution.
+        (default is 50).
+    extension : list string
+        Filename extension (default is 'nwt')
+    unitnumber : int
+        File unit number (default is None).
+    filenames : str or list of str
+        Filenames to use for the package. If filenames=None the package name
+        will be created using the model name and package extension. If a
+        single string is passed the package will be set to the string.
+        Default is None.
+
+    Attributes
+    ----------
+
+    Methods
+    -------
+
+    See Also
+    --------
+
+    Notes
+    -----
+
+    Examples
+    --------
+
+    >>> import flopy
+    >>> m = flopy.modflow.Modflow()
+    >>> nwt = flopy.modflow.ModflowNwt(m)
+
+     acceptable_dtypes (list, items = 3
+ allowDuplicates = False ('bool)
+ backflag = 1 ('int)
+ backreduce = 0.9 ('float)
+ backtol = 2.0 ('float)
+ dbdgamma = 0.0 ('float)
+ dbdkappa = 0.0001 ('float)
+ dbdtheta = 0.9 ('float)
+ epsrn = 0.0001 ('float)
+ extra = 
+ file_name = gmres1.nwt
+ fluxtol = 864.0 ('float)
+ fn_path = Input/gmres1.nwt ('str)
+ hclosexmd = 0.0001 ('float)
+ headtol = 0.01 ('float)
+ iacl = 2 ('int)
+ ibotav = 1 ('int)
+ idroptol = 1 ('int)
+ ilumethod = 2 ('int)
+ iprnwt = 1 ('int)
+ iredsys = 0 ('int)
+ level = 5 ('int)
+ levfill = 1 ('int)
+ linmeth = 1 ('int)
+ maxbackiter = 30 ('int)
+ maxiterout = 200 ('int)
+ maxitinner = 50 ('int)
+ momfact = 0.1 ('float)
+ msdr = 15 ('int)
+ mxiterxmd = 50 ('int)
+ norder = 1 ('int)
+ north = 7 ('int)
+ options = SPECIFIED
+ rrctols = 0.0 ('float)
+ stoptol = 1e-10 ('float)
+ thickfact = 1e-06 ('float)
+ unit_number = 19
+, 
+    MODFLOW Output Control Package Class.
+
+    Parameters
+    ----------
+    model : model object
+        The model object (of type :class:`flopy.modflow.mf.Modflow`) to which
+        this package will be added.
+    ihedfm : int
+        is a code for the format in which heads will be printed.
+        (default is 0).
+    iddnfm : int
+        is a code for the format in which heads will be printed.
+        (default is 0).
+    chedfm : string
+        is a character value that specifies the format for saving heads.
+        The format must contain 20 characters or less and must be a valid
+        Fortran format that is enclosed in parentheses. The format must be
+        enclosed in apostrophes if it contains one or more blanks or commas.
+        The optional word LABEL after the format is used to indicate that
+        each layer of output should be preceded with a line that defines the
+        output (simulation time, the layer being output, and so forth). If
+        there is no record specifying CHEDFM, then heads are written to a
+        binary (unformatted) file. Binary files are usually more compact than
+        text files, but they are not generally transportable among different
+        computer operating systems or different Fortran compilers.
+        (default is None)
+    cddnfm : string
+        is a character value that specifies the format for saving drawdown.
+        The format must contain 20 characters or less and must be a valid
+        Fortran format that is enclosed in parentheses. The format must be
+        enclosed in apostrophes if it contains one or more blanks or commas.
+        The optional word LABEL after the format is used to indicate that
+        each layer of output should be preceded with a line that defines the
+        output (simulation time, the layer being output, and so forth). If
+        there is no record specifying CDDNFM, then drawdowns are written to a
+        binary (unformatted) file. Binary files are usually more compact than
+        text files, but they are not generally transportable among different
+        computer operating systems or different Fortran compilers.
+        (default is None)
+    cboufm : string
+        is a character value that specifies the format for saving ibound.
+        The format must contain 20 characters or less and must be a valid
+        Fortran format that is enclosed in parentheses. The format must be
+        enclosed in apostrophes if it contains one or more blanks or commas.
+        The optional word LABEL after the format is used to indicate that
+        each layer of output should be preceded with a line that defines the
+        output (simulation time, the layer being output, and so forth). If
+        there is no record specifying CBOUFM, then ibounds are written to a
+        binary (unformatted) file. Binary files are usually more compact than
+        text files, but they are not generally transportable among different
+        computer operating systems or different Fortran compilers.
+        (default is None)
+    stress_period_data : dictionary of of lists
+        Dictionary key is a tuple with the zero-based period and step 
+        (IPEROC, ITSOC) for each print/save option list. 
+        (default is {(0,0):['save head']})
+        
+        The list can have any valid MODFLOW OC print/save option:
+            PRINT HEAD
+            PRINT DRAWDOWN
+            PRINT BUDGET
+            SAVE HEAD
+            SAVE DRAWDOWN
+            SAVE BUDGET
+            SAVE IBOUND
+            
+            The lists can also include (1) DDREFERENCE in the list to reset 
+            drawdown reference to the period and step and (2) a list of layers 
+            for PRINT HEAD, SAVE HEAD, PRINT DRAWDOWN, SAVE DRAWDOWN, and
+            SAVE IBOUND.
+        
+        The list is used for every stress period and time step after the 
+        (IPEROC, ITSOC) tuple until a (IPEROC, ITSOC) tuple is entered with
+        and empty list.
+    compact : boolean
+        Save results in compact budget form. (default is True).
+    extension : list of strings
+        (default is ['oc', 'hds', 'ddn', 'cbc', 'ibo']).
+    unitnumber : list of ints
+        (default is [14, 51, 52, 53, 0]).
+    filenames : str or list of str
+        Filenames to use for the package and the head, drawdown, budget (not
+        used), and ibound output files. If filenames=None the package name
+        will be created using the model name and package extension and the
+        output file names will be created using the model name and extensions.
+        If a single string is passed the package will be set to the string and
+        output names will be created using the model name and head, drawdown,
+        budget, and ibound extensions. To define the names for all package
+        files (input and output) the length of the list of strings should be 5.
+        Default is None.
+
+    Attributes
+    ----------
+
+    Methods
+    -------
+
+    See Also
+    --------
+
+    Notes
+    -----
+    The "words" method for specifying output control is the only option 
+    available.  Also, the "compact" budget should normally be used as it 
+    produces files that are typically much smaller.  The compact budget form is 
+    also a requirement for using the MODPATH particle tracking program.
+
+    Examples
+    --------
+
+    >>> import flopy
+    >>> m = flopy.modflow.Modflow()
+    >>> spd = {(0, 0): ['print head'],
+    ...   (0, 1): [],
+    ...   (0, 249): ['print head'],
+    ...   (0, 250): [],
+    ...   (0, 499): ['print head', 'save ibound'],
+    ...   (0, 500): [],
+    ...   (0, 749): ['print head', 'ddreference'],
+    ...   (0, 750): [],
+    ...   (0, 999): ['print head']}
+    >>> oc = flopy.modflow.ModflowOc(m, stress_period_data=spd, cboufm='(20i5)')
+
+     acceptable_dtypes (list, items = 3
+ allowDuplicates = False ('bool)
+ cboufm = None ('NoneType)
+ cddnfm = None ('NoneType)
+ chedfm = (20f7.1) ('str)
+ compact = True ('bool)
+ extra = 
+ file_name = tuc4010a1.oc
+ fn_path = Input/tuc4010a1.oc ('str)
+ ibouun = 0 ('int)
+ iddnfm = 0 ('int)
+ ihedfm = 0 ('int)
+ iubud = 0 ('int)
+ iuddn = 0 ('int)
+ iuhead = 31 ('int)
+ iuibnd = 0 ('int)
+ savebud = True ('bool)
+ saveddn = False ('bool)
+ savehead = True ('bool)
+ saveibnd = False ('bool)
+ stress_period_data = {(46, 11): ['save budget'], (59, 0): [], (64, 0): [], (11, 11): ['save budget'], (60, 11): ['save budget'], (3, 0): [], (66, 11): ['save budget'], (8, 0): [], (69, 11): ['save budget'], (29, 0): [], (34, 0): [], (26, 11): ['save budget'], (60, 0): [], (10, 11): ['save budget', 'save head'], (65, 0): [], (1, 11): ['save budget'], (50, 11): ['save budget'], (19, 11): ['save budget'], (68, 11): ['save budget'], (4, 0): [], (9, 0): [], (30, 0): [], (66, 0): [], (35, 0): [], (40, 0): [], (61, 0): [], (15, 11): ['save head', 'save budget'], (9, 11): ['save budget'], (58, 11): ['save budget'], (5, 0): [], (39, 11): ['save budget'], (33, 11): ['save budget'], (31, 0): [], (51, 11): ['save budget'], (36, 0): [], (14, 11): ['save budget'], (41, 0): [], (62, 0): [], (5, 11): ['save budget', 'save head'], (67, 0): [], (6, 0): [], (29, 11): ['save budget'], (11, 0): [], (47, 11): ['save budget'], (16, 0): [], (37, 0): [], (10, 0): [], (22, 11): ['save budget'], (42, 0): [], (24, 11): ['save budget'], (65, 11): ['save budget'], (63, 0): [], (45, 11): ['save budget'], (68, 0): [], (48, 11): ['save budget', 'save head'], (7, 0): [], (53, 0): [], (12, 0): [], (17, 0): [], (37, 11): ['save budget'], (2, 11): ['save budget'], (38, 0): [], (20, 11): ['save budget', 'save head'], (61, 11): ['save budget'], (30, 11): ['save budget', 'save head'], (48, 0): [], (44, 11): ['save budget'], (54, 11): ['save budget'], (55, 0): [], (12, 11): ['save budget'], (13, 0): [], (27, 11): ['save budget'], (70, 0): [], (18, 0): [], (39, 0): [], (44, 0): [], (59, 11): ['save budget', 'save head'], (49, 0): [], (34, 11): ['save budget'], (3, 11): ['save budget'], (52, 11): ['save budget'], (62, 11): ['save budget'], (53, 11): ['save budget'], (0, 0): ['save budget', 'save head'], (70, 11): ['save budget', 'save head'], (14, 0): [], (7, 11): ['save budget'], (19, 0): [], (24, 0): [], (45, 0): [], (43, 0): [], (42, 11): ['save budget', 'save head'], (23, 11): ['save budget'], (47, 0): [], (17, 11): ['save budget'], (15, 0): [], (35, 11): ['save budget', 'save head'], (20, 0): [], (25, 0): [], (46, 0): [], (-1, -1): [], (51, 0): [], (55, 11): ['save budget', 'save head'], (56, 0): [], (57, 11): ['save budget'], (13, 11): ['save budget'], (31, 11): ['save budget'], (25, 11): ['save budget', 'save head'], (69, 0): [], (21, 0): [], (50, 0): [], (6, 11): ['save budget'], (26, 0): [], (8, 11): ['save budget'], (49, 11): ['save budget'], (16, 11): ['save budget'], (56, 11): ['save budget'], (52, 0): [], (32, 11): ['save budget'], (21, 11): ['save budget'], (1, 0): [], (22, 0): [], (4, 11): ['save budget'], (43, 11): ['save budget'], (27, 0): [], (63, 11): ['save budget'], (67, 11): ['save budget'], (32, 0): [], (28, 11): ['save budget'], (38, 11): ['save budget'], (58, 0): [], (40, 11): ['save budget'], (57, 0): [], (2, 0): [], (64, 11): ['save budget', 'save head'], (41, 11): ['save budget'], (23, 0): [], (28, 0): [], (33, 0): [], (18, 11): ['save budget'], (54, 0): [], (36, 11): ['save budget']} ('dict)
+ unit_number = 22
+]

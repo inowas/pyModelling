@@ -1,0 +1,89 @@
+type,package,k,i,j,value,desc
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,59,84,0.000000,BC in inactive cell
+Warning,WEL,0,110,52,0.000000,BC in inactive cell
+Warning,WEL,1,16,71,0.000000,BC in inactive cell
+Warning,WEL,1,30,62,0.000000,BC in inactive cell
+Warning,WEL,0,35,59,0.000000,BC in inactive cell
+Warning,WEL,0,110,52,0.000000,BC in inactive cell
+Warning,WEL,1,16,71,0.000000,BC in inactive cell
+Warning,WEL,1,29,63,0.000000,BC in inactive cell
+Warning,WEL,1,30,62,0.000000,BC in inactive cell
+Warning,WEL,2,9,74,0.000000,BC in inactive cell
+Warning,WEL,2,9,74,0.000000,BC in inactive cell
+Warning,WEL,2,9,74,0.000000,BC in inactive cell
+Warning,WEL,2,9,74,0.000000,BC in inactive cell
+Warning,WEL,2,9,74,0.000000,BC in inactive cell
+Warning,WEL,2,9,74,0.000000,BC in inactive cell
+Warning,WEL,2,9,74,0.000000,BC in inactive cell
+Warning,WEL,2,9,74,0.000000,BC in inactive cell
+Warning,WEL,1,29,63,0.000000,BC in inactive cell
+Warning,WEL,1,30,62,0.000000,BC in inactive cell
+Warning,WEL,2,9,74,0.000000,BC in inactive cell
+Warning,WEL,1,29,63,0.000000,BC in inactive cell
+Warning,WEL,1,30,62,0.000000,BC in inactive cell
+Warning,WEL,2,9,74,0.000000,BC in inactive cell
+Warning,WEL,1,29,63,0.000000,BC in inactive cell
+Warning,WEL,1,30,62,0.000000,BC in inactive cell
+Warning,WEL,2,9,74,0.000000,BC in inactive cell
+Warning,WEL,1,29,63,0.000000,BC in inactive cell
+Warning,WEL,1,30,62,0.000000,BC in inactive cell
+Warning,WEL,2,9,74,0.000000,BC in inactive cell
+Warning,WEL,1,29,63,0.000000,BC in inactive cell
+Warning,WEL,1,30,62,0.000000,BC in inactive cell
+Warning,WEL,2,9,74,0.000000,BC in inactive cell
+Warning,WEL,2,8,74,0.000000,BC in inactive cell
+Warning,WEL,2,9,74,0.000000,BC in inactive cell
+Warning,WEL,2,8,74,0.000000,BC in inactive cell
+Warning,WEL,2,9,74,0.000000,BC in inactive cell
+Warning,WEL,2,8,74,0.000000,BC in inactive cell
+Warning,WEL,2,8,74,0.000000,BC in inactive cell
+Warning,WEL,2,9,74,0.000000,BC in inactive cell
+Warning,WEL,2,8,74,0.000000,BC in inactive cell
+Warning,WEL,2,9,74,0.000000,BC in inactive cell
+Warning,WEL,2,8,74,0.000000,BC in inactive cell
+Warning,WEL,2,9,74,0.000000,BC in inactive cell
+Warning,WEL,2,8,74,0.000000,BC in inactive cell
+Warning,WEL,2,9,74,0.000000,BC in inactive cell
+Warning,WEL,2,8,74,0.000000,BC in inactive cell
+Warning,WEL,2,9,74,0.000000,BC in inactive cell
+Warning,WEL,1,29,63,0.000000,BC in inactive cell
+Warning,WEL,1,16,71,0.000000,BC in inactive cell
+Warning,RCH,0,0,0,0.000000,Mean R/T ratio < checker warning threshold of 2e-08
+Warning,RCH,0,0,0,0.000000,Mean R/T ratio < checker warning threshold of 2e-08
+Warning,RCH,0,0,0,0.000000,Mean R/T ratio < checker warning threshold of 2e-08
+Warning,RCH,0,0,0,0.000000,Mean R/T ratio < checker warning threshold of 2e-08
+Warning,RCH,0,0,0,0.000000,Mean R/T ratio < checker warning threshold of 2e-08
+Warning,RCH,0,0,0,0.000000,Mean R/T ratio < checker warning threshold of 2e-08
+Warning,RCH,0,0,0,0.000000,Mean R/T ratio < checker warning threshold of 2e-08
+Warning,RCH,0,0,0,0.000000,Mean R/T ratio < checker warning threshold of 2e-08
+Warning,RCH,0,0,0,0.000000,Mean R/T ratio < checker warning threshold of 2e-08
+Warning,RCH,0,0,0,0.000000,Mean R/T ratio < checker warning threshold of 2e-08

@@ -1,0 +1,230 @@
+head save format (20f7.1) LABEL
+head save unit 31
+COMPACT BUDGET FILES
+
+period 1 step 1
+save budget
+save head 1 2 3
+
+period 2 step 12
+save budget
+
+period 3 step 12
+save budget
+
+period 4 step 12
+save budget
+
+period 5 step 12
+save budget
+
+period 6 step 12
+save budget
+save head 1 2 3
+
+period 7 step 12
+save budget
+
+period 8 step 12
+save budget
+
+period 9 step 12
+save budget
+
+period 10 step 12
+save budget
+
+period 11 step 12
+save budget
+save head 1 2 3
+
+period 12 step 12
+save budget
+
+period 13 step 12
+save budget
+
+period 14 step 12
+save budget
+
+period 15 step 12
+save budget
+
+period 16 step 12
+save head 1 2 3
+save budget
+
+period 17 step 12
+save budget
+
+period 18 step 12
+save budget
+
+period 19 step 12
+save budget
+
+period 20 step 12
+save budget
+
+period 21 step 12
+save budget
+save head 1 2 3
+
+period 22 step 12
+save budget
+
+period 23 step 12
+save budget
+
+period 24 step 12
+save budget
+
+period 25 step 12
+save budget
+
+period 26 step 12
+save budget
+save head 1 2 3
+
+period 27 step 12
+save budget
+
+period 28 step 12
+save budget
+
+period 29 step 12
+save budget
+
+period 30 step 12
+save budget
+
+period 31 step 12
+save budget
+save head 1 2 3
+
+period 32 step 12
+save budget
+
+period 33 step 12
+save budget
+
+period 34 step 12
+save budget
+
+period 35 step 12
+save budget
+
+period 36 step 12
+save budget
+save head 1 2 3
+
+period 37 step 12
+save budget
+
+period 38 step 12
+save budget
+
+period 39 step 12
+save budget
+
+period 40 step 12
+save budget
+
+period 41 step 12
+save budget
+
+period 42 step 12
+save budget
+
+period 43 step 12
+save budget
+save head 1 2 3
+
+period 44 step 12
+save budget
+
+period 45 step 12
+save budget
+
+period 46 step 12
+save budget
+
+period 47 step 12
+save budget
+
+period 48 step 12
+save budget
+
+period 49 step 12
+save budget
+save head 1 2 3
+
+period 50 step 12
+save budget
+
+period 51 step 12
+save budget
+
+period 52 step 12
+save budget
+
+period 53 step 12
+save budget
+
+period 54 step 12
+save budget
+
+period 55 step 12
+save budget
+
+period 56 step 12
+save budget
+save head 1 2 3
+
+period 57 step 12
+save budget
+
+period 58 step 12
+save budget
+
+period 59 step 12
+save budget
+
+period 60 step 12
+save budget
+save head 1 2 3
+
+period 61 step 12
+save budget
+
+period 62 step 12
+save budget
+
+period 63 step 12
+save budget
+
+period 64 step 12
+save budget
+
+period 65 step 12
+save budget
+save head 1 2 3
+
+period 66 step 12
+save budget
+
+period 67 step 12
+save budget
+
+period 68 step 12
+save budget
+
+period 69 step 12
+save budget
+
+period 70 step 12
+save budget
+
+period 71 step 12
+save budget
+save head 1 2 3

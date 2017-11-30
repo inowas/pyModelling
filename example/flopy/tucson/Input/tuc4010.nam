@@ -1,0 +1,36 @@
+#  Tuc4010.Nam
+# 
+# Tucson Model 1940 - 2010
+#
+#  Output Files
+#
+LIST             30      nwt40_gmres.lst
+DATA             31      4010.hds
+DATA(BINARY)     33      graphs.out
+DATA             34      hobs.dat
+DATA             35      lost_pumpage.dat
+DATA(BINARY)     39      cbc.bgt
+#
+#  Model Input files
+#
+HOB               8      tuc2011d.hob
+HYD               9      tuchyd93.hyd
+#
+#  Parameter Files
+DIS              10      tuc1940q1.dis
+BAS6             11      tuc1940z.bas
+UPW              12      tuc1940t.upw
+#  Stress Files
+WEL              13      tuc2010q10.wel
+EVT              14      TUC1940d.EVT
+CHD              15      tuc2010a3.chd
+RCH              16      tuc2010n1.rch
+#  Solver & Output Control
+#NWT              19      xMD1.nwt
+NWT              19      gmres1.nwt
+OC               22      tuc4010a1.oc
+
+
+
+
+
