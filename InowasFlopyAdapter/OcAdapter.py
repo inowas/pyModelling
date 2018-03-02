@@ -70,3 +70,18 @@ class OcAdapter:
             stress_period_data[stress_period['stressPeriod'], stress_period['timeStep']] = stress_period['type']
 
         return stress_period_data
+
+    @staticmethod
+    def read_package(package):
+        content = {
+            "ihedfm": package.ihedfm,
+            "iddnfm": package.iddnfm,
+            "chedfm": package.chedfm,
+            "cddnfm": package.cddnfm,
+            "cboufm": package.cboufm,
+            "compact": package.compact,
+            "stress_period_data": package.stress_period_data,
+            "extension": package.extension,
+            "unitnumber": package.unitnumber
+        }
+        return content

@@ -68,3 +68,23 @@ class PcgAdapter:
         }
 
         return default
+
+    @staticmethod
+    def read_package(package):
+        content = {
+            "mxiter": package.mxiter,
+            "iter1": package.iter1,
+            "npcond": package.npcond,
+            "hclose": package.hclose,
+            "rclose": package.rclose,
+            "relax": package.relax,
+            "nbpol": package.nbpol,
+            "iprpcg": package.iprpcg,
+            "mutpcg": package.mutpcg,
+            "damp": package.damp,
+            "dampt": package.dampt,
+            "ihcofadd": package.ihcofadd,
+            "extension": package.extension,
+            "unitnumber":package.unitnumber
+        }
+        return content

@@ -52,3 +52,15 @@ class RchAdapter:
         }
 
         return default
+
+    @staticmethod
+    def read_package(package):
+        content = {
+            "nrchop": package.nrchop,
+            "ipakcb": package.ipakcb,
+            "rech": package.rech,
+            "irch": package.irch,
+            "extension": package.extension,
+            "unitnumber": package.unitnumber
+        }
+        return content

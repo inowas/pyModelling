@@ -108,3 +108,42 @@ class NwtAdapter:
         }
 
         return default
+
+    @staticmethod
+    def read_package(package):
+        content = {
+            "fluxtol": package.fluxtol,
+            "maxiterout": package.maxiterout,
+            "thickfact": package.thickfact,
+            "linmeth": package.linmeth,
+            "iprnwt": package.iprnwt,
+            "ibotavg": package.ibotavg,
+            "options": package.options,
+            "continue": package.continue111,
+            "dbdtheta": package.dbdtheta,
+            "dbdkappa": package.dbdkappa,
+            "dbdgamma": package.dbdgamma,
+            "momfact": package.momfact,
+            "backflag": package.backflag,
+            "maxbackiter": package.maxbackiter,
+            "backtol": package.backtol,
+            "backreduce": package.backreduce,
+            "maxitinner": package.maxitinner,
+            "ilumethod": package.ilumethod,
+            "levfill": package.levfill,
+            "stoptol": package.stoptol,
+            "msdr": package.msdr,
+            "iacl": package.iacl,
+            "norder": package.norder,
+            "level": package.level,
+            "north": package.north,
+            "iredsys": package.iredsys,
+            "rrctols": package.rrctols,
+            "idroptol": package.idroptol,
+            "epsrn": package.epsrn,
+            "hclosexmd": package.hclosexmd,
+            "mxiterxmd": package.mxiterxmd,
+            "extension": package.extension,
+            "unitnumber": package.unitnumber
+        }
+        return content

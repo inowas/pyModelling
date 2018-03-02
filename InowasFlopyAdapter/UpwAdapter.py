@@ -72,3 +72,25 @@ class UpwAdapter:
         }
 
         return default
+
+    @staticmethod
+    def read_package(package):
+        content = {
+            "laytyp": package.laytyp,
+            "layavg": package.layavg,
+            "chani": package.chani,
+            "layvka": package.layvka,
+            "laywet": package.laywet,
+            "ipakcb": package.ipakcb,
+            "hdry": package.hdry,
+            "iphdry": package.iphdry,
+            "hk": package.hk,
+            "hani": package.hani,
+            "vka": package.vka,
+            "ss": package.ss,
+            "sy": package.sy,
+            "vkcb": package.vkcb,
+            "extension": package.extension,
+            "unitnumber": package.unitnumber
+        }
+        return content
