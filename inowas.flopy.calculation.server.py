@@ -60,6 +60,7 @@ def process(content):
         with open(os.path.join(target_directory, 'configuration.json'), 'w') as outfile:
             json.dump(content, outfile)
 
+        data['packages']['mf']['modelname'] = calculation_id
         data['packages']['mf']['model_ws'] = target_directory
         data['packages']['mf']['exe_name'] = os.path.join(binfolder, sys.platform, data['packages']['mf']['exe_name'])
 
