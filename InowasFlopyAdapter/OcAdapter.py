@@ -56,7 +56,7 @@ class OcAdapter:
             "cddnfm": None,
             "cboufm": None,
             "compact": True,
-            "stress_period_data": {(0, 0): ['save head']},
+            "stress_period_data": None,
             "extension": ['oc', 'hds', 'ddn', 'cbc'],
             "unitnumber": [14, 51, 52, 53]
         }
@@ -65,6 +65,9 @@ class OcAdapter:
 
     @staticmethod
     def get_stress_period_data(stress_periods):
+        if stress_periods is None:
+            return stress_periods
+
         stress_period_data = {}
         for stress_period in stress_periods:
             stress_period_data[stress_period['stressPeriod'], stress_period['timeStep']] = stress_period['type']
