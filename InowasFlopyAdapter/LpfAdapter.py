@@ -90,3 +90,34 @@ class LpfAdapter:
         }
 
         return default
+
+    @staticmethod
+    def read_package(package):
+        content = {
+            "laytyp": package.laytyp,
+            "layavg": package.layavg,
+            "chani": package.chani,
+            "layvka": package.layvka,
+            "laywet": package.laywet,
+            "ipakcb": package.ipakcb,
+            "hdry": package.hdry,
+            "iwdflg": package.iwdflg,
+            "wetfct": package.wetfct,
+            "iwetit": package.iwetit,
+            "ihdwet": package.ihdwet,
+            "hk": package.hk,
+            "hani": package.hani,
+            "vka": package.vka,
+            "ss": package.ss,
+            "sy": package.sy,
+            "vkcb": package.vkcb,
+            "wetdry": package.wetdry,
+            "storagecoefficient": package.storagecoefficient,
+            "constantcv": package.constantcv,
+            "thickstrt": package.thickstrt,
+            "nocvcorrection": package.nocvcorrection,
+            "novfc": package.novfc,
+            "extension": package.extension,
+            "unitnumber": package.unitnumber
+        }
+        return content

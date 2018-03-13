@@ -83,3 +83,31 @@ class DisAdapter:
             "start_datetime": None
         }
         return default
+
+    @staticmethod
+    def read_package(package):
+        content = {
+            "nlay": package.nlay,
+            "nrow": package.nrow,
+            "ncol": package.ncol,
+            "nper": package.nper,
+            "delr": package.delr,
+            "delc": package.delc,
+            "laycbd": package.laycbd,
+            "top": package.top,
+            "botm": package.botm,
+            "perlen": package.perlen,
+            "nstp": package.nstp,
+            "tsmult": package.tsmult,
+            "steady": package.steady,
+            "itmuni": package.itmuni,
+            "lenuni": package.lenuni,
+            "extension": package.extension,
+            "unitnumber": package.unitnumber,
+            "xul": package.xul,
+            "yul": package.yul,
+            "rotation": package.rotation,
+            "proj4_str": package.proj4_str,
+            "start_datetime": package.start_datetime
+        }
+        return content

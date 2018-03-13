@@ -52,3 +52,15 @@ class WelAdapter:
         }
 
         return default
+
+    @staticmethod
+    def read_package(package):
+        content = {
+            "ipakcb": package.ipakcb,
+            "stress_period_data": package.stress_period_data,
+            "dtype": package.dtype,
+            "extension": package.extension,
+            "unitnumber": package.unitnumber,
+            "options": package.options
+        }
+        return content

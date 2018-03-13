@@ -56,5 +56,20 @@ class BasAdapter:
             "extension": 'bas',
             "unitnumber": 13
         }
-
         return default
+
+    @staticmethod
+    def read_package(package):
+        content = {
+            "ibound": package.ibound,
+            "strt": package.strt,
+            "ifrefm": package.ifrefm,
+            "ixsec": package.ixsec,
+            "ichflg": package.ichflg,
+            "stoper": package.stoper,
+            "hnoflo": package.hnoflo,
+            "extension": package.extension,
+            "unitnumber": package.unitnumber
+        }
+        return content
+        

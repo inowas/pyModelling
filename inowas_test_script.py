@@ -40,8 +40,16 @@ def process(content, datafolder):
         with open(os.path.join(target_directory, 'configuration.json'), 'w') as outfile:
             json.dump(content, outfile)
 
-        data['packages']['mf']['model_ws'] = target_directory
-        data['packages']['mf']['exe_name'] = os.path.join(binfolder, sys.platform, data['packages']['mf']['exe_name'])
+        try:
+            data['mf']['mf']['model_ws'] = target_directory
+            data['mf']['mf']['exe_name'] = os.path.join(binfolder, sys.platform, data['mf']['mf']['exe_name'])
+        except KeyError:
+            pass
+        try:
+            data['mt']['mt']['model_ws'] = target_directory
+            data['mt']['mt']['exe_name'] = os.path.join(binfolder, sys.platform, data['mt']['mt']['exe_name'])
+        except KeyError:
+            pass
 
         try:
             flopy = InowasFlopyCalculationAdapter(version, data, calculation_id)
@@ -87,7 +95,7 @@ def main():
 
     dirname = os.path.dirname(filename)
     os.chdir(dirname)
-    print('Change to directory: %s' % print(dirname))
+    print('Change to directory: %s' % dirname)
 
     with open(filename) as data_file:
         content = json.load(data_file)

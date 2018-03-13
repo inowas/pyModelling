@@ -48,3 +48,13 @@ class ChdAdapter:
         }
 
         return default
+
+    @staticmethod
+    def read_package(package):
+        content = {
+            "stress_period_data": package.stress_period_data,
+            "dtype": package.dtype,
+            "extension": package.extension,
+            "unitnumber": package.ixsec
+        }
+        return content

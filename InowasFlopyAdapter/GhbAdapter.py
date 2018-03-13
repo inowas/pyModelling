@@ -55,3 +55,15 @@ class GhbAdapter:
 
         return default
 
+    @staticmethod
+    def read_package(package):
+        content = {
+            "ipakcb": package.ipakcb,
+            "stress_period_data": package.stress_period_data,
+            "dtype": package.dtype,
+            "no_print": package.no_print,
+            "options": package.options,
+            "extension": package.extension,
+            "unitnumber": package.unitnumber
+        }
+        return content
