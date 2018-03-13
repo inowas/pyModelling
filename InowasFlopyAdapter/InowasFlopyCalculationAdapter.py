@@ -51,6 +51,7 @@ class InowasFlopyCalculationAdapter:
         'riv', 'wel', 'rch', 'chd', 'ghb',
         'lpf', 'upw', 'pcg', 'nwt', 'oc', 'lmt'
     ]
+
     mt_package_order = [
         "mt", "btn", "adv", "dsp", "gcg", "ssm", "lkt", "phc", "rct", "sft", "tob", "uzt"
     ]
@@ -62,7 +63,7 @@ class InowasFlopyCalculationAdapter:
         self._uuid = uuid
 
         if self._mf_data is not None:
-            #selected_packages = self._mf_data.get("selected_packages", self.mf_package_order)
+            # selected_packages = self._mf_data.get("selected_packages", self.mf_package_order)
             package_content = self.read_packages(self._mf_data)
             self.create_model(self.mf_package_order, package_content)
             print(self._mf.exe_name)
@@ -73,7 +74,7 @@ class InowasFlopyCalculationAdapter:
                 self._report += self.run_model(self._mf)
 
             if self._mt_data is not None:
-                #selected_packages = self._mt_data.get("selected_packages", self.mt_package_order)
+                # selected_packages = self._mt_data.get("selected_packages", self.mt_package_order)
                 package_content = self.read_packages(self._mt_data)
                 self.create_model(self.mt_package_order, package_content)
 
@@ -115,7 +116,7 @@ class InowasFlopyCalculationAdapter:
             self._mt.check()
 
     def create_package(self, name, content):
-        #Modlfow packages
+        # Modflow packages
         if name == 'mf':
             self._mf = MfAdapter(content).get_package()
         if name == 'dis':
@@ -142,10 +143,10 @@ class InowasFlopyCalculationAdapter:
             ChdAdapter(content).get_package(self._mf)
         if name == 'ghb':
             GhbAdapter(content).get_package(self._mf)
-        if name =='lmt':
+        if name == 'lmt':
             LmtAdapter(content).get_package(self._mf)
-        
-        #MT3D packages
+
+        # MT3D packages
         if name == 'mt':
             self._mt = MtAdapter(content).get_package(self._mf)
         if name == 'adv':
