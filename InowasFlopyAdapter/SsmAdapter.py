@@ -37,7 +37,6 @@ class SsmAdapter:
 
     @staticmethod
     def default():
-        #Problem with mxss if used default None calculated incorrectly
         default = {
             "crch": None,
             "cevt": None,
@@ -53,14 +52,14 @@ class SsmAdapter:
     @staticmethod
     def read_package(package):
         content = {
-            "crch": package.crch,
-            "cevt": package.cevt,
+            "crch": package.crch,#None
+            "cevt": package.cevt,#None
             "mxss": package.mxss,
-            "stress_period_data": package.stress_period_data,
-            "dtype": package.dtype,
-            "extension": package.extension,
-            "unitnumber": package.unitnumber,
-            "filenames": package.filenames
+            "stress_period_data":  {k: [list(i) for i in v] for k, v in package.stress_period_data.data.items()},
+            #"dtype": package.dtype,
+            "extension": package.extension[0],
+            "unitnumber": package.unit_number[0],
+            #"filenames": package.filenames
         }
         return content
         

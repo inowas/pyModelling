@@ -66,20 +66,20 @@ class AdvAdapter:
             "percel": package.percel,
             "mxpart": package.mxpart,
             "nadvfd": package.nadvfd,
-            "itrack": package.itrack,
-            "wd": package.wd,
-            "dceps": package.dceps,
-            "nplane": package.nplane,
-            "npl": package.npl,
-            "nph": package.nph,
-            "npmin": package.npmin,
-            "npmax": package.npmax,
-            "nlsink": package.nlsink,
-            "npsink": package.npsink,
-            "dchmoc": package.dchmoc,
-            "extension": package.extension,
-            "unitnumber": package.unitnumber,
-            "filenames": package.filenames
+            "itrack": package.itrack,#None
+            "wd": package.wd,#None
+            "dceps": package.dceps,#None
+            "nplane": package.nplane,#None
+            "npl": package.npl,#None
+            "nph": package.nph,#None
+            "npmin": package.npmin,#None
+            "npmax": package.npmax,#None
+            "nlsink": package.nlsink,#None
+            "npsink": package.npsink,#None
+            "dchmoc": package.dchmoc,#None
+            "extension": package.extension[0],
+            "unitnumber": package.unit_number[0],
+            #"filenames": package.filenames
         }
         return content
         

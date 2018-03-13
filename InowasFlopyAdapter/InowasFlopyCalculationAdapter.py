@@ -47,13 +47,14 @@ class InowasFlopyCalculationAdapter:
     _report = ''
 
     mf_package_order = [
-        'mf', 'dis', 'bas',
+        'mf', 'dis', 'bas', 'bas6',
         'riv', 'wel', 'rch', 'chd', 'ghb',
-        'lpf', 'upw', 'pcg', 'nwt', 'oc', 'lmt'
+        'lpf', 'upw', 'pcg', 'nwt', 'oc', 'lmt', 'lmt6'
     ]
 
     mt_package_order = [
-        "mt", "btn", "adv", "dsp", "gcg", "ssm", "lkt", "phc", "rct", "sft", "tob", "uzt"
+        "mt", "btn", "adv", "dsp", "gcg", "ssm", "lkt",
+        "phc", "rct", "sft", "tob", "uzt"
     ]
 
     def __init__(self, version, data, uuid):
@@ -63,10 +64,9 @@ class InowasFlopyCalculationAdapter:
         self._uuid = uuid
 
         if self._mf_data is not None:
-            # selected_packages = self._mf_data.get("selected_packages", self.mf_package_order)
             package_content = self.read_packages(self._mf_data)
             self.create_model(self.mf_package_order, package_content)
-            print(self._mf.exe_name)
+
             if self._mf_data.get("write_input"):
                 self.write_input_model(self._mf)
 
@@ -74,7 +74,6 @@ class InowasFlopyCalculationAdapter:
                 self._report += self.run_model(self._mf)
 
             if self._mt_data is not None:
-                # selected_packages = self._mt_data.get("selected_packages", self.mt_package_order)
                 package_content = self.read_packages(self._mt_data)
                 self.create_model(self.mt_package_order, package_content)
 
@@ -89,7 +88,7 @@ class InowasFlopyCalculationAdapter:
         package_content = {}
         for package in data["packages"]:
             print('Read Flopy Package: %s' % package)
-            package_content[package] = data[package]
+            package_content[package.lower()] = data[package]
         return package_content
 
     def create_model(self, package_order, package_content):
@@ -116,12 +115,12 @@ class InowasFlopyCalculationAdapter:
             self._mt.check()
 
     def create_package(self, name, content):
-        # Modflow packages
+        #Modlfow packages
         if name == 'mf':
             self._mf = MfAdapter(content).get_package()
         if name == 'dis':
             DisAdapter(content).get_package(self._mf)
-        if name == 'bas':
+        if name == 'bas' or name == 'bas6':
             BasAdapter(content).get_package(self._mf)
         if name == 'lpf':
             LpfAdapter(content).get_package(self._mf)
@@ -143,7 +142,7 @@ class InowasFlopyCalculationAdapter:
             ChdAdapter(content).get_package(self._mf)
         if name == 'ghb':
             GhbAdapter(content).get_package(self._mf)
-        if name == 'lmt':
+        if name =='lmt':
             LmtAdapter(content).get_package(self._mf)
 
         # MT3D packages
@@ -173,10 +172,13 @@ class InowasFlopyCalculationAdapter:
             UztAdapter(content).get_package(self._mt)
 
     def response(self):
-        heads = ReadHead(self._mf_data['mf']['model_ws'])
-        drawdowns = ReadDrawdown(self._mf_data['mf']['model_ws'])
-        budgets = ReadBudget(self._mf_data['mf']['model_ws'])
+        key = 'mf'
+        if 'MF' in self._mf_data:
+            key = 'MF'
 
+        heads = ReadHead(self._mf_data[key]['model_ws'])
+        drawdowns = ReadDrawdown(self._mf_data[key]['model_ws'])
+        budgets = ReadBudget(self._mf_data[key]['model_ws'])
         response = {}
         response['heads'] = heads.read_times()
         response['drawdowns'] = drawdowns.read_times()

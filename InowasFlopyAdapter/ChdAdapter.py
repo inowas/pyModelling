@@ -32,10 +32,7 @@ class ChdAdapter:
         content = self.merge()
         return mf.ModflowChd(
                 _mf,
-                stress_period_data=content['stress_period_data'],
-                dtype=content['dtype'],
-                extension=content['extension'],
-                unitnumber=content['unitnumber']
+                **content
             )
 
     @staticmethod
@@ -52,9 +49,10 @@ class ChdAdapter:
     @staticmethod
     def read_package(package):
         content = {
-            "stress_period_data": package.stress_period_data,
-            "dtype": package.dtype,
-            "extension": package.extension,
-            "unitnumber": package.ixsec
+            #stress period data values translated to list of lists to be json serializable
+            "stress_period_data": {k: [list(i) for i in v] for k, v in package.stress_period_data.data.items()},
+            #"dtype": package.dtype,
+            "extension": package.extension[0],
+            "unitnumber": package.unit_number[0]
         }
         return content

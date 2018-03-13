@@ -37,7 +37,6 @@ class LmtAdapter:
 
     @staticmethod
     def default():
-           
         default = {
             "output_file_name": 'mt3d_link.ftl',
             "output_file_unit": 54,
@@ -50,3 +49,17 @@ class LmtAdapter:
         }
 
         return default
+    
+    @staticmethod
+    def read_package(package):
+        content = {
+            "output_file_name": package.output_file_name,
+            "output_file_unit": package.output_file_unit,
+            "output_file_header": package.output_file_header,
+            "output_file_format": package.output_file_format,
+            "extension": package.extension[0],
+            "package_flows": package.package_flows,
+            "unitnumber": package.unit_number[0],
+            #"filenames": None
+        }
+        return content
