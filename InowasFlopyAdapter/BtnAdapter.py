@@ -1,3 +1,4 @@
+import numpy as np
 import flopy.mt3d as mt
 
 
@@ -109,14 +110,14 @@ class BtnAdapter:
             "tunit": package.tunit,
             "lunit": package.lunit,
             "munit": package.munit,
-            "laycon": package.laycon,
-            "delr": package.delr,
-            "delc": package.delc,
-            "htop": package.htop,
-            "dz": package.dz,
-            "prsity": package.prsity,
-            "icbund": package.icbund,
-            "sconc": package.sconc,
+            "laycon": package.laycon.array.tolist(),
+            "delr": np.reshape(package.delr.array, (len(package.delr.array),)).tolist(),
+            "delc": np.reshape(package.delc.array, (len(package.delc.array),)).tolist(),
+            "htop": package.htop.array.tolist(),
+            "dz": package.dz.array.tolist(),
+            "prsity": package.prsity.array.tolist(),
+            "icbund": package.icbund.array.tolist(),
+            "sconc": [i.array.tolist() for i in package.sconc],
             "cinact": package.cinact,
             "thkmin": package.thkmin,
             "ifmtcn": package.ifmtcn,
@@ -125,23 +126,23 @@ class BtnAdapter:
             "ifmtdp": package.ifmtdp,
             "savucn": package.savucn,
             "nprs": package.nprs,
-            "timprs": package.timprs,
-            "obs": package.obs,
+            "timprs": package.timprs,#None
+            "obs": package.obs,#None
             "nprobs": package.nprobs,
             "chkmas": package.chkmas,
             "nprmas": package.nprmas,
-            "perlen": package.perlen,
-            "nstp": package.nstp,
-            "tsmult": package.tsmult,
-            "ssflag": package.ssflag,
-            "dt0": package.dt0,
-            "mxstrn": package.mxstrn,
-            "ttsmult": package.ttsmult,
-            "ttsmax": package.ttsmax,
-            "species_names": package.species_names,
-            "extension": package.extension,
-            "unitnumber": package.unitnumber,
-            "filenames": package.filenames
+            "perlen": package.perlen.array.tolist(),
+            "nstp": package.nstp.array.tolist(),
+            "tsmult": package.tsmult.array.tolist(),
+            #"ssflag": package.ssflag,
+            "dt0": package.dt0.array.tolist(),
+            "mxstrn": package.mxstrn.array.tolist(),
+            "ttsmult": package.ttsmult.array.tolist(),
+            "ttsmax": package.ttsmax.array.tolist(),
+            "species_names": package.species_names if package.species_names else None,
+            "extension": package.extension[0],
+            "unitnumber": package.unit_number[0],
+            #"filenames": package.filenames
         }
         return content
         

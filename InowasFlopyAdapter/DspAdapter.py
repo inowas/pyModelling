@@ -1,3 +1,4 @@
+import numpy as np
 import flopy.mt3d as mt
 
 
@@ -52,14 +53,14 @@ class DspAdapter:
     @staticmethod
     def read_package(package):
         content = {
-            "al": package.al,
-            "trpt": package.trpt,
-            "trpv": package.trpv,
-            "dmcoef": package.dmcoef,
-            "extension": package.extension,
+            "al": package.al.array.tolist(),
+            "trpt": np.reshape(package.trpt.array, (len(package.trpt.array),)).tolist(),
+            "trpv": np.reshape(package.trpv.array, (len(package.trpv.array),)).tolist(),
+            #"dmcoef": package.dmcoef.array.tolist(),
+            "extension": package.extension[0],
             "multiDiff": package.multiDiff,
-            "unitnumber": package.unitnumber,
-            "filenames": package.filenames
+            "unitnumber": package.unit_number[0],
+            #"filenames": package.filenames
         }
         return content
         

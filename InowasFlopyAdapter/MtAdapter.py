@@ -56,17 +56,17 @@ class MtAdapter:
     @staticmethod
     def read_package(package):
         content = {
-            "modelname": package.modelname,
+            #"modelname": package.modelname,#None
             "namefile_ext": package.namefile_ext,
             "ftlfilename": package.ftlfilename,
             "ftlfree": package.ftlfree,
             "version": package.version,
-            "exe_name": package.exe_name,
+            "exe_name": package.exe_name,#None
             "structured": package.structured,
-            "listunit": package.listunit,
+            "listunit": package.listunit,#None
             "ftlunit": package.ftlunit,
             "model_ws": package.model_ws,
-            "external_path": package.external_path,
+            "external_path": package.external_path,#None
             "verbose": package.verbose,
             "load": package.load,
             "silent": package.silent

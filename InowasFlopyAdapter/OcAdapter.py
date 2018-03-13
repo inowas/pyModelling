@@ -36,15 +36,7 @@ class OcAdapter:
         content = self.merge()
         return mf.ModflowOc(
                 _mf,
-                ihedfm=content['ihedfm'],
-                iddnfm=content['iddnfm'],
-                chedfm=content['chedfm'],
-                cddnfm=content['cddnfm'],
-                cboufm=content['cboufm'],
-                compact=content['compact'],
-                stress_period_data=content['stress_period_data'],
-                extension=content['extension'],
-                unitnumber=content['unitnumber']
+                **content
             )
 
     @staticmethod
@@ -77,11 +69,12 @@ class OcAdapter:
             "ihedfm": package.ihedfm,
             "iddnfm": package.iddnfm,
             "chedfm": package.chedfm,
-            "cddnfm": package.cddnfm,
-            "cboufm": package.cboufm,
+            "cddnfm": package.cddnfm,#None
+            "cboufm": package.cboufm,#None
             "compact": package.compact,
-            "stress_period_data": package.stress_period_data,
-            "extension": package.extension,
-            "unitnumber": package.unitnumber
+            #stress period data dict keys transformed from tuple to string to be json serializible:
+            "stress_period_data": {str(k): v for k, v in package.stress_period_data.items()},
+            "extension": package.extension[0],
+            "unitnumber": package.unit_number[0]
         }
         return content

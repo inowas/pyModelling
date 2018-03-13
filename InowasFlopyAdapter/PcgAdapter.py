@@ -32,20 +32,7 @@ class PcgAdapter:
         content = self.merge()
         return mf.ModflowPcg(
                 _mf,
-                mxiter=content['mxiter'],
-                iter1=content['iter1'],
-                npcond=content['npcond'],
-                hclose=content['hclose'],
-                rclose=content['rclose'],
-                relax=content['relax'],
-                nbpol=content['nbpol'],
-                iprpcg=content['iprpcg'],
-                mutpcg=content['mutpcg'],
-                damp=content['damp'],
-                dampt=content['dampt'],
-                ihcofadd=content['ihcofadd'],
-                extension=content['extension'],
-                unitnumber=content['unitnumber']
+                **content
             )
 
     @staticmethod
@@ -84,7 +71,7 @@ class PcgAdapter:
             "damp": package.damp,
             "dampt": package.dampt,
             "ihcofadd": package.ihcofadd,
-            "extension": package.extension,
-            "unitnumber":package.unitnumber
+            "extension": package.extension[0],
+            "unitnumber":package.unit_number[0]
         }
         return content

@@ -32,15 +32,7 @@ class BasAdapter:
         content = self.merge()
         return mf.ModflowBas(
                 _mf,
-                ibound=content['ibound'],
-                strt=content['strt'],
-                ifrefm=content['ifrefm'],
-                ixsec=content['ixsec'],
-                ichflg=content['ichflg'],
-                stoper=content['stoper'],
-                hnoflo=content['hnoflo'],
-                extension=content['extension'],
-                unitnumber=content['unitnumber']
+                **content
             )
 
     @staticmethod
@@ -61,15 +53,15 @@ class BasAdapter:
     @staticmethod
     def read_package(package):
         content = {
-            "ibound": package.ibound,
-            "strt": package.strt,
+            "ibound": package.ibound.array.tolist(),
+            "strt": package.strt.array.tolist(),
             "ifrefm": package.ifrefm,
             "ixsec": package.ixsec,
             "ichflg": package.ichflg,
             "stoper": package.stoper,
             "hnoflo": package.hnoflo,
-            "extension": package.extension,
-            "unitnumber": package.unitnumber
+            "extension": package.extension[0],
+            "unitnumber": package.unit_number[0]
         }
         return content
         

@@ -32,31 +32,7 @@ class LpfAdapter:
         content = self.merge()
         return mf.ModflowLpf(
                 _mf,
-                laytyp=content['laytyp'],
-                layavg=content['layavg'],
-                chani=content['chani'],
-                layvka=content['layvka'],
-                laywet=content['laywet'],
-                ipakcb=content['ipakcb'],
-                hdry=content['hdry'],
-                iwdflg=content['iwdflg'],
-                wetfct=content['wetfct'],
-                iwetit=content['iwetit'],
-                ihdwet=content['ihdwet'],
-                hk=content['hk'],
-                hani=content['hani'],
-                vka=content['vka'],
-                ss=content['ss'],
-                sy=content['sy'],
-                vkcb=content['vkcb'],
-                wetdry=content['wetdry'],
-                storagecoefficient=content['storagecoefficient'],
-                constantcv=content['constantcv'],
-                thickstrt=content['thickstrt'],
-                nocvcorrection=content['nocvcorrection'],
-                novfc=content['novfc'],
-                extension=content['extension'],
-                unitnumber=content['unitnumber']
+                **content
             )
 
     @staticmethod
@@ -94,30 +70,30 @@ class LpfAdapter:
     @staticmethod
     def read_package(package):
         content = {
-            "laytyp": package.laytyp,
-            "layavg": package.layavg,
-            "chani": package.chani,
-            "layvka": package.layvka,
-            "laywet": package.laywet,
+            "laytyp": package.laytyp.array.tolist(),
+            "layavg": package.layavg.array.tolist(),
+            "chani": package.chani.array.tolist(),
+            "layvka": package.layvka.array.tolist(),
+            "laywet": package.laywet.array.tolist(),
             "ipakcb": package.ipakcb,
             "hdry": package.hdry,
-            "iwdflg": package.iwdflg,
-            "wetfct": package.wetfct,
-            "iwetit": package.iwetit,
-            "ihdwet": package.ihdwet,
-            "hk": package.hk,
-            "hani": package.hani,
-            "vka": package.vka,
-            "ss": package.ss,
-            "sy": package.sy,
-            "vkcb": package.vkcb,
-            "wetdry": package.wetdry,
-            "storagecoefficient": package.storagecoefficient,
-            "constantcv": package.constantcv,
-            "thickstrt": package.thickstrt,
-            "nocvcorrection": package.nocvcorrection,
-            "novfc": package.novfc,
-            "extension": package.extension,
-            "unitnumber": package.unitnumber
+            #"iwdflg": package.iwdflg,
+            "wetfct": package.wetfct,#None
+            "iwetit": package.iwetit,#None
+            "ihdwet": package.ihdwet,#None
+            "hk": package.hk.array.tolist(),
+            "hani": package.hani.array.tolist(),
+            "vka": package.vka.array.tolist(),
+            "ss": package.ss.array.tolist(),
+            "sy": package.sy.array.tolist(),
+            "vkcb": package.vkcb.array.tolist(),
+            "wetdry": package.wetdry.array.tolist(),
+            #"storagecoefficient": package.storagecoefficient,
+            #"constantcv": package.constantcv,
+            #"thickstrt": package.thickstrt,
+            #"nocvcorrection": package.nocvcorrection,
+            #"novfc": package.novfc,
+            "extension": package.extension[0],
+            "unitnumber": package.unit_number[0]
         }
         return content

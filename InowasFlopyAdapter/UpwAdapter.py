@@ -32,22 +32,7 @@ class UpwAdapter:
         content = self.merge()
         return mf.ModflowUpw(
                 _mf,
-                laytyp=content['laytyp'],
-                layavg=content['layavg'],
-                chani=content['chani'],
-                layvka=content['layvka'],
-                laywet=content['laywet'],
-                ipakcb=content['ipakcb'],
-                hdry=content['hdry'],
-                iphdry=content['iphdry'],
-                hk=content['hk'],
-                hani=content['hani'],
-                vka=content['vka'],
-                ss=content['ss'],
-                sy=content['sy'],
-                vkcb=content['vkcb'],
-                extension=content['extension'],
-                unitnumber=content['unitnumber']
+                **content
             )
 
     @staticmethod
@@ -76,21 +61,21 @@ class UpwAdapter:
     @staticmethod
     def read_package(package):
         content = {
-            "laytyp": package.laytyp,
-            "layavg": package.layavg,
-            "chani": package.chani,
-            "layvka": package.layvka,
-            "laywet": package.laywet,
+            "laytyp": package.laytyp.array.tolist(),
+            "layavg": package.layavg.array.tolist(),
+            "chani": package.chani.array.tolist(),
+            "layvka": package.layvka.array.tolist(),
+            "laywet": package.laywet.array.tolist(),
             "ipakcb": package.ipakcb,
             "hdry": package.hdry,
             "iphdry": package.iphdry,
-            "hk": package.hk,
-            "hani": package.hani,
-            "vka": package.vka,
-            "ss": package.ss,
-            "sy": package.sy,
-            "vkcb": package.vkcb,
-            "extension": package.extension,
-            "unitnumber": package.unitnumber
+            "hk": package.hk.array.tolist(),
+            "hani": package.hani.array.tolist(),
+            "vka": package.vka.array.tolist(),
+            "ss": package.ss.array.tolist(),
+            "sy": package.sy.array.tolist(),
+            "vkcb": package.vkcb.array.tolist(),
+            "extension": package.extension[0],
+            "unitnumber": package.unit_number[0]
         }
         return content

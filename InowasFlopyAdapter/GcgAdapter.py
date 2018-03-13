@@ -60,8 +60,8 @@ class GcgAdapter:
             "accl": package.accl,
             "cclose": package.cclose,
             "iprgcg": package.iprgcg,
-            "extension": package.extension,
-            "unitnumber": package.unitnumber
+            "extension": package.extension[0],
+            "unitnumber": package.unit_number[0]
         }
         return content
         
