@@ -2,7 +2,6 @@ import flopy.mt3d as mt
 
 
 class LktAdapter:
-
     _data = None
 
     def __init__(self, data):
@@ -31,9 +30,9 @@ class LktAdapter:
     def get_package(self, _mt):
         content = self.merge()
         return mt.Mt3dLkt(
-                _mt,
-                **content
-            )
+            _mt,
+            **content
+        )
 
     @staticmethod
     def default():
@@ -66,4 +65,3 @@ class LktAdapter:
             "filenames": package.filenames
         }
         return content
-        

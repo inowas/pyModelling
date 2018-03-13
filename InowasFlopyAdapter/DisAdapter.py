@@ -2,7 +2,6 @@ import flopy.modflow as mf
 
 
 class DisAdapter:
-
     _data = None
 
     def __init__(self, data):
@@ -83,10 +82,10 @@ class DisAdapter:
             "lenuni": package.lenuni,
             "extension": package.extension[0],
             "unitnumber": package.unit_number[0],
-            #"xul": package.xul,
-            #"yul": package.yul,
-            #"rotation": package.rotation,
-            #"proj4_str": package.proj4_str,
+            # "xul": package.xul,
+            # "yul": package.yul,
+            # "rotation": package.rotation,
+            # "proj4_str": package.proj4_str,
             "start_datetime": package.start_datetime
         }
         return content

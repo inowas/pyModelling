@@ -2,7 +2,6 @@ import flopy.modflow as mf
 
 
 class PcgAdapter:
-
     _data = None
 
     def __init__(self, data):
@@ -31,9 +30,9 @@ class PcgAdapter:
     def get_package(self, _mf):
         content = self.merge()
         return mf.ModflowPcg(
-                _mf,
-                **content
-            )
+            _mf,
+            **content
+        )
 
     @staticmethod
     def default():
@@ -72,6 +71,6 @@ class PcgAdapter:
             "dampt": package.dampt,
             "ihcofadd": package.ihcofadd,
             "extension": package.extension[0],
-            "unitnumber":package.unit_number[0]
+            "unitnumber": package.unit_number[0]
         }
         return content

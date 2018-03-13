@@ -88,4 +88,3 @@ class SftAdapter:
             "extension": package.extension
         }
         return content
-        

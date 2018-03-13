@@ -3,7 +3,6 @@ import flopy.mt3d as mt
 
 
 class BtnAdapter:
-
     _data = None
 
     def __init__(self, data):
@@ -32,9 +31,9 @@ class BtnAdapter:
     def get_package(self, _mt):
         content = self.merge()
         return mt.Mt3dBtn(
-                _mt,
-                **content
-            )
+            _mt,
+            **content
+        )
 
     @staticmethod
     def default():
@@ -126,15 +125,15 @@ class BtnAdapter:
             "ifmtdp": package.ifmtdp,
             "savucn": package.savucn,
             "nprs": package.nprs,
-            "timprs": package.timprs,#None
-            "obs": package.obs,#None
+            "timprs": package.timprs,  # None
+            "obs": package.obs,  # None
             "nprobs": package.nprobs,
             "chkmas": package.chkmas,
             "nprmas": package.nprmas,
             "perlen": package.perlen.array.tolist(),
             "nstp": package.nstp.array.tolist(),
             "tsmult": package.tsmult.array.tolist(),
-            #"ssflag": package.ssflag,
+            # "ssflag": package.ssflag,
             "dt0": package.dt0.array.tolist(),
             "mxstrn": package.mxstrn.array.tolist(),
             "ttsmult": package.ttsmult.array.tolist(),
@@ -142,7 +141,6 @@ class BtnAdapter:
             "species_names": package.species_names if package.species_names else None,
             "extension": package.extension[0],
             "unitnumber": package.unit_number[0],
-            #"filenames": package.filenames
+            # "filenames": package.filenames
         }
         return content
-        

@@ -3,7 +3,6 @@ from flopy.utils.mflistfile import MfListBudget
 
 
 class ReadBudget:
-
     _filename = None
 
     def __init__(self, workspace):

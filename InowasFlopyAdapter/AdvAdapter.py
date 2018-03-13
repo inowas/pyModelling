@@ -2,7 +2,6 @@ import flopy.mt3d as mt
 
 
 class AdvAdapter:
-
     _data = None
 
     def __init__(self, data):
@@ -31,9 +30,9 @@ class AdvAdapter:
     def get_package(self, _mt):
         content = self.merge()
         return mt.Mt3dAdv(
-                _mt,
-                **content
-            )
+            _mt,
+            **content
+        )
 
     @staticmethod
     def default():
@@ -66,20 +65,19 @@ class AdvAdapter:
             "percel": package.percel,
             "mxpart": package.mxpart,
             "nadvfd": package.nadvfd,
-            "itrack": package.itrack,#None
-            "wd": package.wd,#None
-            "dceps": package.dceps,#None
-            "nplane": package.nplane,#None
-            "npl": package.npl,#None
-            "nph": package.nph,#None
-            "npmin": package.npmin,#None
-            "npmax": package.npmax,#None
-            "nlsink": package.nlsink,#None
-            "npsink": package.npsink,#None
-            "dchmoc": package.dchmoc,#None
+            "itrack": package.itrack,  # None
+            "wd": package.wd,  # None
+            "dceps": package.dceps,  # None
+            "nplane": package.nplane,  # None
+            "npl": package.npl,  # None
+            "nph": package.nph,  # None
+            "npmin": package.npmin,  # None
+            "npmax": package.npmax,  # None
+            "nlsink": package.nlsink,  # None
+            "npsink": package.npsink,  # None
+            "dchmoc": package.dchmoc,  # None
             "extension": package.extension[0],
             "unitnumber": package.unit_number[0],
-            #"filenames": package.filenames
+            # "filenames": package.filenames
         }
         return content
-        

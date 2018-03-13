@@ -2,7 +2,6 @@ import flopy.modflow as mf
 
 
 class LpfAdapter:
-
     _data = None
 
     def __init__(self, data):
@@ -31,9 +30,9 @@ class LpfAdapter:
     def get_package(self, _mf):
         content = self.merge()
         return mf.ModflowLpf(
-                _mf,
-                **content
-            )
+            _mf,
+            **content
+        )
 
     @staticmethod
     def default():
@@ -77,10 +76,10 @@ class LpfAdapter:
             "laywet": package.laywet.array.tolist(),
             "ipakcb": package.ipakcb,
             "hdry": package.hdry,
-            #"iwdflg": package.iwdflg,
-            "wetfct": package.wetfct,#None
-            "iwetit": package.iwetit,#None
-            "ihdwet": package.ihdwet,#None
+            # "iwdflg": package.iwdflg,
+            "wetfct": package.wetfct,  # None
+            "iwetit": package.iwetit,  # None
+            "ihdwet": package.ihdwet,  # None
             "hk": package.hk.array.tolist(),
             "hani": package.hani.array.tolist(),
             "vka": package.vka.array.tolist(),
@@ -88,11 +87,11 @@ class LpfAdapter:
             "sy": package.sy.array.tolist(),
             "vkcb": package.vkcb.array.tolist(),
             "wetdry": package.wetdry.array.tolist(),
-            #"storagecoefficient": package.storagecoefficient,
-            #"constantcv": package.constantcv,
-            #"thickstrt": package.thickstrt,
-            #"nocvcorrection": package.nocvcorrection,
-            #"novfc": package.novfc,
+            # "storagecoefficient": package.storagecoefficient,
+            # "constantcv": package.constantcv,
+            # "thickstrt": package.thickstrt,
+            # "nocvcorrection": package.nocvcorrection,
+            # "novfc": package.novfc,
             "extension": package.extension[0],
             "unitnumber": package.unit_number[0]
         }

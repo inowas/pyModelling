@@ -47,10 +47,10 @@ class InowasFlopyImportAdapter:
     """
 
     def __init__(self, model_ws, json_file, mf_namfile=None, mt_namfile=None,
-                 type_="flopy_calculation", version="3.2.6", calculation_id="default", 
+                 type_="flopy_calculation", version="3.2.6", calculation_id="default",
                  author="default", project="default", model_id="default",
                  run_model=True, write_input=True):
-    
+
         self.model_data = {
             "author": author,
             "project": project,
@@ -60,7 +60,7 @@ class InowasFlopyImportAdapter:
             "model_id": model_id,
             "write_input": write_input,
             "run_model": run_model,
-            "data":{}
+            "data": {}
         }
         self._report = ''
         self.json_file = json_file
@@ -80,8 +80,7 @@ class InowasFlopyImportAdapter:
             self.model_data["data"]["mt"]["packages"] += self.mt_model.get_package_list()
             self.model_data["data"]["mt"]["write_input"] = write_input
             self.model_data["data"]["mt"]["run_model"] = run_model
-            
-        
+
     @staticmethod
     def np_type_translate(obj):
         try:
@@ -90,23 +89,23 @@ class InowasFlopyImportAdapter:
             raise TypeError('Object %s is not JSON serializable and not Numpy dtype' % type(obj))
 
     def serialize(self):
-        #Encode packages content to JSON
+        # Encode packages content to JSON
         for package_name in self.model_data["data"]["mf"]["packages"] + self.model_data["data"]["mt"]["packages"]:
             try:
                 self.read_packages(name=package_name, data=self.model_data["data"])
                 self._report += "Successfully read the package: %s \n" % package_name
             except:
                 self._report += "Could not read package: %s \n" % package_name
-        
+
         try:
-            with open(self.json_file, 'w') as f:  
+            with open(self.json_file, 'w') as f:
                 json.dump(self.model_data, f, default=self.np_type_translate)
             self._report += "Model input saved to %s \n" % self.json_file
-        except: 
-           self._report += "Could not save input to %s \n" % self.json_file
+        except:
+            self._report += "Could not save input to %s \n" % self.json_file
 
     def read_packages(self, name, data):
-        #Modlfow packages
+        # Modflow packages
         if name == 'MF':
             data["mf"][name] = MfAdapter(data=None).read_package(self.mf_model)
         if name == 'DIS':
@@ -119,12 +118,12 @@ class InowasFlopyImportAdapter:
             data["mf"][name] = PcgAdapter(data=None).read_package(self.mf_model.get_package(name))
         if name == 'OC':
             data["mf"][name] = {}
-            #data["mf"][name] = OcAdapter(data=None).read_package(self.mf_model.get_package(name))
+            # data["mf"][name] = OcAdapter(data=None).read_package(self.mf_model.get_package(name))
         if name == 'WEL':
             data["mf"][name] = WelAdapter(data=None).read_package(self.mf_model.get_package(name))
         if name == 'CHD':
             data["mf"][name] = ChdAdapter(data=None).read_package(self.mf_model.get_package(name))
-        if name == 'LMT'or name == 'LMT6':  
+        if name == 'LMT' or name == 'LMT6':
             data["mf"][name] = LmtAdapter(data=None).read_package(self.mf_model.get_package(name))
         if name == 'NWT':
             data["mf"][name] = NwtAdapter(data=None).read_package(self.mf_model.get_package(name))
@@ -137,8 +136,8 @@ class InowasFlopyImportAdapter:
         #     data["mf"][name] = RchAdapter(data=None).read_package(self.mf_model.get_package(name))
         # if name == 'GHB':
         #     data["mf"][name] = GhbAdapter(data=None).read_package(self.mf_model.get_package(name))
-        
-        #MT3D packages 
+
+        # MT3D packages
         if name == 'MT':
             data["mt"][name] = MtAdapter(data=None).read_package(self.mt_model)
         if name == 'ADV':

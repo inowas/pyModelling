@@ -3,7 +3,6 @@ import flopy.mt3d as mt
 
 
 class DspAdapter:
-
     _data = None
 
     def __init__(self, data):
@@ -32,9 +31,9 @@ class DspAdapter:
     def get_package(self, _mt):
         content = self.merge()
         return mt.Mt3dDsp(
-                _mt,
-                **content
-            )
+            _mt,
+            **content
+        )
 
     @staticmethod
     def default():
@@ -56,11 +55,10 @@ class DspAdapter:
             "al": package.al.array.tolist(),
             "trpt": np.reshape(package.trpt.array, (len(package.trpt.array),)).tolist(),
             "trpv": np.reshape(package.trpv.array, (len(package.trpv.array),)).tolist(),
-            #"dmcoef": package.dmcoef.array.tolist(),
+            # "dmcoef": package.dmcoef.array.tolist(),
             "extension": package.extension[0],
             "multiDiff": package.multiDiff,
             "unitnumber": package.unit_number[0],
-            #"filenames": package.filenames
+            # "filenames": package.filenames
         }
         return content
-        

@@ -41,13 +41,9 @@ def process(content, datafolder):
             json.dump(content, outfile)
 
         try:
+            data['mf']['mf']['modelname'] = calculation_id
             data['mf']['mf']['model_ws'] = target_directory
             data['mf']['mf']['exe_name'] = os.path.join(binfolder, sys.platform, data['mf']['mf']['exe_name'])
-        except KeyError:
-            pass
-        try:
-            data['mt']['mt']['model_ws'] = target_directory
-            data['mt']['mt']['exe_name'] = os.path.join(binfolder, sys.platform, data['mt']['mt']['exe_name'])
         except KeyError:
             pass
 

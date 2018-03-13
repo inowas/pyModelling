@@ -6,7 +6,8 @@
    "type":"flopy_calculation",
    "version":"3.2.6",
    "data":{
-      "packages":[
+      "mf": {
+         "packages":[
          "mf",
          "dis",
          "bas",
@@ -2674,5 +2675,6 @@
       },
       "write_input":true,
       "run_model":true
+      }
    }
 }

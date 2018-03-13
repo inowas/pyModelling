@@ -2,7 +2,6 @@ import flopy.modflow as mf
 
 
 class WelAdapter:
-
     _data = None
 
     def __init__(self, data):
@@ -31,9 +30,9 @@ class WelAdapter:
     def get_package(self, _mf):
         content = self.merge()
         return mf.ModflowWel(
-                _mf,
-                **content
-            )
+            _mf,
+            **content
+        )
 
     @staticmethod
     def default():
@@ -52,9 +51,9 @@ class WelAdapter:
     def read_package(package):
         content = {
             "ipakcb": package.ipakcb,
-            #stress period data values translated to list of lists to be json serializable
+            # stress period data values translated to list of lists to be json serializable
             "stress_period_data": {k: [list(i) for i in v] for k, v in package.stress_period_data.data.items()},
-            #"dtype": package.dtype,
+            # "dtype": package.dtype,
             "extension": package.extension[0],
             "unitnumber": package.unit_number[0],
             # options is None if options list is empty:

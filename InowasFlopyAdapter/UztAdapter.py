@@ -2,7 +2,6 @@ import flopy.mt3d as mt
 
 
 class UztAdapter:
-
     _data = None
 
     def __init__(self, data):
@@ -31,9 +30,9 @@ class UztAdapter:
     def get_package(self, _mt):
         content = self.merge()
         return mt.Mt3dUzt(
-                _mt,
-                **content
-            )
+            _mt,
+            **content
+        )
 
     @staticmethod
     def default():
@@ -70,4 +69,3 @@ class UztAdapter:
             "filenames": package.filenames
         }
         return content
-        

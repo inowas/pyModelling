@@ -2,7 +2,6 @@ import flopy.modflow as mf
 
 
 class LmtAdapter:
-
     _data = None
 
     def __init__(self, data):
@@ -31,9 +30,9 @@ class LmtAdapter:
     def get_package(self, _mf):
         content = self.merge()
         return mf.ModflowLmt(
-                _mf,
-                **content
-            )
+            _mf,
+            **content
+        )
 
     @staticmethod
     def default():
@@ -49,7 +48,7 @@ class LmtAdapter:
         }
 
         return default
-    
+
     @staticmethod
     def read_package(package):
         content = {
@@ -60,6 +59,6 @@ class LmtAdapter:
             "extension": package.extension[0],
             "package_flows": package.package_flows,
             "unitnumber": package.unit_number[0],
-            #"filenames": None
+            # "filenames": None
         }
         return content

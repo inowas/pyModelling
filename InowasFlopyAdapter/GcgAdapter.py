@@ -2,7 +2,6 @@ import flopy.mt3d as mt
 
 
 class GcgAdapter:
-
     _data = None
 
     def __init__(self, data):
@@ -31,9 +30,9 @@ class GcgAdapter:
     def get_package(self, _mt):
         content = self.merge()
         return mt.Mt3dGcg(
-                _mt,
-                **content
-            )
+            _mt,
+            **content
+        )
 
     @staticmethod
     def default():
@@ -64,4 +63,3 @@ class GcgAdapter:
             "unitnumber": package.unit_number[0]
         }
         return content
-        

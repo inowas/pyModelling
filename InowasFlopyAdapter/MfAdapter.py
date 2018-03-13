@@ -2,7 +2,6 @@ import flopy.modflow as mf
 
 
 class MfAdapter:
-
     _data = None
 
     def __init__(self, data):
@@ -52,12 +51,12 @@ class MfAdapter:
     @staticmethod
     def read_package(package):
         content = {
-            #"modelname": package.modelname,#None
+            # "modelname": package.modelname,#None
             "namefile_ext": package.namefile_ext,
             "version": package.version,
             "exe_name": package.exe_name,
             "structured": package.structured,
-            #"listunit": package.listunit,
+            # "listunit": package.listunit,
             "model_ws": package.model_ws,
             "external_path": package.external_path,
             "verbose": package.verbose

@@ -62,4 +62,3 @@ class TobAdapter:
             "filenames": package.filenames
         }
         return content
-        

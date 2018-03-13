@@ -2,7 +2,6 @@ import flopy.modflow as mf
 
 
 class OcAdapter:
-
     _data = None
 
     def __init__(self, data):
@@ -35,9 +34,9 @@ class OcAdapter:
     def get_package(self, _mf):
         content = self.merge()
         return mf.ModflowOc(
-                _mf,
-                **content
-            )
+            _mf,
+            **content
+        )
 
     @staticmethod
     def default():
@@ -72,10 +71,10 @@ class OcAdapter:
             "ihedfm": package.ihedfm,
             "iddnfm": package.iddnfm,
             "chedfm": package.chedfm,
-            "cddnfm": package.cddnfm,#None
-            "cboufm": package.cboufm,#None
+            "cddnfm": package.cddnfm,  # None
+            "cboufm": package.cboufm,  # None
             "compact": package.compact,
-            #stress period data dict keys transformed from tuple to string to be json serializible:
+            # stress period data dict keys transformed from tuple to string to be json serializable
             "stress_period_data": {str(k): v for k, v in package.stress_period_data.items()},
             "extension": package.extension[0],
             "unitnumber": package.unit_number[0]

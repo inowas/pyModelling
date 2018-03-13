@@ -1,16 +1,16 @@
 {
   "project": "",
   "data": {
-    "selected_packages": [
-      "mf",
-      "dis",
-      "bas",
-      "lpf",
-      "pcg",
-      "oc",
-      "chd"
-    ],
-    "packages": {
+    "mf": {
+      "packages": [
+        "mf",
+        "dis",
+        "bas",
+        "lpf",
+        "pcg",
+        "oc",
+        "chd"
+      ],
       "pcg": {
         "mxiter": 50,
         "mutpcg": 3,
@@ -38,7 +38,17 @@
         "exe_name": "mf2005"
       },
       "chd": {
-        "stress_period_data": {},
+        "stress_period_data": {
+          "0": [
+            [
+              0,
+              0,
+              74,
+              440,
+              100
+            ]
+          ]
+        },
         "extension": "chd",
         "unitnumber": 24
       },
@@ -6421,13 +6431,13 @@
         "start_datetime": "2000-01-01T00:01:00+00:00",
         "nlay": 2,
         "itmuni": 4
-      }
-    },
-    "write_input": true,
-    "version": "3.2.6",
-    "run_model": true
+      },
+      "write_input": true,
+      "version": "3.2.6",
+      "run_model": true
+    }
   },
-  "version": "3.2.6",
+  "version": "3.2.9",
   "author": "",
   "type": "flopy_calculation",
   "calculation_id": "188a018aece7f19d5ee1b440ba6f36e9",

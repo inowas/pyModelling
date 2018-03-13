@@ -2,7 +2,6 @@ import flopy.mt3d as mt
 
 
 class RctAdapter:
-
     _data = None
 
     def __init__(self, data):
@@ -31,9 +30,9 @@ class RctAdapter:
     def get_package(self, _mt):
         content = self.merge()
         return mt.Mt3dRct(
-                _mt,
-                **content
-            )
+            _mt,
+            **content
+        )
 
     @staticmethod
     def default():
@@ -72,4 +71,3 @@ class RctAdapter:
             "filenames": package.filenames
         }
         return content
-        

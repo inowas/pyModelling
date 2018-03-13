@@ -2,7 +2,6 @@ import flopy.modflow as mf
 
 
 class UpwAdapter:
-
     _data = None
 
     def __init__(self, data):
@@ -31,9 +30,9 @@ class UpwAdapter:
     def get_package(self, _mf):
         content = self.merge()
         return mf.ModflowUpw(
-                _mf,
-                **content
-            )
+            _mf,
+            **content
+        )
 
     @staticmethod
     def default():

@@ -2,7 +2,6 @@ import flopy.modflow as mf
 
 
 class BasAdapter:
-
     _data = None
 
     def __init__(self, data):
@@ -31,9 +30,9 @@ class BasAdapter:
     def get_package(self, _mf):
         content = self.merge()
         return mf.ModflowBas(
-                _mf,
-                **content
-            )
+            _mf,
+            **content
+        )
 
     @staticmethod
     def default():
@@ -64,4 +63,3 @@ class BasAdapter:
             "unitnumber": package.unit_number[0]
         }
         return content
-        

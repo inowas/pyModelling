@@ -2,7 +2,6 @@ import flopy.mt3d as mt
 
 
 class PhcAdapter:
-
     _data = None
 
     def __init__(self, data):
@@ -31,9 +30,9 @@ class PhcAdapter:
     def get_package(self, _mt):
         content = self.merge()
         return mt.Mt3dPhc(
-                _mt,
-                **content
-            )
+            _mt,
+            **content
+        )
 
     @staticmethod
     def default():
@@ -80,4 +79,3 @@ class PhcAdapter:
             "unitnumber": package.unitnumber
         }
         return content
-        

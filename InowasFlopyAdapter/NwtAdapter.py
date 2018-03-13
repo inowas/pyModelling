@@ -2,7 +2,6 @@ import flopy.modflow as mf
 
 
 class NwtAdapter:
-
     _data = None
 
     def __init__(self, data):
@@ -30,6 +29,7 @@ class NwtAdapter:
 
     def get_package(self, _mf):
         content = self.merge()
+        print(content)
         return mf.ModflowNwt(
             _mf,
             **content
@@ -44,9 +44,9 @@ class NwtAdapter:
             "thickfact": 1E-5,
             "linmeth": 1,
             "iprnwt": 0,
-            #"ibotavg": 0,
+            "ibotav": 0,
             "options": 'COMPLEX',
-            #"continue": False,
+            "Continue": False,
             "dbdtheta": 0.4,
             "dbdkappa": 1.e-5,
             "dbdgamma": 0.,
@@ -84,9 +84,9 @@ class NwtAdapter:
             "thickfact": package.thickfact,
             "linmeth": package.linmeth,
             "iprnwt": package.iprnwt,
-            #"ibotavg": package.ibotavg,
+            # "ibotavg": package.ibotavg,
             "options": package.options,
-            #"continue": package.continue,
+            # "continue": package.continue,
             "dbdtheta": package.dbdtheta,
             "dbdkappa": package.dbdkappa,
             "dbdgamma": package.dbdgamma,

@@ -2,7 +2,6 @@ import flopy.modflow as mf
 
 
 class RchAdapter:
-
     _data = None
 
     def __init__(self, data):
@@ -31,14 +30,14 @@ class RchAdapter:
     def get_package(self, _mf):
         content = self.merge()
         return mf.ModflowRch(
-                _mf,
-                nrchop=content['nrchop'],
-                ipakcb=content['ipakcb'],
-                rech=content['stress_period_data'],
-                irch=content['irch'],
-                extension=content['extension'],
-                unitnumber=content['unitnumber']
-            )
+            _mf,
+            nrchop=content['nrchop'],
+            ipakcb=content['ipakcb'],
+            rech=content['stress_period_data'],
+            irch=content['irch'],
+            extension=content['extension'],
+            unitnumber=content['unitnumber']
+        )
 
     @staticmethod
     def default():

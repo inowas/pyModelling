@@ -2,7 +2,6 @@ import flopy.modflow as mf
 
 
 class ChdAdapter:
-
     _data = None
 
     def __init__(self, data):
@@ -31,9 +30,9 @@ class ChdAdapter:
     def get_package(self, _mf):
         content = self.merge()
         return mf.ModflowChd(
-                _mf,
-                **content
-            )
+            _mf,
+            **content
+        )
 
     @staticmethod
     def default():
@@ -49,9 +48,9 @@ class ChdAdapter:
     @staticmethod
     def read_package(package):
         content = {
-            #stress period data values translated to list of lists to be json serializable
+            # stress period data values translated to list of lists to be json serializable
             "stress_period_data": {k: [list(i) for i in v] for k, v in package.stress_period_data.data.items()},
-            #"dtype": package.dtype,
+            # "dtype": package.dtype,
             "extension": package.extension[0],
             "unitnumber": package.unit_number[0]
         }
