@@ -2,7 +2,6 @@ import flopy.modflow as mf
 
 
 class DisAdapter:
-
     _data = None
 
     def __init__(self, data):
@@ -32,28 +31,7 @@ class DisAdapter:
         content = self.merge()
         return mf.ModflowDis(
             _mf,
-            nlay=content['nlay'],
-            nrow=content['nrow'],
-            ncol=content['ncol'],
-            nper=content['nper'],
-            delr=content['delr'],
-            delc=content['delc'],
-            laycbd=content['laycbd'],
-            top=content['top'],
-            botm=content['botm'],
-            perlen=content['perlen'],
-            nstp=content['nstp'],
-            tsmult=content['tsmult'],
-            steady=content['steady'],
-            itmuni=content['itmuni'],
-            lenuni=content['lenuni'],
-            extension=content['extension'],
-            unitnumber=content['unitnumber'],
-            xul=content['xul'],
-            yul=content['yul'],
-            rotation=content['rotation'],
-            proj4_str=content['proj4_str'],
-            start_datetime=content['start_datetime']
+            **content
         )
 
     @staticmethod
@@ -83,3 +61,31 @@ class DisAdapter:
             "start_datetime": None
         }
         return default
+
+    @staticmethod
+    def read_package(package):
+        content = {
+            "nlay": package.nlay,
+            "nrow": package.nrow,
+            "ncol": package.ncol,
+            "nper": package.nper,
+            "delr": package.delr.array.tolist(),
+            "delc": package.delc.array.tolist(),
+            "laycbd": package.laycbd.array.tolist(),
+            "top": package.top.array.tolist(),
+            "botm": package.botm.array.tolist(),
+            "perlen": package.perlen.array.tolist(),
+            "nstp": package.nstp.array.tolist(),
+            "tsmult": package.tsmult.array.tolist(),
+            "steady": package.steady.array.tolist(),
+            "itmuni": package.itmuni,
+            "lenuni": package.lenuni,
+            "extension": package.extension[0],
+            "unitnumber": package.unit_number[0],
+            # "xul": package.xul,
+            # "yul": package.yul,
+            # "rotation": package.rotation,
+            # "proj4_str": package.proj4_str,
+            "start_datetime": package.start_datetime
+        }
+        return content

@@ -2,7 +2,6 @@ import flopy.modflow as mf
 
 
 class RivAdapter:
-
     _data = None
 
     def __init__(self, data):
@@ -31,14 +30,14 @@ class RivAdapter:
     def get_package(self, _mf):
         content = self.merge()
         return mf.ModflowRiv(
-                _mf,
-                ipakcb=content['ipakcb'],
-                stress_period_data=content['stress_period_data'],
-                dtype=content['dtype'],
-                extension=content['extension'],
-                unitnumber=content['unitnumber'],
-                options=content['options']
-            )
+            _mf,
+            ipakcb=content['ipakcb'],
+            stress_period_data=content['stress_period_data'],
+            dtype=content['dtype'],
+            extension=content['extension'],
+            unitnumber=content['unitnumber'],
+            options=content['options']
+        )
 
     @staticmethod
     def default():
@@ -52,3 +51,15 @@ class RivAdapter:
         }
 
         return default
+
+    @staticmethod
+    def read_package(package):
+        content = {
+            "ipakcb": package.ipakcb,
+            "stress_period_data": package.stress_period_data,
+            "dtype": package.dtype,
+            "extension": package.extension,
+            "unitnumber": package.unitnumber,
+            "options": package.options
+        }
+        return content

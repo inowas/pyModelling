@@ -3,7 +3,6 @@ import flopy.utils.binaryfile as bf
 
 
 class ReadDrawdown:
-
     _filename = None
 
     def __init__(self, workspace):

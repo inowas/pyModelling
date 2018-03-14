@@ -2,7 +2,6 @@ import flopy.modflow as mf
 
 
 class MfAdapter:
-
     _data = None
 
     def __init__(self, data):
@@ -30,17 +29,8 @@ class MfAdapter:
 
     def get_package(self):
         content = self.merge()
-
         return mf.Modflow(
-            modelname=content['modelname'],
-            namefile_ext=content['namefile_ext'],
-            version=content['version'],
-            exe_name=content['exe_name'],
-            structured=content['structured'],
-            listunit=content['listunit'],
-            model_ws=content['model_ws'],
-            external_path=content['external_path'],
-            verbose=content['verbose']
+            **content
         )
 
     @staticmethod
@@ -57,3 +47,18 @@ class MfAdapter:
             "verbose": False
         }
         return default
+
+    @staticmethod
+    def read_package(package):
+        content = {
+            # "modelname": package.modelname,#None
+            "namefile_ext": package.namefile_ext,
+            "version": package.version,
+            "exe_name": package.exe_name,
+            "structured": package.structured,
+            # "listunit": package.listunit,
+            "model_ws": package.model_ws,
+            "external_path": package.external_path,
+            "verbose": package.verbose
+        }
+        return content

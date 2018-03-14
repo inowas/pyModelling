@@ -60,9 +60,9 @@ def process(content):
         with open(os.path.join(target_directory, 'configuration.json'), 'w') as outfile:
             json.dump(content, outfile)
 
-        data['packages']['mf']['modelname'] = calculation_id
-        data['packages']['mf']['model_ws'] = target_directory
-        data['packages']['mf']['exe_name'] = os.path.join(binfolder, sys.platform, data['packages']['mf']['exe_name'])
+        data['mf']['mf']['modelname'] = calculation_id
+        data['mf']['mf']['model_ws'] = target_directory
+        data['mf']['mf']['exe_name'] = os.path.join(binfolder, sys.platform, data['mf']['mf']['exe_name'])
 
         try:
             flopy = InowasFlopyCalculationAdapter(version, data, calculation_id)
@@ -87,7 +87,8 @@ def process(content):
         status_code=500,
         model_id=model_id,
         calculation_id=calculation_id,
-        message="Internal Server Error. Request data does not fit. \"m_type\" should have the content \"flopy_calculation\""
+        message="Internal Server Error. Request data does not fit. \"m_type\" should have the content "
+                "\"flopy_calculation\" "
     )
 
 

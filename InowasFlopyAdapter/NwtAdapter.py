@@ -2,7 +2,6 @@ import flopy.modflow as mf
 
 
 class NwtAdapter:
-
     _data = None
 
     def __init__(self, data):
@@ -30,42 +29,10 @@ class NwtAdapter:
 
     def get_package(self, _mf):
         content = self.merge()
+        print(content)
         return mf.ModflowNwt(
             _mf,
-            headtol=content['headtol'],
-            fluxtol=content['fluxtol'],
-            maxiterout=content['maxiterout'],
-            thickfact=content['thickfact'],
-            linmeth=content['linmeth'],
-            iprnwt=content['iprnwt'],
-            ibotav=content['ibotavg'],
-            options=content['options'],
-            Continue=content['continue'],
-            dbdtheta=content['dbdtheta'],
-            dbdkappa=content['dbdkappa'],
-            dbdgamma=content['dbdgamma'],
-            momfact=content['momfact'],
-            backflag=content['backflag'],
-            maxbackiter=content['maxbackiter'],
-            backtol=content['backtol'],
-            backreduce=content['backreduce'],
-            maxitinner=content['maxitinner'],
-            ilumethod=content['ilumethod'],
-            levfill=content['levfill'],
-            stoptol=content['stoptol'],
-            msdr=content['msdr'],
-            iacl=content['iacl'],
-            norder=content['norder'],
-            level=content['level'],
-            north=content['north'],
-            iredsys=content['iredsys'],
-            rrctols=content['rrctols'],
-            idroptol=content['idroptol'],
-            epsrn=content['epsrn'],
-            hclosexmd=content['hclosexmd'],
-            mxiterxmd=content['mxiterxmd'],
-            extension=content['extension'],
-            unitnumber=content['unitnumber']
+            **content
         )
 
     @staticmethod
@@ -77,9 +44,9 @@ class NwtAdapter:
             "thickfact": 1E-5,
             "linmeth": 1,
             "iprnwt": 0,
-            "ibotavg": 0,
+            "ibotav": 0,
             "options": 'COMPLEX',
-            "continue": False,
+            "Continue": False,
             "dbdtheta": 0.4,
             "dbdkappa": 1.e-5,
             "dbdgamma": 0.,
@@ -108,3 +75,42 @@ class NwtAdapter:
         }
 
         return default
+
+    @staticmethod
+    def read_package(package):
+        content = {
+            "fluxtol": package.fluxtol,
+            "maxiterout": package.maxiterout,
+            "thickfact": package.thickfact,
+            "linmeth": package.linmeth,
+            "iprnwt": package.iprnwt,
+            # "ibotavg": package.ibotavg,
+            "options": package.options,
+            # "continue": package.continue,
+            "dbdtheta": package.dbdtheta,
+            "dbdkappa": package.dbdkappa,
+            "dbdgamma": package.dbdgamma,
+            "momfact": package.momfact,
+            "backflag": package.backflag,
+            "maxbackiter": package.maxbackiter,
+            "backtol": package.backtol,
+            "backreduce": package.backreduce,
+            "maxitinner": package.maxitinner,
+            "ilumethod": package.ilumethod,
+            "levfill": package.levfill,
+            "stoptol": package.stoptol,
+            "msdr": package.msdr,
+            "iacl": package.iacl,
+            "norder": package.norder,
+            "level": package.level,
+            "north": package.north,
+            "iredsys": package.iredsys,
+            "rrctols": package.rrctols,
+            "idroptol": package.idroptol,
+            "epsrn": package.epsrn,
+            "hclosexmd": package.hclosexmd,
+            "mxiterxmd": package.mxiterxmd,
+            "extension": package.extension[0],
+            "unitnumber": package.unit_number[0]
+        }
+        return content

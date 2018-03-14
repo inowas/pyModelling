@@ -2,7 +2,6 @@ import flopy.modflow as mf
 
 
 class GhbAdapter:
-
     _data = None
 
     def __init__(self, data):
@@ -31,15 +30,15 @@ class GhbAdapter:
     def get_package(self, _mf):
         content = self.merge()
         return mf.ModflowGhb(
-                _mf,
-                ipakcb=content['ipakcb'],
-                stress_period_data=content['stress_period_data'],
-                dtype=content['dtype'],
-                no_print=content['no_print'],
-                options=content['options'],
-                extension=content['extension'],
-                unitnumber=content['unitnumber']
-            )
+            _mf,
+            ipakcb=content['ipakcb'],
+            stress_period_data=content['stress_period_data'],
+            dtype=content['dtype'],
+            no_print=content['no_print'],
+            options=content['options'],
+            extension=content['extension'],
+            unitnumber=content['unitnumber']
+        )
 
     @staticmethod
     def default():
@@ -55,3 +54,15 @@ class GhbAdapter:
 
         return default
 
+    @staticmethod
+    def read_package(package):
+        content = {
+            "ipakcb": package.ipakcb,
+            "stress_period_data": package.stress_period_data,
+            "dtype": package.dtype,
+            "no_print": package.no_print,
+            "options": package.options,
+            "extension": package.extension,
+            "unitnumber": package.unitnumber
+        }
+        return content

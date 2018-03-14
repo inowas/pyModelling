@@ -1,8 +1,9 @@
-{ "version": "3.2.6",
+{
+  "version": "3.2.9",
   "type": "flopy_calculation",
   "data": {
-    "version": "3.2.6",
-    "packages": {
+    "mf": {
+      "version": "3.2.9",
       "oc": {
         "cddnfm": null,
         "stress_period_data": [
@@ -3725,12 +3726,12 @@
         "norder": 1,
         "stoptol": 1e-10,
         "backtol": 1.1,
-        "ibotavg": 0,
+        "ibotav": 0,
         "backflag": 1,
         "headtol": 0.01,
         "unitnumber": 32,
         "iacl": 2,
-        "continue": false,
+        "Continue": false,
         "mxiterxmd": 50,
         "rrctols": 0,
         "msdr": 15,
@@ -74298,23 +74299,23 @@
         "ipakcb": 0,
         "irch": 0,
         "extension": "rch"
-      }
-    },
-    "run_model": true,
-    "selected_packages": [
-      "mf",
-      "bas",
-      "dis",
-      "oc",
-      "wel",
-      "rch",
-      "riv",
-      "ghb",
-      "chd",
-      "upw",
-      "nwt"
-    ],
-    "write_input": true
+      },
+      "run_model": true,
+      "packages": [
+        "mf",
+        "bas",
+        "dis",
+        "oc",
+        "wel",
+        "rch",
+        "riv",
+        "ghb",
+        "chd",
+        "upw",
+        "nwt"
+      ],
+      "write_input": true
+    }
   },
   "author": "",
   "project": "",

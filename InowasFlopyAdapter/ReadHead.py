@@ -3,7 +3,6 @@ import flopy.utils.binaryfile as bf
 
 
 class ReadHead:
-
     _filename = None
 
     def __init__(self, workspace):

@@ -2,7 +2,6 @@ import os
 
 
 class ReadFile:
-
     _filename = None
     _workspace = None
 
@@ -14,7 +13,7 @@ class ReadFile:
 
         workspace = self._workspace
         for file in os.listdir(self._workspace):
-            if file.endswith("."+extension):
+            if file.endswith("." + extension):
                 self._filename = os.path.join(self._workspace, file)
 
         try:

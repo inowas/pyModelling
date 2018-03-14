@@ -1,26 +1,26 @@
 {
-  "version": "3.2.6",
+  "version": "3.2.9",
   "calculation_id": "b995549e1b026c343916b777df166c76",
   "type": "flopy_calculation",
   "project": "",
   "model_id": "907427b9-a8ec-4e39-bb7a-5f5dea82162f",
   "author": "",
   "data": {
-    "write_input": true,
-    "selected_packages": [
-      "mf",
-      "bas",
-      "dis",
-      "oc",
-      "wel",
-      "rch",
-      "riv",
-      "ghb",
-      "upw",
-      "nwt"
-    ],
-    "run_model": true,
-    "packages": {
+    "mf": {
+      "write_input": true,
+      "packages": [
+        "mf",
+        "bas",
+        "dis",
+        "oc",
+        "wel",
+        "rch",
+        "riv",
+        "ghb",
+        "upw",
+        "nwt"
+      ],
+      "run_model": true,
       "upw": {
         "sy": [
           0.2
@@ -34145,7 +34145,7 @@
         "hclosexmd": 0.0001,
         "dbdkappa": 0.00001,
         "epsrn": 0.0001,
-        "ibotavg": 0,
+        "ibotav": 0,
         "options": "COMPLEX",
         "maxiterout": 100,
         "momfact": 0.1,
@@ -34157,7 +34157,7 @@
         "backtol": 1.1,
         "iacl": 2,
         "idroptol": 1,
-        "continue": false,
+        "Continue": false,
         "backreduce": 0.7,
         "linmeth": 1,
         "level": 5,
@@ -40385,8 +40385,8 @@
         "start_datetime": "2015-01-01T00:00:00+00:00",
         "extension": "dis",
         "ncol": 75
-      }
-    },
-    "version": "3.2.6"
+      },
+      "version": "3.2.9"
+    }
   }
 }

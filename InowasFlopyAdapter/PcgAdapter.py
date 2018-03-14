@@ -2,7 +2,6 @@ import flopy.modflow as mf
 
 
 class PcgAdapter:
-
     _data = None
 
     def __init__(self, data):
@@ -31,22 +30,9 @@ class PcgAdapter:
     def get_package(self, _mf):
         content = self.merge()
         return mf.ModflowPcg(
-                _mf,
-                mxiter=content['mxiter'],
-                iter1=content['iter1'],
-                npcond=content['npcond'],
-                hclose=content['hclose'],
-                rclose=content['rclose'],
-                relax=content['relax'],
-                nbpol=content['nbpol'],
-                iprpcg=content['iprpcg'],
-                mutpcg=content['mutpcg'],
-                damp=content['damp'],
-                dampt=content['dampt'],
-                ihcofadd=content['ihcofadd'],
-                extension=content['extension'],
-                unitnumber=content['unitnumber']
-            )
+            _mf,
+            **content
+        )
 
     @staticmethod
     def default():
@@ -68,3 +54,23 @@ class PcgAdapter:
         }
 
         return default
+
+    @staticmethod
+    def read_package(package):
+        content = {
+            "mxiter": package.mxiter,
+            "iter1": package.iter1,
+            "npcond": package.npcond,
+            "hclose": package.hclose,
+            "rclose": package.rclose,
+            "relax": package.relax,
+            "nbpol": package.nbpol,
+            "iprpcg": package.iprpcg,
+            "mutpcg": package.mutpcg,
+            "damp": package.damp,
+            "dampt": package.dampt,
+            "ihcofadd": package.ihcofadd,
+            "extension": package.extension[0],
+            "unitnumber": package.unit_number[0]
+        }
+        return content
