@@ -35,90 +35,6 @@ class InowasFlopyReadFitness:
 
         return self.fitness
 
-
-        
-    
-    @staticmethod
-    def make_mask(location, dis_package):
-        "Returns an array mask of location that has nper,nlay,nrow,ncol dimensions"
-        nstp_flat = dis_package.nstp.array.sum()
-        nrow = dis_package.nrow
-        ncol = dis_package.ncol
-        nlay = dis_package.nlay
-
-        if location["type"] == 'bbox':
-            try:
-                per_min = location['per_min']
-            except KeyError:
-                per_min = 0
-
-            try:
-                per_max = location['per_max']
-            except KeyError:
-                per_max = nstp_flat
-
-            try:
-                lay_min = location['lay_min']
-            except KeyError:
-                lay_min = 0
-
-            try:
-                lay_max = location['lay_max']
-            except KeyError:
-                lay_max = nlay
-
-            try:
-                col_min = location['col_min']
-            except KeyError:
-                col_min = 0
-
-            try:
-                col_max = location['col_max']
-            except KeyError:
-                col_max = ncol
-
-            try:
-                row_min = location['row_min']
-            except KeyError:
-                row_min = 0
-
-            try:
-                row_max = location['row_max']
-            except KeyError:
-                row_max = nrow
-
-            if per_min == per_max:
-                per_max += 1
-            if lay_min == lay_max:
-                lay_max += 1
-            if row_min == row_max:
-                row_max += 1
-            if col_min == col_max:
-                col_max += 1
-        
-            mask = np.zeros((nstp_flat, nlay, nrow, ncol), dtype=bool)
-            mask[
-                per_min:per_max,
-                lay_min:lay_max,
-                row_min:row_max,
-                col_min:col_max
-            ] = True
-
-        # elif location["type"] == 'object':
-        #     lays = []
-        #     rows = []
-        #     cols = []
-        #     for obj in location["objects"]:
-        #         lays.append(obj.lay)
-        #         rows.append(obj.row)
-        #         cols.append(obj.col)
-
-        #     mask = np.zeros((nstp_flat, nlay, nrow, ncol), dtype=bool)
-        #     mask[:,lays,rows,cols] = True
-        
-        return mask
-        
-
     def read_objectives(self, objectives_data):
         "Returnes fitnes list"
         fitness = []
@@ -227,8 +143,88 @@ class InowasFlopyReadFitness:
 
         return conc
     
-    
+    # @staticmethod
     # def read_flux():
 
 
     #     return flux
+
+    @staticmethod
+    def make_mask(location, dis_package):
+        "Returns an array mask of location that has nper,nlay,nrow,ncol dimensions"
+        nstp_flat = dis_package.nstp.array.sum()
+        nrow = dis_package.nrow
+        ncol = dis_package.ncol
+        nlay = dis_package.nlay
+
+        if location["type"] == 'bbox':
+            try:
+                per_min = location['per_min']
+            except KeyError:
+                per_min = 0
+
+            try:
+                per_max = location['per_max']
+            except KeyError:
+                per_max = nstp_flat
+
+            try:
+                lay_min = location['lay_min']
+            except KeyError:
+                lay_min = 0
+
+            try:
+                lay_max = location['lay_max']
+            except KeyError:
+                lay_max = nlay
+
+            try:
+                col_min = location['col_min']
+            except KeyError:
+                col_min = 0
+
+            try:
+                col_max = location['col_max']
+            except KeyError:
+                col_max = ncol
+
+            try:
+                row_min = location['row_min']
+            except KeyError:
+                row_min = 0
+
+            try:
+                row_max = location['row_max']
+            except KeyError:
+                row_max = nrow
+
+            if per_min == per_max:
+                per_max += 1
+            if lay_min == lay_max:
+                lay_max += 1
+            if row_min == row_max:
+                row_max += 1
+            if col_min == col_max:
+                col_max += 1
+        
+            mask = np.zeros((nstp_flat, nlay, nrow, ncol), dtype=bool)
+            mask[
+                per_min:per_max,
+                lay_min:lay_max,
+                row_min:row_max,
+                col_min:col_max
+            ] = True
+
+        # elif location["type"] == 'object':
+        #     lays = []
+        #     rows = []
+        #     cols = []
+        #     for obj in location["objects"]:
+        #         lays.append(obj.lay)
+        #         rows.append(obj.row)
+        #         cols.append(obj.col)
+
+        #     mask = np.zeros((nstp_flat, nlay, nrow, ncol), dtype=bool)
+        #     mask[:,lays,rows,cols] = True
+        
+        return mask

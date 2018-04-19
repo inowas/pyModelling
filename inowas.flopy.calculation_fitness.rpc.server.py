@@ -38,13 +38,13 @@ def process(content):
     data = content.get("data")
     fitness_data = content.get("fitness")
 
-    print('Summary:')
-    print('Author: %s' % author)
-    print('Project: %s' % project)
-    print('Model Id: %s' % model_id)
-    print('Calculation Id: %s' % calculation_id)
-    print('Type: %s' % m_type)
-    print('Version: %s' % version)
+    # print('Summary:')
+    # print('Author: %s' % author)
+    # print('Project: %s' % project)
+    # print('Model Id: %s' % model_id)
+    # print('Calculation Id: %s' % calculation_id)
+    # print('Type: %s' % m_type)
+    # print('Version: %s' % version)
 
     if m_type == 'flopy_calculation_fitness' and fitness_data is not None:
 
