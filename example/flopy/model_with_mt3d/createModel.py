@@ -126,11 +126,72 @@ mt.run_model()
 model_input = {
     "author": "Aybulat F",
     "project": "Test model with Mt3d",
-    "type": "flopy_calculation",
+    "type": "flopy_calculation_fitness",
     "version": "3.2.6",
     "calculation_id": "calculation_id",
     "write_input": True,
     "run_model": True,
+    "fitness": {
+        "objectives": [
+            {
+                "type": "concentration",
+                "conc_file_name": "MT3D001.UCN",
+                "summary_method": "max",
+                "weight": -1,
+                "penalty_value": 999,
+                "location": {
+                    "type": "bbox",
+                    "ts": [0, 0],
+                    "lay": [0, 0],
+                    "row": [40, 50],
+                    "col": [40, 50]
+                }
+            },
+            {
+                "type": "head",
+                "summary_method": "max",
+                "weight": -1,
+                "penalty_value": 999,
+                "location": {
+                    "type": "bbox",
+                    "ts": [0, 0],
+                    "lay": [0, 0],
+                    "row": [40, 50],
+                    "col": [40, 50]
+                }
+            },
+            {
+                "type": "flux",
+                "package": "wel",
+                "summary_method": "mean",
+                "weight": -1,
+                "penalty_value": 999,
+                "location": {
+                    "type": "bbox",
+                    "ts": [0, 0],
+                    "lay": [0, 0],
+                    "row": [40, 50],
+                    "col": [40, 50]
+                }
+            }
+        ],
+        "constrains": [
+            {
+                "type": "concentration",
+                "conc_file_name": "MT3D001.UCN",
+                "summary_method": "max",
+                "operator": "less",
+                "value": 1,
+                "location": {
+                    "type": "bbox",
+                    "ts": [0, 0],
+                    "lay": [0, 0],
+                    "row": [40, 50],
+                    "col": [40, 50]
+                }
+            }
+        ]
+    },
     "data": {
         "mf": {
             "run_model": True,
