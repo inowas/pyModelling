@@ -5,28 +5,27 @@ Author: Aybulat Fatkhutdinov
 """
 
 import os
+import math
 import numpy as np
 import flopy
-
-# from .InowasFitnessTools import Objective
-# from .InowasFitnessTools import Constrain
-
 
 
 class InowasFlopyReadFitness:
     """Calculation of objective values of a model """
 
-    def __init__(self, fitness_data, flopy_adapter):
+    def __init__(self, optimization_data, flopy_adapter):
+
+        self.optimization_data = optimization_data
 
         self.dis_package = flopy_adapter._mf.get_package('DIS')
         self.model_ws = flopy_adapter._mf.model_ws
         self.model_name = flopy_adapter._mf.model.nam
 
-        objectives_values = self.read_objectives(fitness_data["objectives"])
-        constrains_exceeded = self.check_constrains(fitness_data["constrains"])
+        objectives_values = self.read_objectives()
+        constrains_exceeded = self.check_constrains()
 
         if True in constrains_exceeded or None in objectives_values:
-            self.fitness = [obj["penalty_value"] for obj in fitness_data["objectives"]]
+            self.fitness = [obj["penalty_value"] for obj in optimization_data["objectives"]]
         else:
             self.fitness = objectives_values
 
@@ -35,12 +34,16 @@ class InowasFlopyReadFitness:
 
         return self.fitness
 
-    def read_objectives(self, objectives_data):
+    def read_objectives(self):
         "Returnes fitnes list"
         fitness = []
 
-        for objective in objectives_data:
-            mask = self.make_mask(objective["location"], self.dis_package)
+        for objective in self.optimization_data["objectives"]:
+
+            if objective["type"] is not "flux" and objective["type"] is not "distance":
+                mask = self.make_mask(
+                    objective["location"], self.optimization_data["temp_objects"], self.dis_package
+                )
 
             if objective["type"] == "concentration":
                 fitness.append(
@@ -56,27 +59,56 @@ class InowasFlopyReadFitness:
                     )
                 )
 
-            # elif objective["type"] == "flux":
-            #     fitness.append(self.read_flux(objective, mask))
+            elif objective["type"] == "flux":
+                fitness.append(
+                    self.read_flux(objective, self.optimization_data["temp_objects"])
+                )
+            
+            elif objective["type"] == "input_concentrations":
+                fitness.append(
+                    self.read_input_concentration(objective, self.optimization_data["temp_objects"])
+                )
+            
+            elif objective["type"] == "flux":
+                fitness.append(
+                    self.read_distance(objective, self.optimization_data["temp_objects"])
+                )
 
         return fitness
     
-    def check_constrains(self, constrains_data):
+    def check_constrains(self):
         """Returns a list of penalty values"""
         constrains_exceeded = []
 
-        for constrain in constrains_data:
-            mask = self.make_mask(constrain["location"], self.dis_package)
+        for constrain in self.optimization_data["constrains"]:
+            mask = self.make_mask(
+                constrain["location"], self.optimization_data["temp_objects"], self.dis_package    
+            )
 
-            if constrain.type == 'head':
+            if constrain["type"] == 'head':
                 value = self.read_head(
                     constrain, mask, self.model_ws, self.model_name
                 )
    
-            elif constrain.type == 'concentration':
+            elif constrain["type"] == 'concentration':
                 value = self.read_concentration(
                     constrain, mask, self.model_ws, self.model_name
-                )     
+                )
+            
+            elif constrain["type"] == "flux":
+                value = self.read_flux(
+                    constrain, self.optimization_data["temp_objects"]
+                )
+            
+            elif constrain["type"] == "input_concentrations":
+                value = self.read_input_concentration(
+                    constrain, self.optimization_data["temp_objects"]
+                )
+            
+            elif constrain["type"] == "flux":
+                value = self.read_distance(
+                    constrain, self.optimization_data["temp_objects"]
+                )
             
             if constrain["operator"] == "less":
                 constrains_exceeded.append(
@@ -143,14 +175,113 @@ class InowasFlopyReadFitness:
 
         return conc
     
-    # @staticmethod
-    # def read_flux():
+    @staticmethod
+    def read_flux(data, temp_objects):
+        "Reads wel fluxes"
+        fluxes = np.array([])
+        try:
+            for obj in data["location"]["objects"]:
+                fluxes = np.hstack((fluxes, temp_objects[obj]["fluxes"]))
+        except KeyError:
+            print("WARNING! Objective location of type Flux has to be an Object!")
+            return None
 
+        if data["method"] == 'mean':
+            flux = np.nanmean(fluxes)
+        elif data["method"] == 'max':
+            flux = np.max(fluxes)
+        elif data["method"] == 'min':
+            flux = np.min(fluxes)
 
-    #     return flux
+        return flux
+    
+    @staticmethod
+    def read_input_concentration(data, temp_objects):
+        input_concentrations = np.array([])
+
+        try:
+            component = data["component"]
+        except KeyError:
+            print("WARNING! Concentration component for the Objective of type input_concentrations is not defined!")
+            return None
+        try:
+            for obj in data["location"]["objects"]:
+                input_concentrations = np.hstack(
+                    (input_concentrations, 
+                     np.array(temp_objects[obj]["input_concentrations"])[:,component])
+                )
+        except KeyError:
+            print("WARNING! Objective location of type Input_concentrations has to be an Object!")
+            return None
+
+        if data["method"] == 'mean':
+            input_concentrations = np.nanmean(input_concentrations)
+        elif data["method"] == 'max':
+            input_concentrations = np.max(input_concentrations)
+        elif data["method"] == 'min':
+            input_concentrations = np.min(input_concentrations)
+
+        return input_concentrations
+    
+    @staticmethod
+    def read_distance(data, temp_objects):
+        """Returns distance between two groups of objects"""
+        location_1 = data["location_1"]
+        location_2 = data["location_2"]
+        
+        objects_1 = None
+        objects_2 = None
+
+        if location_1['type'] == 'object':
+            objects_1 = [
+                obj for id_, obj in temp_objects.items() if id_ in location_1['objects_ids']
+            ]
+
+        if location_2['type'] == 'object':
+            objects_2 =[
+                obj for id_, obj in temp_objects.items() if id_ in location_2['objects_ids']
+            ]
+        
+        distances = []
+        if objects_1 is not None:
+            for obj_1 in objects_1:
+                if objects_2 is not None:
+                    for obj_2 in objects_2:
+                        dx = float(abs(obj_2["col"] - obj_1["col"]))
+                        dy = float(abs(obj_2["row"] - obj_1["row"]))
+                        dz = float(abs(obj_2["lay"] - obj_1["lay"]))
+                        distances.append(math.sqrt((dx**2) + (dy**2) + (dz**2)))
+                else:
+                    dx = float(abs(location_2['lay_row_col'][2] - obj_1["col"]))
+                    dy = float(abs(location_2['lay_row_col'][1] - obj_1["row"]))
+                    dz = float(abs(location_2['lay_row_col'][0] - obj_1["lay"]))
+                    distances.append(math.sqrt((dx**2) + (dy**2) + (dz**2)))
+        else:
+            if objects_2 is not None:
+                for obj_2 in objects_2:
+                    dx = float(abs(obj_2["col"] - location_1['lay_row_col'][2]))
+                    dy = float(abs(obj_2["row"] - location_1['lay_row_col'][1]))
+                    dz = float(abs(obj_2["lay"] - location_1['lay_row_col'][0]))
+                    distances.append(math.sqrt((dx**2) + (dy**2) + (dz**2)))
+            else:
+                dx = float(abs(location_2['lay_row_col'][2]-location_1['lay_row_col'][2]))
+                dy = float(abs(location_2['lay_row_col'][1]-location_1['lay_row_col'][1]))
+                dz = float(abs(location_2['lay_row_col'][0]-location_1['lay_row_col'][0]))
+                distances.append(math.sqrt((dx**2) + (dy**2) + (dz**2)))
+
+        distances = np.array(distances)
+
+        if data["method"] == 'mean':
+            distance = np.nanmean(distances)
+        elif data["method"] == 'max':
+            distance = np.max(distances)
+        elif data["method"] == 'min':
+            distance = np.min(distances)
+        
+        return distance
 
     @staticmethod
-    def make_mask(location, dis_package):
+    def make_mask(location, temp_objects, dis_package):
         "Returns an array mask of location that has nper,nlay,nrow,ncol dimensions"
         nstp_flat = dis_package.nstp.array.sum()
         nrow = dis_package.nrow
@@ -215,16 +346,16 @@ class InowasFlopyReadFitness:
                 col_min:col_max
             ] = True
 
-        # elif location["type"] == 'object':
-        #     lays = []
-        #     rows = []
-        #     cols = []
-        #     for obj in location["objects"]:
-        #         lays.append(obj.lay)
-        #         rows.append(obj.row)
-        #         cols.append(obj.col)
+        elif location["type"] == 'object':
+            lays = []
+            rows = []
+            cols = []
+            for obj in location["objects"]:
+                lays.append(temp_objects[obj]["lay"])
+                rows.append(temp_objects[obj]["row"])
+                cols.append(temp_objects[obj]["col"])
 
-        #     mask = np.zeros((nstp_flat, nlay, nrow, ncol), dtype=bool)
-        #     mask[:,lays,rows,cols] = True
+            mask = np.zeros((nstp_flat, nlay, nrow, ncol), dtype=bool)
+            mask[:,lays,rows,cols] = True
         
         return mask

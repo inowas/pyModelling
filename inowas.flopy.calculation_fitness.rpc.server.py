@@ -36,7 +36,7 @@ def process(content):
     m_type = content.get("type")
     version = content.get("version")
     data = content.get("data")
-    fitness_data = content.get("fitness")
+    optimization_data = content.get("optimization")
 
     # print('Summary:')
     # print('Author: %s' % author)
@@ -46,7 +46,7 @@ def process(content):
     # print('Type: %s' % m_type)
     # print('Version: %s' % version)
 
-    if m_type == 'flopy_calculation_fitness' and fitness_data is not None:
+    if m_type == 'flopy_calculation_optimization' and optimization_data is not None:
 
         print("Running flopy calculation for model-id '{0}' with calculation-id '{1}'".format(model_id, calculation_id))
         target_directory = os.path.join(datafolder, calculation_id)
@@ -65,7 +65,7 @@ def process(content):
 
         try:
             flopy_adapter = InowasFlopyCalculationAdapter(version, data, calculation_id)
-            fitness = InowasFlopyReadFitness(fitness_data, flopy_adapter).get_fitness()
+            fitness = InowasFlopyReadFitness(optimization_data, flopy_adapter).get_fitness()
 
             response = {
                 response['status_code']: "200",

@@ -9,7 +9,7 @@ from collections import OrderedDict
 class OptWell(object):
     """Well used in optimization process"""
     def __init__(self, data):
-        self.idx = data['id']
+        self.id_ = data['id']
         self.variables_map = OrderedDict()
         self.flux_mask = None
         self.concentration_mask = None
@@ -72,11 +72,25 @@ class OptWell(object):
             self.flux_mask = np.zeros((flux_length))
             self.concentration_mask = np.zeros((concentration_length, concentration_width))
 
-    def update_packages(self, data, individual):
+    def update_data(self, data, individual):
         """Add candidate well data to SPD """
         lay, row, col, fluxes, concentrations = self.format_individual(
             self.variables_map, individual, self.flux_mask, self.concentration_mask
         )
+
+        temp_data = {
+            "lay": lay,
+            "row": row,
+            "col": col,
+            "fluxes": fluxes,
+            "input_concentrations": concentrations
+        }
+
+        if "temp_objects" in data["optimization"]:
+            data["optimization"]["temp_objects"][self.id_] = temp_data
+        else:
+            data["optimization"]["temp_objects"] = {self.id_: temp_data}
+
 
         if fluxes is not None:
             try:

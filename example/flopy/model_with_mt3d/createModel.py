@@ -131,7 +131,7 @@ model_input = {
     "calculation_id": "calculation_id",
     "write_input": True,
     "run_model": True,
-    "fitness": {
+    "optimization": {
         "objectives": [
             {
                 "type": "concentration",
@@ -188,6 +188,65 @@ model_input = {
                     "lay": [0, 0],
                     "row": [40, 50],
                     "col": [40, 50]
+                }
+            }
+        ],
+        "objects": [
+            {
+                "id": 0,
+                "type": "well",
+                "position": {
+                    "row": [30, 190],
+                    "col": [30, 190],
+                    "lay": [0, 0]
+                },
+                "flux": {
+                    "0": [720, 720]
+                },
+                "concentration": {
+                    "0": [[0, 0]]
+                }
+            },
+            {
+                "id": 1,
+                "type": "well",
+                "position": {
+                    "row": [30, 190],
+                    "col": [30, 190],
+                    "lay": [0, 0]
+                },
+                "flux": {
+                    "0": [720, 720]
+                },
+                "concentration": {
+                    "0": [[0, 0]]
+                }
+            },
+            {
+                "id": 2,
+                "type": "well",
+                "position": {
+                    "row": [30, 190],
+                    "col": [30, 190],
+                    "lay": [0, 0]
+                },
+                "flux": {
+                    "0": [720, 720]
+                },
+                "concentration": {
+                    "0": [[0, 0]]
+                }
+            },
+            {
+                "id": 3,
+                "type": "well",
+                "position": {
+                    "row": [109, 110],
+                    "col": [109, 110],
+                    "lay": [0, 0]
+                },
+                "flux": {
+                    "0": [-2160, -2160]
                 }
             }
         ]
