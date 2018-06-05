@@ -10,6 +10,7 @@ from .BasAdapter import BasAdapter
 from .ChdAdapter import ChdAdapter
 from .DisAdapter import DisAdapter
 from .GhbAdapter import GhbAdapter
+from .HobAdapter import HobAdapter
 from .LpfAdapter import LpfAdapter
 from .MfAdapter import MfAdapter
 from .NwtAdapter import NwtAdapter
@@ -48,7 +49,7 @@ class InowasFlopyCalculationAdapter:
 
     mf_package_order = [
         'mf', 'dis', 'bas', 'bas6',
-        'riv', 'wel', 'rch', 'chd', 'ghb',
+        'riv', 'wel', 'rch', 'chd', 'ghb', 'hob',
         'lpf', 'upw', 'pcg', 'nwt', 'oc', 'lmt', 'lmt6'
     ]
 
@@ -115,7 +116,7 @@ class InowasFlopyCalculationAdapter:
             self._mt.check()
 
     def create_package(self, name, content):
-        # Modlfow packages
+        # Modflow packages
         if name == 'mf':
             self._mf = MfAdapter(content).get_package()
         if name == 'dis':
@@ -142,6 +143,8 @@ class InowasFlopyCalculationAdapter:
             ChdAdapter(content).get_package(self._mf)
         if name == 'ghb':
             GhbAdapter(content).get_package(self._mf)
+        if name == 'hob':
+            HobAdapter(content).get_package(self._mf)
         if name == 'lmt':
             LmtAdapter(content).get_package(self._mf)
 
