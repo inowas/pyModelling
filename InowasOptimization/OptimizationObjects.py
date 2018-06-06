@@ -94,26 +94,26 @@ class OptWell(object):
 
         if fluxes is not None:
             try:
-                spd = data["mf"]["wel"]["stress_period_data"]
+                spd = data["data"]["mf"]["wel"]["stress_period_data"]
             except KeyError:
                 spd = {}
 
             fluxes = fluxes * self.flux_multiplier
 
-            data["mf"]["wel"]["stress_period_data"] = self.update_wel_spd(
+            data["data"]["mf"]["wel"]["stress_period_data"] = self.update_wel_spd(
                 lay, row, col, 
                 fluxes, spd
             )
         
         if concentrations is not None:
             try:
-                spd = data["mt"]["ssm"]["stress_period_data"]
+                spd = data["data"]["mt"]["ssm"]["stress_period_data"]
             except KeyError:
                 spd = {}
 
             concentrations = concentrations * self.conc_multiplier
 
-            data["mt"]["ssm"]["stress_period_data"] = self.update_ssm_spd(
+            data["data"]["mt"]["ssm"]["stress_period_data"] = self.update_ssm_spd(
                 lay, row, col, 
                 concentrations, spd
             )

@@ -19,7 +19,8 @@ class InowasFlopyReadFitness:
 
         self.dis_package = flopy_adapter._mf.get_package('DIS')
         self.model_ws = flopy_adapter._mf.model_ws
-        self.model_name = flopy_adapter._mf.model.nam
+        self.model_name = flopy_adapter._mf.namefile.split('.')[0]
+        self.temp_objects = self.optimization_data.get("temp_objects")
 
         objectives_values = self.read_objectives()
         constrains_exceeded = self.check_constrains()
@@ -42,37 +43,25 @@ class InowasFlopyReadFitness:
 
             if objective["type"] is not "flux" and objective["type"] is not "distance":
                 mask = self.make_mask(
-                    objective["location"], self.optimization_data["temp_objects"], self.dis_package
+                    objective["location"], self.temp_objects, self.dis_package
                 )
 
             if objective["type"] == "concentration":
-                fitness.append(
-                    self.read_concentration(
-                        objective, mask, self.model_ws, self.model_name
-                    )
-                )
+                value = self.read_concentration(objective, mask, self.model_ws, self.model_name)
 
             elif objective["type"] == "head":
-                fitness.append(
-                    self.read_head(
-                        objective, mask, self.model_ws, self.model_name
-                    )
-                )
+                value = self.read_head( objective, mask, self.model_ws, self.model_name)
+          
 
             elif objective["type"] == "flux":
-                fitness.append(
-                    self.read_flux(objective, self.optimization_data["temp_objects"])
-                )
+                value = self.read_flux(objective, self.temp_objects)
+
             
             elif objective["type"] == "input_concentrations":
-                fitness.append(
-                    self.read_input_concentration(objective, self.optimization_data["temp_objects"])
-                )
+                value = self.read_input_concentration(objective, self.temp_objects)
             
-            elif objective["type"] == "flux":
-                fitness.append(
-                    self.read_distance(objective, self.optimization_data["temp_objects"])
-                )
+            value = self.summary(value, objective["summary_method"])
+            fitness.append(value.item())
 
         return fitness
     
@@ -82,7 +71,7 @@ class InowasFlopyReadFitness:
 
         for constrain in self.optimization_data["constrains"]:
             mask = self.make_mask(
-                constrain["location"], self.optimization_data["temp_objects"], self.dis_package    
+                constrain["location"], self.temp_objects, self.dis_package    
             )
 
             if constrain["type"] == 'head':
@@ -97,31 +86,46 @@ class InowasFlopyReadFitness:
             
             elif constrain["type"] == "flux":
                 value = self.read_flux(
-                    constrain, self.optimization_data["temp_objects"]
+                    constrain, self.temp_objects
                 )
             
             elif constrain["type"] == "input_concentrations":
                 value = self.read_input_concentration(
-                    constrain, self.optimization_data["temp_objects"]
+                    constrain, self.temp_objects
                 )
             
-            elif constrain["type"] == "flux":
-                value = self.read_distance(
-                    constrain, self.optimization_data["temp_objects"]
-                )
+            value = self.summary(value, constrain["summary_method"])
             
             if constrain["operator"] == "less":
-                constrains_exceeded.append(
-                    True if value > constrain["value"] else False
-                )
-
+                if value > constrain["value"]:
+                    print("Constrain value {} exceeded max value {}, penalty will be assigned".format(value, constrain["value"]))
+                    constrains_exceeded.append(True)
+                else:
+                    constrains_exceeded.append(False)
+                
             elif constrain["operator"] == "more":
-                constrains_exceeded.append(
-                    True if value < constrain["value"] else False
-                )
-  
+                if value < constrain["value"]:
+                    print("Constrain value {} lower than min value {}, penalty will be assigned".format(value, constrain["value"]))
+                    constrains_exceeded.append(True)
+                else:
+                    constrains_exceeded.append(False)
 
         return constrains_exceeded
+    
+    @staticmethod
+    def summary(result, method):
+        if method == 'mean':
+            result = np.nanmean(result)
+        elif method == 'max':
+            result = np.max(result)
+        elif method == 'min':
+            result = np.min(result)
+        else:
+            print("Unknown summary method {}. Using max".format(method))
+            result = np.max(result)
+        
+        return result
+
 
     @staticmethod
     def read_head(data, mask, model_ws, model_name):
@@ -138,14 +142,6 @@ class InowasFlopyReadFitness:
 
         except:
             print('Head file of the model: '+model_name+' could not be opened')
-            return None
-
-        if data["method"] == 'mean':
-            head = np.nanmean(head)
-        elif data["method"] == 'maximum':
-            head = np.max(head)
-        elif data["method"] == 'min':
-            head = np.min(head)
 
         return head
     
@@ -166,13 +162,6 @@ class InowasFlopyReadFitness:
             print('Concentrations file of the model: '+model_name+' could not be opened')
             return None
 
-        if data["method"] == 'mean':
-            conc = np.nanmean(conc)
-        elif data["method"] == 'max':
-            conc = np.max(conc)
-        elif data["method"] == 'min':
-            conc = np.min(conc)
-
         return conc
     
     @staticmethod
@@ -186,14 +175,7 @@ class InowasFlopyReadFitness:
             print("WARNING! Objective location of type Flux has to be an Object!")
             return None
 
-        if data["method"] == 'mean':
-            flux = np.nanmean(fluxes)
-        elif data["method"] == 'max':
-            flux = np.max(fluxes)
-        elif data["method"] == 'min':
-            flux = np.min(fluxes)
-
-        return flux
+        return fluxes
     
     @staticmethod
     def read_input_concentration(data, temp_objects):
@@ -211,15 +193,8 @@ class InowasFlopyReadFitness:
                      np.array(temp_objects[obj]["input_concentrations"])[:,component])
                 )
         except KeyError:
-            print("WARNING! Objective location of type Input_concentrations has to be an Object!")
+            print("WARNING! Objective location of type input_concentrations has to be an Object!")
             return None
-
-        if data["method"] == 'mean':
-            input_concentrations = np.nanmean(input_concentrations)
-        elif data["method"] == 'max':
-            input_concentrations = np.max(input_concentrations)
-        elif data["method"] == 'min':
-            input_concentrations = np.min(input_concentrations)
 
         return input_concentrations
     
@@ -270,15 +245,8 @@ class InowasFlopyReadFitness:
                 distances.append(math.sqrt((dx**2) + (dy**2) + (dz**2)))
 
         distances = np.array(distances)
-
-        if data["method"] == 'mean':
-            distance = np.nanmean(distances)
-        elif data["method"] == 'max':
-            distance = np.max(distances)
-        elif data["method"] == 'min':
-            distance = np.min(distances)
         
-        return distance
+        return distances
 
     @staticmethod
     def make_mask(location, temp_objects, dis_package):

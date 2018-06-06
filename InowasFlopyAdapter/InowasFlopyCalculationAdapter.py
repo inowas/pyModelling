@@ -105,6 +105,8 @@ class InowasFlopyCalculationAdapter:
     @staticmethod
     def run_model(model):
         print('Run the %s model' % model)
+        print(model.namefile)
+        print(model.exe_name)
         success, report = model.run_model(report=True)
         return ' \n'.join(str(e) for e in report + [success])
 
