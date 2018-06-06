@@ -29,11 +29,8 @@ class HobAdapter:
 
     def get_package(self, _mf):
         content = self.merge()
-
         # noinspection PyTypeChecker
         content["obs_data"] = self.map_obs_data(_mf, content["obs_data"])
-        print(content["obs_data"])
-
         return mf.ModflowHob(
             _mf,
             **content
