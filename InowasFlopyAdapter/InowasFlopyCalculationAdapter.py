@@ -11,6 +11,7 @@ from .ChdAdapter import ChdAdapter
 from .DisAdapter import DisAdapter
 from .GhbAdapter import GhbAdapter
 from .HobAdapter import HobAdapter
+from .HobStatistics import HobStatistics
 from .LpfAdapter import LpfAdapter
 from .MfAdapter import MfAdapter
 from .NwtAdapter import NwtAdapter
@@ -66,13 +67,14 @@ class InowasFlopyCalculationAdapter:
 
         if self._mf_data is not None:
             package_content = self.read_packages(self._mf_data)
+
             self.create_model(self.mf_package_order, package_content)
+            self.write_input_model(self._mf)
+            self._report += self.run_model(self._mf)
 
-            if self._mf_data.get("write_input"):
-                self.write_input_model(self._mf)
-
-            if self._mf_data.get("run_model"):
-                self._report += self.run_model(self._mf)
+            if "hob" in self._mf_data["packages"]:
+                print('Calculate hob-statistics and write to file %s.hob.stat' % uuid)
+                self.run_hob_statistics(self._mf)
 
             if self._mt_data is not None:
                 package_content = self.read_packages(self._mt_data)
@@ -108,6 +110,14 @@ class InowasFlopyCalculationAdapter:
         print('Run the %s model' % model)
         success, report = model.run_model(report=True)
         return ' \n'.join(str(e) for e in report + [success])
+
+    @staticmethod
+    def run_hob_statistics(model):
+        model_ws = model.model_ws
+        name = model.name
+
+        print('Calculate hob-statistics for model %s' % name)
+        HobStatistics(model_ws, name).write_to_file()
 
     def check_model(self):
         if self._mf is not None:
