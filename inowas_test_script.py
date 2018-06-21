@@ -47,24 +47,15 @@ def process(content, datafolder):
         except KeyError:
             pass
 
-        try:
-            flopy = InowasFlopyCalculationAdapter(version, data, calculation_id)
-            response = {}
-            response['status_code'] = "200"
-            response['model_id'] = model_id
-            response['calculation_id'] = calculation_id
-            response['data'] = flopy.response()
-            response['message'] = flopy.response_message()
-            response = str(response).replace('\'', '"')
-            return response
-        except:
-            response = {}
-            response['status_code'] = "500"
-            response['model_id'] = model_id
-            response['calculation_id'] = calculation_id
-            response['message'] = traceback.format_exc(limit=1)
-            response = json.dumps(response)
-            return response
+        flopy = InowasFlopyCalculationAdapter(version, data, calculation_id)
+        response = {}
+        response['status_code'] = "200"
+        response['model_id'] = model_id
+        response['calculation_id'] = calculation_id
+        response['data'] = flopy.response()
+        response['message'] = flopy.response_message()
+        response = str(response).replace('\'', '"')
+        return response
 
     if m_type == 'flopy_read_data':
         print('Read flopy data:')

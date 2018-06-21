@@ -41,12 +41,13 @@ class HobAdapter:
         obs = []
 
         for o in observations:
+            print(o)
             obs.append(mf.HeadObservation(
                 model,
-                layer=o[1],
-                row=o[2],
-                column=o[3],
-                time_series_data=o[4]
+                layer=o['layer'],
+                row=o['row'],
+                column=o['column'],
+                time_series_data=o['time_series_data']
             ))
 
         return obs
