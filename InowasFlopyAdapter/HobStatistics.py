@@ -60,11 +60,12 @@ class HobStatistics:
             n=len(observed),
             rMax=np.max(np.abs(simulated - observed)),
             rMin=np.min(np.abs(simulated - observed)),
-            rMean=np.mean(np.abs(simulated - observed)),
+            rMean=np.mean(simulated - observed),
+            absRMean=np.mean(np.abs(simulated-observed)),
             sse=stats.sem(simulated - observed),
             rmse=np.sqrt(((simulated - observed) ** 2).mean()),
             R=stats.pearsonr(observed, simulated)[0],
-            R2=r2_score(observed, simulated),
+            R2=r2_score(observed, simulated)
         )
 
         statistics["nrmse"] = statistics["rmse"] / (np.max(observed) - np.min(observed))
@@ -76,7 +77,7 @@ class HobStatistics:
 
         # Plot (weighted) residuals vs. simulated heads
         statistics["weightedResiduals"] = list(simulated - observed)
-        statistics["linRegress"] = stats.linregress(simulated, statistics["weightedResiduals"])
+        statistics["linRegressSW"] = stats.linregress(simulated, statistics["weightedResiduals"])
 
         # Check for Normal Distribution¶
         statistics["rankedResiduals"] = list(np.sort(simulated - observed))
@@ -86,5 +87,6 @@ class HobStatistics:
         npf = list(map(lambda x, n: self.calculate_npf(x, n), npf, np.ones(n) * n))
 
         statistics["npf"] = npf
+        statistics["linRegressRN"] = stats.linregress(statistics["rankedResiduals"], statistics["npf"])
 
         return statistics
