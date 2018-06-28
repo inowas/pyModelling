@@ -103,11 +103,11 @@ wel_data[19].append((0,90,90, -1667.941155))
 
 wel = flopy.modflow.ModflowWel(mf, stress_period_data=wel_data)
 
-for i in range(nper):
-    ssm_data[i].append((0, 90, 90, 0.15, itype['WEL']))
+# for i in range(nper):
+#     ssm_data[i].append((0, 90, 90, 0.15, itype['WEL']))
 
 mt = flopy.mt3d.Mt3dms(modflowmodel=mf, modelname=mt_modelname, model_ws=model_ws,
-                       ftlfilename='mt3d_link.ftl', exe_name='mt3dms')
+                       ftlfilename='mt3d_link.ftl', exe_name='mt3dusgs')
 
 btn = flopy.mt3d.Mt3dBtn(mt, sconc=1.9, ncomp=1, mcomp=1, dt0=30, nprs=-1)
 adv = flopy.mt3d.Mt3dAdv(mt, mixelm=0)
@@ -132,17 +132,17 @@ model_input = {
     "calculation_id": "calculation_id",
     "optimization": {
         "parameters": {
+            "method": "GA",
             "ngen": 5,
             "pop_size": 10,
             "mutpb": 0.1,
             "cxpb": 0.9,
             "eta": 20,
             "indpb": 0.2,
+            "diversity_flg": True,
             "ncls": 3,
-            "nlocal": 1,
             "maxf": 10,
-            "qbound": 0.25,
-            "refpoint": [0, 0]
+            "qbound": 0.25
         },
         "objectives": [
             {
@@ -172,22 +172,32 @@ model_input = {
                     "col": [90, 90]
                 }
             },
-            # {
-            #     "type": "flux",
-            #     "package": "wel",
-            #     "summary_method": "mean",
-            #     "weight": -1,
-            #     "penalty_value": 999,
-            #     "location": {
-            #         "type": "bbox",
-            #         "ts": [0, 0],
-            #         "lay": [0, 0],
-            #         "row": [40, 50],
-            #         "col": [40, 50]
-            #     }
-            # }
+            {
+                "type": "flux",
+                "package": "wel",
+                "summary_method": "mean",
+                "weight": -1,
+                "penalty_value": 999,
+                "location": {
+                    "type": "object",
+                    "objects": [0, 1]
+                }
+            },
+            {
+                "type": "input_concentration",
+                "component": "component1",
+                "package": "wel",
+                "summary_method": "mean",
+                "weight": -1,
+                "penalty_value": 999,
+                "location": {
+                    "type": "object",
+                    "objects": [0]
+                }
+            }
+
         ],
-        "constrains": [
+        "constraints": [
             {
                 "type": "concentration",
                 "conc_file_name": "MT3D001.UCN",
@@ -208,57 +218,96 @@ model_input = {
                 "id": 0,
                 "type": "well",
                 "position": {
-                    "row": [30, 150],
-                    "col": [30, 150],
-                    "lay": [0, 0]
+                    "row": {
+                        "min": 30,
+                        "max": 150,
+                    },
+                    "col": {
+                        "min": 30,
+                        "max": 150,
+                    },
+                    "lay": {
+                        "min": 0,
+                        "max": 0,
+                    }
                 },
                 "flux": {
-                    "0": [720, 720]
+                    "0": {
+                        "min": 720,
+                        "max": 720
+                    }
                 },
                 "concentration": {
-                    "0": [[0, 0]]
+                    "0": {
+                        "component1": {
+                            "min": 0,
+                            "max": 0
+                        }
+                    }
                 }
             },
             {
                 "id": 1,
                 "type": "well",
                 "position": {
-                    "row": [30, 150],
-                    "col": [30, 150],
-                    "lay": [0, 0]
+                    "row": {
+                        "min": 30,
+                        "max": 150,
+                    },
+                    "col": {
+                        "min": 30,
+                        "max": 150,
+                    },
+                    "lay": {
+                        "min": 0,
+                        "max": 0,
+                    }
                 },
                 "flux": {
-                    "0": [720, 720]
+                    "0": {
+                        "min": 720,
+                        "max": 720
+                    }
                 },
                 "concentration": {
-                    "0": [[0, 0]]
+                    "0": {
+                        "component1": {
+                            "min": 0,
+                            "max": 0
+                        }
+                    }
                 }
             },
             {
                 "id": 2,
                 "type": "well",
                 "position": {
-                    "row": [30, 150],
-                    "col": [30, 150],
-                    "lay": [0, 0]
+                    "row": {
+                        "min": 30,
+                        "max": 150,
+                    },
+                    "col": {
+                        "min": 30,
+                        "max": 150,
+                    },
+                    "lay": {
+                        "min": 0,
+                        "max": 0,
+                    }
                 },
                 "flux": {
-                    "0": [720, 720]
+                    "0": {
+                        "min": 720,
+                        "max": 720
+                    }
                 },
                 "concentration": {
-                    "0": [[0, 0]]
-                }
-            },
-            {
-                "id": 3,
-                "type": "well",
-                "position": {
-                    "row": [109, 110],
-                    "col": [109, 110],
-                    "lay": [0, 0]
-                },
-                "flux": {
-                    "0": [-2160, -2160]
+                    "0": {
+                        "component1": {
+                            "min": 0,
+                            "max": 0
+                        }
+                    }
                 }
             }
         ]

@@ -1,11 +1,11 @@
+import os
 import random
 import json
+import uuid
 import numpy as np
-import scipy
-from multiprocessing import Pool, current_process
-# from mystic.solvers import fmin, NelderMeadSimplexSolver
-# from mystic.monitors import Monitor
-# from mystic.termination import CandidateRelativeTolerance as CRT
+from mystic.solvers import NelderMeadSimplexSolver
+from mystic.monitors import Monitor
+from mystic.termination import CandidateRelativeTolerance as CRT
 
 from sklearn.cluster import KMeans
 from deap import base
@@ -14,74 +14,296 @@ from deap import creator
 from deap import tools
 import copy
 import asyncio
+from aio_pika import connect_robust
+from aio_pika.patterns import RPC
+import pika
 
-from InowasOptimization.OptimizationObjects import OptWell
-from InowasOptimization.rabbitmq_evaluation_rcp_client import EvaluationRpcClient
+from SimulationRpcClient import SimulationRpcClient 
 
 
 class Optimization(object):
     """
-    Optimization class
+    Optimization algorithm class
 
     """
-    evaluation_rcp_client = EvaluationRpcClient
 
-    def __init__(self, request_data):
+    def __init__(self, request_data, response_channel, response_queue, data_folder, rabbit_host,
+                 rabbit_port, rabbit_vhost, rabbit_user, rabbit_password):
+
+        self.response_queue = response_queue
+        self.response_channel = response_channel
+        self.host = rabbit_host
+        self.port = int(rabbit_port)
+        self.login = rabbit_user
+        self.password = rabbit_password
+        self.virtualhost = rabbit_vhost
 
         self.request_data = request_data
-        self.objects, self.objects_map, self.bounds = self.read_optimitation_data(request_data["optimization"])
+
+        self.progress_log = []
+        self.hypervolume_ref_point = None
+        self.diversity_ref_point = None
+        
+        try:
+            self.optimization_id = self.request_data['optimization']['id']
+        except KeyError:
+            self.optimization_id = uuid.uuid4()
+
+        data_dir = os.path.join(
+            os.path.realpath(data_folder),
+            'optimization-data-'+str(self.optimization_id)
+        )
+        config_file = os.path.join(
+            data_dir,
+            'config.json'
+        )
+        
+        if not os.path.exists(data_dir):
+            os.makedirs(data_dir)
+
+        with open(config_file, 'w') as f:
+            json.dump(self.request_data, f)
+        
+        self.var_template = copy.deepcopy(self.request_data['optimization']['objects'])
+        
+        self.var_map, self.bounds = self.read_optimitation_data()
+    
+    def run_optimization(self):
+
+        if self.request_data['optimization']['parameters']['method'] == 'GA':
+            response = self.nsga_hybrid()
+            # result, result_log = self.nsga_hybrid()
+        
+        elif self.request_data['optimization']['parameters']['method'] == 'Simplex':
+            response = self.simplex()
+        
+        return response
+    
+    def simplex(self):
+        print('Start local optimization')
+        # Inverting weights (*-1) to convert problem to minimizing 
+        weights = [i["weight"]*-1 for i in self.request_data["optimization"]["objectives"]]
+        maxf = self.request_data['optimization']['parameters']['maxf']
+
+        stepmon = Monitor()
+        evalmon = Monitor()
+
+        solver = NelderMeadSimplexSolver(len(weights))
+        solver.SetInitialPoints(INITIAL_FITNESS)
+        solver.SetEvaluationMonitor(evalmon)
+        solver.SetGenerationMonitor(stepmon)
+        solver.SetStrictRanges([i[0] for i in self.bounds], [i[1] for i in self.bounds])
+        solver.SetEvaluationLimits(evaluations=MAXF)
+        solver.SetTermination(CRT(xtol=1e-4, ftol=1e-4))
+        solver.Solve(self.evaluate_single_solution, ExtraArgs={'weights': weights})
+        solver.enable_signal_handler()
+        
+        solution = solver.Solution()
+        solution_fitness = self.evaluate_single_solution(individual=solution)
+
+        response = self.make_simplex_response(
+            solution=solution,
+            fitness=solution_fitness,
+            evaluations=maxf
+        )
+
+    def make_simplex_response(self, solution, fitness, evaluations):
+        """
+        Generate response json of the NSGA algorithm
+        """
+        response = {}
+        response['solutions'] = [
+            {
+                'fitness': list(fitness),
+                'variables': list(solution),
+                'objects': self.apply_individual(solution)
+            }
+        ]
+        response['progess_log'] = self.progress_log
+        response['generation'] = evaluations
+        response['final'] = True
+        
+        response = json.dumps(response).encode()
+
+        self.response_channel.basic_publish(
+            exchange='',
+            routing_key=self.response_queue,
+            body=response,
+            properties=pika.BasicProperties(
+                delivery_mode=2  # make message persistent
+            )
+        )
+
+        return response
+
 
     def nsga_hybrid(self):
 
-        NGEN = self.request_data['optimization']['parameters']['ngen']
-        POP_SIZE = self.request_data['optimization']['parameters']['pop_size']
-        MUTPB = self.request_data['optimization']['parameters']['mutpb']
-        CXPB = self.request_data['optimization']['parameters']['cxpb']
-        MU = POP_SIZE
-        ETA = self.request_data['optimization']['parameters']['eta']
-        INDPB = self.request_data['optimization']['parameters']['indpb']
-        NCLS = self.request_data['optimization']['parameters']['ncls']
-        NLOCAL = self.request_data['optimization']['parameters']['nlocal']
-        QBOUND = self.request_data['optimization']['parameters']['qbound']
-        REFPOINT = self.request_data['optimization']['parameters']['refpoint']
-        MAXF = self.request_data['optimization']['parameters']['maxf']
+        ngen = self.request_data['optimization']['parameters']['ngen']
+        pop_size = self.request_data['optimization']['parameters']['pop_size']
+        mutpb = self.request_data['optimization']['parameters']['mutpb']
+        cxpb = self.request_data['optimization']['parameters']['cxpb']
+        mu = pop_size
+        eta = self.request_data['optimization']['parameters']['eta']
+        indpb = self.request_data['optimization']['parameters']['indpb']
+        ncls = self.request_data['optimization']['parameters']['ncls']
+        qbound = self.request_data['optimization']['parameters']['qbound']
+        # diversity_flg = self.request_data['optimization']['parameters']['diversity_flg']
+        diversity_flg = False
 
         creator.create(
-            "FitnessMulti", base.Fitness,
+            "Fitnessmulti", base.Fitness,
             weights=[i["weight"] for i in self.request_data["optimization"]["objectives"]]
         )
-        creator.create("Individual", list, fitness=creator.FitnessMulti)
-        toolbox = base.Toolbox()
-        toolbox.register("candidate", self.make_candidate, self.bounds)
-        # toolbox.register("evaluate", self.evaluate_async)
-        toolbox.register(
+        creator.create("Individual", list, fitness=creator.Fitnessmulti)
+        self.toolbox = base.Toolbox()
+        self.toolbox.register("candidate", self.make_candidate, self.bounds)
+        self.toolbox.register(
             "mutate", tools.mutPolynomialBounded,
             low=[i[0] for i in self.bounds], up=[i[1] for i in self.bounds],
-            eta=ETA, indpb=INDPB
+            eta=eta, indpb=indpb
         )
-        toolbox.register(
+        self.toolbox.register(
             "mate", tools.cxSimulatedBinaryBounded,
             low=[i[0] for i in self.bounds], up=[i[1] for i in self.bounds],
-            eta=ETA
+            eta=eta
         )
-        toolbox.register("individual", tools.initIterate, creator.Individual, toolbox.candidate)
-        toolbox.register("population", tools.initRepeat, list, toolbox.individual)
-        toolbox.register("select", tools.selNSGA2)
+        self.toolbox.register("individual", tools.initIterate, creator.Individual, self.toolbox.candidate)
+        self.toolbox.register("population", tools.initRepeat, list, self.toolbox.individual)
+        self.toolbox.register("select", tools.selNSGA2)
 
-        # stats paramters
-        stats = tools.Statistics(lambda ind: ind.fitness.values)
-        stats.register("avg", np.mean, axis=0)
-        stats.register("std", np.std, axis=0)
-        stats.register("min", np.min, axis=0)
-        stats.register("max", np.max, axis=0)
-        # stats.register("hypervolume", np.max, axis=0)
+        pop = self.toolbox.population(n=mu)
+        pop = self.evaluate_population(pop=pop)
+        # This is just to assign the crowding distance to the individuals
+        # no actual selection is done
+        pop = self.toolbox.select(pop, len(pop))
+        response = self.make_ga_response(pop=pop, generation=0, final=False)
+
+        # Begin the generational process
+        for gen in range(1, ngen):
+            offspring = self.generate_offspring(pop, cxpb, mutpb, mu)
+            offspring = self.evaluate_population(pop=offspring)
+            combined_pop = pop + offspring
+
+            if diversity_flg:
+                pop = self.check_diversity(combined_pop, ncls, qbound, mu)
+            else:
+                pop = self.toolbox.select(combined_pop, mu)
+    
+            print('Generating response for iteration No. {}'.format(gen))
+            response = self.make_ga_response(pop=pop, generation=gen, final=gen==ngen-1)
+
+        return response
+
+    def make_ga_response(self, pop, generation, final):
+        """
+        Generate response json of the NSGA algorithm
+        """
+        response = {}
+        response['solutions'] = []
+        for individual in pop:
+            response['solutions'].append(
+                {
+                    'fitness': list(individual.fitness.values),
+                    'variables': list(individual),
+                    'objects': self.apply_individual(individual)
+                }
+            )
+        response['progess_log'] = self.progress_log
+        response['generation'] = generation
+        response['final'] = final
         
-        logbook = tools.Logbook()
-        logbook.header = "gen", "evals", "std", "min", "avg", "max"
-        hypervolume_log = []
+        response = json.dumps(response).encode()
 
-        pop = toolbox.population(n=MU)
+        self.response_channel.basic_publish(
+            exchange='',
+            routing_key=self.response_queue,
+            body=response,
+            properties=pika.BasicProperties(
+                delivery_mode=2  # make message persistent
+            )
+        )
 
+        return response
+
+    def generate_offspring(self, pop, cxpb, mutpb, mu):
+        # Vary population. Taken from def varOr()
+        offspring = []
+        for _ in range(mu):
+            op_choice = random.random()
+            if op_choice < cxpb:            # Apply crossover
+                ind1, ind2 = map(self.toolbox.clone, random.sample(pop, 2))
+                ind1, ind2 = self.toolbox.mate(ind1, ind2)
+                del ind1.fitness.values
+                offspring.append(ind1)
+            elif op_choice < cxpb + mutpb:  # Apply mutation
+                ind = self.toolbox.clone(random.choice(pop))
+                ind, = self.toolbox.mutate(ind)
+                del ind.fitness.values
+                offspring.append(ind)
+            else:                           # Apply reproduction
+                offspring.append(random.choice(pop))
+        
+        return offspring
+    
+    def check_diversity(self, pop, ncls, qbound, mu):
+
+        Q_diversity, cluster_labels = self.project_and_cluster(n_clasters=ncls, pop=pop)
+        if self.diversity_ref_point is None:
+            self.diversity_ref_point = qbound * Q_diversity
+    
+        print('Performing clustering and diversity calculation...'.format(gen))
+        
+        if Q_diversity < Q_diversity_bound:
+            print(' Q diversity index {} lower than boundary {}. Diversity will be enhanced...'.format(
+                Q_diversity, self.diversity_ref_point
+            ))
+
+            pop = self.diversity_enhanced_selection(
+                pop=pop, cluster_labels=cluster_labels,
+                mu=mu, selection_method=self.toolbox.select
+            )
+        else:
+            pop = self.toolbox.select(pop, mu)
+        
+        self.diversity_ref_point = qbound * Q_diversity
+
+        return pop
+    
+    def calculate_hypervolume(self, pop):
+
+        print('Calculating hypervolume...')
+
+        if self.hypervolume_ref_point is None:
+            fitness_array = np.array([i.fitness.values for i in pop])
+            self.hypervolume_ref_point = np.max(fitness_array, 0)
+
+        hv = hypervolume(pop, ref=self.hypervolume_ref_point)
+        self.progress_log.append(hv)
+        print('Hypervolume of the generation: {}'.format(self.progress_log[-1]))
+    
+    def evaluate_single_solution(self, individual, weights=None):
+        """Returns scalar fitness if weghts, else vector fitness of a single individual"""
+        loop = asyncio.get_event_loop()
+
+        tasks = [
+            loop.create_task(
+                self.evaluate_async(individual, uuid.uuid4())
+                )
+        ]
+
+        fitnesses = loop.run_until_complete(asyncio.gather(*tasks))
+        fitness =fitness[0]
+        if weights is not None:
+            scalar_fitness = 0
+            for value, weight in zip(fitness, weights):
+                scalar_fitness += value * weight
+
+            return scalar_fitness
+        else:
+            return fitness
+
+    def evaluate_population(self, pop):
         # Create event loop
         loop = asyncio.get_event_loop()
 
@@ -90,224 +312,114 @@ class Optimization(object):
 
         tasks = [
             loop.create_task(
-                self.evaluate_async(loop, ind, 0, idx)
-                ) for idx, ind in enumerate(invalid_ind)
+                self.evaluate_async(ind, uuid.uuid4())
+                ) for ind in invalid_ind
         ]
 
         fitnesses = loop.run_until_complete(asyncio.gather(*tasks))
-        print(fitnesses)
 
         for ind, fit in zip(invalid_ind, fitnesses):
             ind.fitness.values = fit
-
-        # This is just to assign the crowding distance to the individuals
-        # no actual selection is done
-        pop = toolbox.select(pop, len(pop))
-        # Calculating initial diversity boundary
-        Q_diversity, cluster_labels = self.project_and_cluster(n_clasters=NCLS, pop=pop)
-        Q_diversity_bound = QBOUND * Q_diversity
         
-        record = stats.compile(pop)
-        logbook.record(gen=0, evals=len(invalid_ind), **record)
-        print(logbook.stream)
+        self.calculate_hypervolume(pop)
 
-        # Begin the generational process
-        for gen in range(1, NGEN):
-            # Vary population. From def varOr()
-            offspring = []
-            for _ in range(MU):
-                op_choice = random.random()
-                if op_choice < CXPB:            # Apply crossover
-                    ind1, ind2 = map(toolbox.clone, random.sample(pop, 2))
-                    try:
-                        ind1, ind2 = toolbox.mate(ind1, ind2)
-                    except TypeError:
-                        raise
-                    del ind1.fitness.values
-                    offspring.append(ind1)
-                elif op_choice < CXPB + MUTPB:  # Apply mutation
-                    ind = toolbox.clone(random.choice(pop))
-                    ind, = toolbox.mutate(ind)
-                    del ind.fitness.values
-                    offspring.append(ind)
-                else:                           # Apply reproduction
-                    offspring.append(random.choice(pop))
-
-            
-            # Evaluate the individuals with an invalid fitness
-            invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
-            # fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
-
-            tasks = [
-                loop.create_task(
-                    self.evaluate_async(loop, ind, gen, idx)
-                    ) for idx, ind in enumerate(invalid_ind)
-            ]
-
-            fitnesses = loop.run_until_complete(asyncio.gather(*tasks))
-            print(fitnesses)
-
-
-            for ind, fit in zip(invalid_ind, fitnesses):
-                ind.fitness.values = fit
-
-            combined_pop = pop + offspring
-            
-            print('Generation: {0}. Performing clustering and diversity evaluation...'.format(gen))
-            
-            # Check diversity and perform clustering
-            
-            Q_diversity, cluster_labels = self.project_and_cluster(n_clasters=NCLS, pop=combined_pop)
-            print('Generation: {0}. Q diversity index: {1}'.format(gen, Q_diversity))
-            
-            # Select the next generation population after checking diversity of the population
-          
-            if Q_diversity < Q_diversity_bound:
-                print('Generation: {0}. Q diversity index {1} lower than boundary {2}. Diversity will be enhanced...'.format(
-                    gen, Q_diversity, Q_diversity_bound
-                ))
-
-                pop = diversity_enhanced_selection(
-                    pop=combined_pop, cluster_labels=cluster_labels,
-                    mu=MU, selection_method=toolbox.select
-                )
-            else:
-                pop = toolbox.select(combined_pop, MU)
-            
-            Q_diversity_bound = QBOUND * Q_diversity
-
-            print('Generation: {0}. Calculating hypervolume...'.format(gen))
-            if gen == 1:
-                fitness_array = np.array([i.fitness.values for i in pop])
-                reference_point = np.max(fitness_array, 0)
-                print('Generation: {0}. Hypervolume reference point is {1}'.format(gen, reference_point))
-            hv = hypervolume(pop, ref=reference_point)
-            hypervolume_log.append(hv)
-            print('Generation: {0}. Hypervolume of the generation  {1}'.format(gen, hypervolume_log[-1]))
-            
-            record = stats.compile(pop)
-            logbook.record(gen=gen, evals=len(invalid_ind), **record)
-            print(logbook.stream)
-
-            # print('Generation: {0}. Performing local search...'.format(str(gen)))
-            # Perform local search
-            # pop = local_search_internal(
-            #     evaluate_func=evaluate,
-            #     scalar_func=scalarization,
-            #     pop=pop,
-            #     reference_point=REFPOINT,
-            #     bounds=BOUNDS, maxf=MAXF,
-            #     n_local=NLOCAL, cluster_labels=None
-            # )
-
-            print('Generation: {0}. Checkng termination criteria...'.format(gen))
-            # Check termination criteria
-            termination_criteria = False
-            if termination_criteria:
-                return pop, logbook, hypervolume_log
-        
-        return pop, logbook, hypervolume_log
+        return pop
     
-    async def evaluate_async(self, loop, individual, gen_id, ind_id):
+    async def evaluate_async(self, individual, simulation_id):
 
-        request_data_copy = copy.deepcopy(self.request_data)
-        individual = np.array(individual)
-        unique_objects = np.unique(self.objects_map)
+        objects_data = self.apply_individual(
+            individual = individual
+        )
 
-        for idx in unique_objects:
-            individual_idx = individual[self.objects_map == idx]
-            request_data_copy = self.objects[idx].update_data(request_data_copy, individual_idx)
-        
-        request_data_copy['gen_id'] = gen_id
-        request_data_copy['ind_id'] = ind_id
+        request_data = {
+            'simulation_id': simulation_id,
+            'objects_data': objects_data,
+            'optimization_id': self.optimization_id
+        }
 
         print(" [x] Requesting fitness for individual {}".format(individual))
-        client = self.evaluation_rcp_client(loop)
 
-        rpc = await client.connect()
-        response = await rpc.call(request_data_copy)
-        response = json.loads(response.decode())
+        connection = await connect_robust(
+            host=self.host,
+            port=self.port,
+            login=self.login,
+            password=self.password,
+            virtualhost=self.virtualhost
+        )
+        channel = await connection.channel()
+
+        rpc = await RPC.create(channel)
+
+        response = await rpc.proxy.process(content=request_data)
+
+        await connection.close()
 
         print(" [.] Received status code: {}, fitness: {}".format(response["status_code"], response["fitness"]))
 
         return tuple(response["fitness"])
 
-    # def evaluate(self, individual):
-    #     request_data_copy = copy.deepcopy(self.request_data)
-    #     individual = np.array(individual)
-    #     unique_objects = np.unique(self.objects_map)
-
-    #     for idx in unique_objects:
-    #         individual_idx = individual[self.objects_map == idx]
-    #         self.opt_objects[idx].update_packages(request_data_copy, individual_idx)
-
-    #     optimization_rpc = self.evaluation_rcp_client_class()
-    #     response = self.evaluation_rcp_client_object().call(request_data_copy)
-    #     response = json.loads(response)
-    #     fitness = response["fitness"]
-        
-    #     return tuple(fitness)
-
-    # def evaluate_pop(self, individuals):
-    #     request_data_copy = copy.deepcopy(self.request_data)
-    #     unique_objects = np.unique(self.objects_map)
-    #     requests = []
-
-    #     for ind in individuals:
-    #         individual = np.array(ind)
-
-    #         for idx in unique_objects:
-    #             individual_idx = individual[self.objects_map == idx]
-    #             self.opt_objects[idx].update_packages(request_data_copy, individual_idx)
-
-    #         optimization_rpc = self.evaluation_rcp_client_class()
-    #         response = self.evaluation_rcp_client_object().call(request_data_copy)
-    #         response = json.loads(response)
-    #         fitness = response["fitness"]
-        
-    #     return tuple(fitness)
-
-    @staticmethod
-    def read_optimitation_data(request_data):
-
-        objects = {}
-        objects_map = []
-        bounds = []
-
-        for obj in request_data['objects']:
-            for key, value in obj.items():
-                if key == 'position':
-                    for k, v in value.items():
-                        if k != 'multiplier':
-                            if v[0] != v[1]:
-                                bounds.append(
-                                    (v[0], v[1])
-                                )
-                                objects_map.append(obj['id'])
-
-                elif key == 'flux':
-                    for k, v in value.items():
-                        if k != 'multiplier':
-                            if v[0] != v[1]:
-                                bounds.append(
-                                    (v[0], v[1])
-                                )
-                                objects_map.append(obj['id'])
+    def apply_individual(self, individual):
+        """Write individual values to variable template and return the filled template"""    
+        for ind_value, keys in zip(individual, self.var_map):
+            if keys[1] == 'concentration':
+                for object_ in self.var_template:
+                    if object_['id'] == keys[0]:
+                        object_[keys[1]][keys[2]][keys[3]]['result'] = ind_value
+                        break
+            else:
+                for object_ in self.var_template:
+                    if object_['id'] == keys[0]:
+                        object_[keys[1]][keys[2]]['result'] = ind_value
+                        break
                     
-                elif key == 'concentration':
-                    for k, v in value.items():
-                        if k != 'multiplier':
-                            for i in v:
-                                if i[0] != i[1]:
-                                    bounds.append(
-                                        (i[0], i[1])
-                                    )
-                                    objects_map.append(obj['id'])
+        
+        return self.var_template
 
-            if obj['type'] == 'well':
-                objects[obj['id']] = OptWell(obj)
 
-        return objects, objects_map, bounds
+    def read_optimitation_data(self):
+        """
+        Example of variables template, where values are fixed ones and Nones are optimized:
+        
+        Example of variables map and variables boundries:
+        var_map = [(0, flux, 0), (0, concentration, 0),(0, position, row),(0, position, col)]
+        var_bounds = [(0, 10), (0, 1),(0, 30),(0, 30)]
+        """
+
+        var_map = []
+        var_bounds = []
+
+        for object_ in self.var_template:
+            for parameter, value in object_.items():
+                if parameter == 'position':
+                    for axis, axis_data in value.items():
+                        if axis_data['min'] != axis_data['max']:
+                            var_map.append((object_['id'], 'position', axis))
+                            var_bounds.append((axis_data['min'], axis_data['max']))
+                            object_['position'][axis]['result'] = None
+                        else:
+                            object_['position'][axis]['result'] = axis_data['min']
+
+                elif parameter == 'flux':
+                    for period, period_data in value.items():
+                        if period_data['min'] != period_data['max']:
+                            var_map.append((object_['id'], 'flux', period))
+                            var_bounds.append((period_data['min'], period_data['max']))
+                            object_['flux'][period]['result'] = None
+                        else:
+                            object_['flux'][period]['result'] = period_data['min']
+                
+                elif parameter == 'concentration':
+                    for period, period_data in value.items():
+                        for component, component_data in period_data.items():
+                            if component_data['min'] != component_data['max']:
+                                var_map.append((object_['id'], parameter, period, component))
+                                var_bounds.append((component_data['min'], component_data['max']))
+                                object_[parameter][period][component]['result'] = None
+                            else:
+                                object_[parameter][period][component]['result'] = component_data['min']
+                    
+
+        return var_map, var_bounds
 
     @staticmethod
     def make_candidate(bounds):
@@ -366,87 +478,6 @@ class Optimization(object):
             rank += 1
 
         return diverse_pop
-
-    @staticmethod
-    def local_search_internal(evaluate_func, scalar_func, pop, reference_point, bounds, maxf, n_local=1, cluster_labels=None):
-        # Local search algorithm SLSQP with Achievement Based Sclarization
-        fitness_array = np.array([i.fitness.values for i in pop])
-        z_max = np.max(fitness_array, 0)
-        z_min = np.min(fitness_array, 0)
-
-        def evaluate_func_scalar(individual, evaluate_func=evaluate_func, scalar_func=scalar_func, reference_point=reference_point, z_max=z_max, z_min=z_min):
-            fitness = evaluate_func(individual)
-            scalar_fitness = scalar_func(fitness, reference_point, z_max, z_min)
-            print('Individual: ')
-            print(str(individual))
-            print('Scalar fitness: ' + str(scalar_fitness))
-
-            return scalar_fitness
-
-        for _ in range(n_local):
-            random_individual = random.choice(pop)
-            initial_guess = random_individual[:]
-            print('Local Optimization: ')
-            print('Randomly selected individual: ' + str(random_individual))
-            print('Initial fitness: ' + str(random_individual.fitness.values))
-
-            stepmon = Monitor()
-            evalmon = Monitor()
-            solver = NelderMeadSimplexSolver(len(initial_guess))
-            solver.SetInitialPoints(initial_guess)
-            solver.SetEvaluationMonitor(evalmon)
-            solver.SetGenerationMonitor(stepmon)
-            solver.SetStrictRanges([i[0] for i in bounds], [i[1] for i in bounds])
-            solver.SetEvaluationLimits(evaluations=maxf)
-            solver.SetGenerationMonitor(stepmon)
-            solver.enable_signal_handler()
-            solver.SetTermination(CRT())
-            solver.enable_signal_handler()
-            solver.Solve(evaluate_func_scalar)
-            solution = solver.Solution()
-            print('Local Solution:')
-            print(solution)
-            # result = scipy.optimize.minimize(
-            #     fun=evaluate_func_scalar,
-            #     x0=initial_guess,
-            #     args=(evaluate_func, scalar_func, reference_point, z_max, z_min),
-            #     method='SLSQP',
-            #     bounds=bounds,
-            #     options={'disp': True, 'maxiter': 7, 'eps': 5}
-            # )
-
-            # result = scipy.optimize.minimize(
-            #     fun=evaluate_func_scalar,
-            #     x0=initial_guess,
-            #     args=(evaluate_func, scalar_func, reference_point, z_max, z_min),
-            #     method='L-BFGS-B',
-            #     bounds=bounds,
-            #     options={'disp': True, 'maxfun': maxf, 'eps': 1}
-            # )
-            # result = scipy.optimize.minimize(
-            #     fun=evaluate_func_scalar,
-            #     x0=initial_guess,
-            #     args=(evaluate_func, scalar_func, reference_point, z_max, z_min),
-            #     method='Nelder-Mead',
-            #     options={'disp': True, 'maxfev': maxf}
-            # )
-            # results = [float(i) for i in result.x]
-            # results_corrected = []
-            # for res, bound in zip(results, bounds):
-            #     if res > bound[1]:
-            #         results_corrected.append(bound[1])
-            #     elif res < bound[0]:
-            #         results_corrected.append(bound[0])
-            #     else:
-            #         results_corrected.append(res)
-
-            random_individual[:] = solution
-            random_individual.fitness.values = evaluate_func(random_individual)
-
-            print('Locally optimized individual: ' + str(random_individual))
-            print('Locally optimized fitness: ' + str(random_individual.fitness.values))
-
-        return pop
 
     @staticmethod
     def scalarization(fitness, reference_point, z_max, z_min):
