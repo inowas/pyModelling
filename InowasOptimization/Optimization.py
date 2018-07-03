@@ -15,7 +15,6 @@ from deap import tools
 import copy
 import pika
 
-# from SimulationRpcClient import SimulationRpcClient 
 class OptimizationBase(object):
     """
     Optimization algorithm class
@@ -60,8 +59,11 @@ class OptimizationBase(object):
             json.dump(self.request_data, f)
         
         self.var_template = copy.deepcopy(self.request_data['optimization']['objects'])
+
+        self.weights = [i["weight"] for i in self.request_data["optimization"]["objectives"]]
         
         self.var_map, self.bounds, self.initial_values = self.read_optimitation_data()
+
         # Rabbit stuf
         self.simulation_request_queue = simulation_request_queue
         self.simulation_response_queue = simulation_response_queue+str(self.optimization_id)
@@ -203,7 +205,7 @@ class NSGA(OptimizationBase):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self._hypervolume_ref_point = np.zeros((len(self.request_data["optimization"]["objectives"])))
+        self._hypervolume_ref_point = None
         self._diversity_ref_point = None
     
     def run(self):
@@ -222,7 +224,7 @@ class NSGA(OptimizationBase):
 
         creator.create(
             "Fitnessmulti", base.Fitness,
-            weights=[i["weight"] for i in self.request_data["optimization"]["objectives"]]
+            weights=self.weights
         )
         creator.create("Individual", list, fitness=creator.Fitnessmulti)
         self.toolbox = base.Toolbox()
@@ -246,7 +248,7 @@ class NSGA(OptimizationBase):
         # This is just to assign the crowding distance to the individuals
         # no actual selection is done
         pop = self.toolbox.select(pop, len(pop))
-        response = self.callback(pop=pop, final=False)
+        # response = self.callback(pop=pop, final=False)
 
         # Begin the generational process
         for gen in range(1, ngen):
@@ -347,11 +349,21 @@ class NSGA(OptimizationBase):
 
         print('Calculating hypervolume...')
 
-        # if self._hypervolume_ref_point is None:
-        #     fitness_array = np.array([i.fitness.values for i in pop])
-        #     self._hypervolume_ref_point = np.max(fitness_array, 0)
+        if self._hypervolume_ref_point is None:
+            print('Calculating hypervolume reference point...')
+            worst_values = []
+            fitness_array = np.array([i.fitness.values for i in pop])
+            maxs = np.max(fitness_array, 0)
+            mins = np.min(fitness_array, 0)
+            for i, weight in enumerate(self.weights):
+                if weight <= 0:
+                    worst_values.append(maxs[i])
+                else:
+                    worst_values.append(mins[i])
+            self._hypervolume_ref_point = np.array(worst_values)
 
-        hv = hypervolume(pop)
+
+        hv = hypervolume(pop, self._hypervolume_ref_point)
         self._progress_log.append(hv)
         print('Hypervolume of the generation: {}'.format(self._progress_log[-1]))
         
@@ -475,7 +487,7 @@ class NSGA(OptimizationBase):
     #     return scalar
 
 
-class NedlerMead(OptimizationBase):
+class NelderMead(OptimizationBase):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._best_scalar_fitness = None
@@ -484,8 +496,6 @@ class NedlerMead(OptimizationBase):
     
     def run(self):
         print('Start local optimization...')
-        # Inverting weights (*-1) to convert problem to minimizing 
-        weights = [i["weight"]*-1 for i in self.request_data["optimization"]["objectives"]]
         maxf = self.request_data['optimization']['parameters']['maxf']
         xtol = self.request_data['optimization']['parameters']['xtol']
         ftol = self.request_data['optimization']['parameters']['ftol']
@@ -497,10 +507,10 @@ class NedlerMead(OptimizationBase):
         solver.SetStrictRanges([i[0] for i in self.bounds], [i[1] for i in self.bounds])
         solver.SetEvaluationLimits(evaluations=maxf)
         solver.SetTermination(CRT(xtol=ftol, ftol=ftol))
-
+        # Inverting weights (*-1) to convert problem to minimizing 
         solver.Solve(
             self.evaluate_single_solution,
-            ExtraArgs=(weights),
+            ExtraArgs=([weight * -1 for weight in self.weights]),
             callback=self.callback
         )
         solver.enable_signal_handler()

@@ -4,7 +4,7 @@ import pika
 import warnings
 import json
 
-from Optimization import NSGA, NedlerMead
+from Optimization import NSGA, NelderMead
 
 
 DATA_FOLDER = os.environ['DATA_FOLDER']
@@ -64,7 +64,7 @@ def on_request(ch, method, props, body):
                 **kwargs
             )
         elif content['optimization']['parameters']['method'] == 'Simplex':
-            optimization = NedlerMead(
+            optimization = NelderMead(
                 **kwargs
             )
         optimization.run()
