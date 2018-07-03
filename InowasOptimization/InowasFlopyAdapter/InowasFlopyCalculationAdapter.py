@@ -107,7 +107,7 @@ class InowasFlopyCalculationAdapter:
         print('Run the %s model' % model)
         print(model.namefile)
         print(model.exe_name)
-        success, report = model.run_model(report=True)
+        success, report = model.run_model(report=True, silent=True)
         return ' \n'.join(str(e) for e in report + [success])
 
     def check_model(self):

@@ -7,7 +7,6 @@ RUN pip install numpy
 RUN pip install scipy
 RUN pip install flopy
 RUN pip install pika
-RUN pip install aio-pika
 RUN pip install mystic
 RUN pip install sklearn
 RUN pip install deap

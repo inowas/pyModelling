@@ -47,7 +47,7 @@ class OcAdapter:
             "cddnfm": None,
             "cboufm": None,
             "compact": True,
-            #"stress_period_data": None,
+            "stress_period_data": None,
             "extension": ['oc', 'hds', 'ddn', 'cbc'],
             "unitnumber": [14, 51, 52, 53]
         }

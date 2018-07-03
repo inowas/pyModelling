@@ -13,7 +13,7 @@ class Simulation(object):
         # Set model workspace
         self.model_ws = os.path.join(
             os.path.realpath(data_folder),
-            'optimization-data-'+str(optimization_id),
+            str(optimization_id),
             str(simulation_id)
         )
         print('Set model workspace to {}'.format(self.model_ws))
@@ -21,7 +21,7 @@ class Simulation(object):
         # Set configuration file name
         config_file = os.path.join(
             os.path.realpath(data_folder),
-            'optimization-data-'+str(optimization_id),
+            str(optimization_id),
             'config.json'
         )
         print('Reading configulation file {}'.format(config_file))
@@ -40,7 +40,7 @@ class Simulation(object):
         self.model_data['mf']['mf']['exe_name'] = self.model_data['mf']['mf']['exe_name']
     
         try:
-            self.model_data['mt']['mt']['modelname'] = 'mf'
+            self.model_data['mt']['mt']['modelname'] = 'mt'
             self.model_data['mt']['mt']['model_ws'] = self.model_ws
             self.model_data['mt']['mt']['exe_name'] = self.model_data['mt']['mt']['exe_name']
   
@@ -60,7 +60,7 @@ class Simulation(object):
             self.optimization_data, flopy_adapter
         )
 
-        print('Delete model files in: {}'.format(self.model_ws))
+        print('Deleting model files in: {}'.format(self.model_ws))
         shutil.rmtree(self.model_ws)
 
         return fitness.get_fitness()

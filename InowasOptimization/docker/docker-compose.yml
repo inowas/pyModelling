@@ -1,47 +1,41 @@
 version: "2.1"
 
 services:
-    rabbitmq:
-        image: rabbitmq:3.6-management
-        restart: always
-        environment:
-            RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-            RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
-            RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST}
-        volumes:
-            - rabbitmq-data:/var/lib/rabbitmq
-            - ./rabbitmq:/start
-        command: /start/init.sh
-        ports:
-            - 15672:15672 
-            - 5672:5672
-
     modflow-optimization:
         build: ./docker-optimization
         restart: always
-        entrypoint:
-          - /app/wait_for_rabbitmq.sh
+        environment:
+            DATA_FOLDER: /optimization_temp_data
+            HOST: sheep.rmq.cloudamqp.com
+            PORT: 5672
+            VIRTUAL_HOST: ylfqreqi
+            USER: ylfqreqi
+            PASSWORD: oe3Hqc_nPWomlp2eDnq5Chwtnfy3jnBk
+            REQUEST_QUEUE: optimization_request_queue
+            RESPONSE_QUEUE: optimization_response_queue
+            SIMULATION_REQUEST_QUEUE: simulation_request_queue
+            SIMULATION_RESPONSE_QUEUE: simulation_response_queue
         volumes:
-            - ${MODFLOW_DATA_FOLDER}:/data
-            - ${PYMODELLING_APP_PATH}:/pyModelling
+            - ../optimization_temp_data:/optimization_temp_data
+            - ../../InowasOptimization:/InowasOptimization
             - ./scripts:/app
-        command: python /pyModelling/InowasOptimization/OptimizationServer.py /data rabbitmq 5672 ${RABBITMQ_VHOST} ${RABBITMQ_USER} ${RABBITMQ_PASS} ${OPZIMIZATION_REQUEST_QUEUE} ${OPZIMIZATION_RESPONSE_QUEUE} ${SIMULATION_RPC_QUEUE}
-        links:
-          - rabbitmq
+        command: python /InowasOptimization/OptimizationServer.py
 
     modflow-optimization-simulation:
         build: ./docker-simulation
         restart: always
-        entrypoint:
-          - /app/wait_for_rabbitmq.sh
+        environment:
+            DATA_FOLDER: /optimization_temp_data
+            HOST: sheep.rmq.cloudamqp.com
+            PORT: 5672
+            VIRTUAL_HOST: ylfqreqi
+            USER: ylfqreqi
+            PASSWORD: oe3Hqc_nPWomlp2eDnq5Chwtnfy3jnBk
+            REQUEST_QUEUE: simulation_request_queue
+            RESPONSE_QUEUE: simulation_response_queue
         volumes:
-            - ${MODFLOW_DATA_FOLDER}:/data
-            - ${PYMODELLING_APP_PATH}:/pyModelling
+            - ../optimization_temp_data:/optimization_temp_data
+            - ../../InowasOptimization:/InowasOptimization
             - ./scripts:/app
-        command: python /pyModelling/InowasOptimization/SimulationRpcServer.py /data rabbitmq 5672 ${RABBITMQ_VHOST} ${RABBITMQ_USER} ${RABBITMQ_PASS}
-        links:
-          - rabbitmq
+        command: python /InowasOptimization/SimulationServer.py
 
-volumes:
-    rabbitmq-data:
-        driver: local

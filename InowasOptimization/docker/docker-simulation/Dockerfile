@@ -6,7 +6,6 @@ RUN apt-get update \
 RUN pip install numpy
 RUN pip install scipy
 RUN pip install flopy
-RUN pip install aio-pika
 
 # installing pymake
 RUN pip3 install https://github.com/modflowpy/pymake/zipball/master
