@@ -1,11 +1,11 @@
 FROM python:3.6-jessie
 
 RUN apt-get update \
-    && apt-get install -y netcat g++ gfortran netcat wget unzip make
+    && apt-get install -y g++ gfortran netcat wget unzip make
 
-RUN pip install numpy
-RUN pip install scipy
-RUN pip install flopy
+RUN pip install numpy \
+    && pip install scipy \
+    && pip install flopy
 
 # installing pymake
 RUN pip3 install https://github.com/modflowpy/pymake/zipball/master
