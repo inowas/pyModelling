@@ -248,11 +248,18 @@ class NSGA(OptimizationBase):
         # This is just to assign the crowding distance to the individuals
         # no actual selection is done
         pop = self.toolbox.select(pop, len(pop))
-        # response = self.callback(pop=pop, final=False)
+        self.calculate_hypervolume(pop)
+        print('Generating response for iteration No. {}'.format(0))
+        self.callback(pop=pop, final=False)
 
         # Begin the generational process
         for gen in range(1, ngen):
-            offspring = self.generate_offspring(pop, cxpb, mutpb, mu)
+            offspring = self.generate_offspring(
+                pop=pop,
+                cxpb=cxpb,
+                mutpb=mutpb,
+                lambda_=mu
+            )
             offspring = self.evaluate_population(pop=offspring)
             combined_pop = pop + offspring
 
@@ -262,9 +269,8 @@ class NSGA(OptimizationBase):
                 pop = self.toolbox.select(combined_pop, mu)
     
             self.calculate_hypervolume(pop)
-    
             print('Generating response for iteration No. {}'.format(gen))
-            response = self.callback(pop=pop, final=gen==ngen-1)
+            self.callback(pop=pop, final=gen==ngen-1)
 
         return
 
@@ -299,12 +305,12 @@ class NSGA(OptimizationBase):
             )
         )
 
-        return response
+        return
 
-    def generate_offspring(self, pop, cxpb, mutpb, mu):
+    def generate_offspring(self, pop, cxpb, mutpb, lambda_):
         # Vary population. Taken from def varOr()
         offspring = []
-        for _ in range(mu):
+        for _ in range(lambda_):
             op_choice = random.random()
             if op_choice < cxpb:            # Apply crossover
                 ind1, ind2 = map(self.toolbox.clone, random.sample(pop, 2))
