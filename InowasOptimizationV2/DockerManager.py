@@ -7,10 +7,11 @@ class DockerManager(object):
 
     volumes = {
         os.path.realpath('./optimization_temp_data'): {'bind': '/optimization_temp_data', 'mode': 'rw'},
-        os.path.realpath('../InowasOptimization'): {'bind': '/InowasOptimization', 'mode': 'rw'}
+        os.path.realpath('./Optimization'): {'bind': '/Optimization', 'mode': 'rw'},
+        os.path.realpath('./Simulation'): {'bind': '/Simulation', 'mode': 'rw'}
     }
-    simulation_server_command = 'python /InowasOptimization/SimulationServer.py'
-    optimization_server_command = 'python /InowasOptimization/OptimizationServer.py'
+    simulation_server_command = 'python /Simulation/SimulationServer.py'
+    optimization_server_command = 'python /Optimization/OptimizationManager.py'
 
     def __init__(self, environment):
         self.environment = environment
@@ -43,27 +44,29 @@ class DockerManager(object):
         containers = self.get_containers('optimization', status)
         return len(containers)
     
-    def run_optimization_container(self):
-        container = self.client.containers.run(
-            self.optimization_image,
-            command=self.optimization_server_command,
-            environment=self.environment,
-            volumes=self.volumes,
-            detach=True
-        )
-        self.optimization_containers.append(container)
-        return container.id
+    def run_optimization_container(self, number):
+        for _ in range(number):
+            container = self.client.containers.run(
+                self.optimization_image,
+                command=self.optimization_server_command,
+                environment=self.environment,
+                volumes=self.volumes,
+                detach=True
+            )
+            self.optimization_containers.append(container)
+        return
 
-    def run_simulation_container(self):
-        container = self.client.containers.run(
-            self.simulation_image,
-            command=self.simulation_server_command,
-            environment=self.environment,
-            volumes=self.volumes,
-            detach=True
-        )
-        self.simulation_containers.append(container)
-        return container.id
+    def run_simulation_container(self, number):
+        for _ in range(number):
+            container = self.client.containers.run(
+                self.simulation_image,
+                command=self.simulation_server_command,
+                environment=self.environment,
+                volumes=self.volumes,
+                detach=True
+            )
+            self.simulation_containers.append(container)
+        
     
     def stop_all_simulation_containers(self, remove=True):
         containers = self.get_containers('simulation', 'running')
@@ -105,6 +108,15 @@ class DockerManager(object):
                 self.remove_container(container)
 
         return
+    
+    def remove_exited_containers(self):
+        containers = self.client.containers.list(
+            filters={
+                'status': 'exited'
+            }
+        )
+        for container in containers:
+            container.remove()
 
     
     def clean(self):

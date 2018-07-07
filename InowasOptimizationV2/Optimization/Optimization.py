@@ -21,9 +21,10 @@ class OptimizationBase(object):
 
     """
 
-    def __init__(self, request_data, response_channel, response_queue, rabbit_host,
+    def __init__(self, optimization_id, request_data, response_channel, response_queue, rabbit_host,
                  rabbit_port, rabbit_vhost, rabbit_user, rabbit_password, simulation_request_queue, simulation_response_queue):
 
+        self.optimization_id = optimization_id
         self.response_queue = response_queue
         self.response_channel = response_channel
         self.host = rabbit_host
@@ -44,8 +45,8 @@ class OptimizationBase(object):
         self.var_map, self.bounds, self.initial_values = self.read_optimitation_data()
 
         # Rabbit stuf
-        self.simulation_request_queue = simulation_request_queue
-        self.simulation_response_queue = simulation_response_queue+str(self.optimization_id)
+        self.simulation_request_queue = simulation_request_queue+self.optimization_id
+        self.simulation_response_queue = simulation_response_queue+self.optimization_id
 
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(
@@ -60,8 +61,7 @@ class OptimizationBase(object):
         print('Declaring simulation request queue: '+self.simulation_request_queue)
         self.simulation_request_channel.queue_declare(
             queue=self.simulation_request_queue,
-            durable=True,
-            auto_delete=False
+            durable=True
         )
         
         self.simulation_response_channel = self.connection.channel()
@@ -72,20 +72,50 @@ class OptimizationBase(object):
         )
     
     def clean(self):
-        print('Deleting simulation response queue...')
-        self.simulation_response_channel.queue_delete(
-            self.simulation_response_queue
-        )
-        print('Closing connection...')
-        self.connection.close()
+        try:
+            print('Sinding Stop commands to the workers...')
+            self.simulation_request_channel.basic_publish(
+                exchange='',
+                routing_key=self.simulation_request_queue,
+                body = json.dumps({"time_to_die": True}).encode(),
+                properties=pika.BasicProperties(
+                    delivery_mode=2  # make message persistent
+                )
+            )
+        except:
+            pass
+        try:
+            print('Deleting simulation queues...')
+            self.simulation_request_channel.queue_delete(
+                queue=self.simulation_request_queue
+            )
+            self.simulation_response_channel.queue_delete(
+                queue=self.simulation_response_queue
+            )
+        
+        except:
+            pass
+        
+        try:
+            print('Closing connection...')
+            self.connection.close()
+        except:
+            pass
+        
+        try:
+            print('Deleting optimization temp folder...')
+            shutil.rmtree(
+                os.path.join(
+                    os.path.realpath(os.environ['TEMP_FOLDER']),
+                    os.environ['OPTIMIZATION_ID']
+                )
+            )
+        except:
+            pass
 
-        print('Deleting optimization temp folder...')
-        shutil.rmtree(self.data_dir)
+    def publish_simulation_job(self, individual, ind_id):
 
-
-    def send_simulation_jobs(self, individual, ind_id):
-
-        print(" [x] Requesting fitness for individual {}".format(individual))
+        print(" Requesting fitness for individual {}".format(individual))
         print(" Publishing simulation job for individual {} to the queue: {}"\
         .format(individual, self.simulation_request_queue))
 
@@ -106,7 +136,7 @@ class OptimizationBase(object):
             routing_key=self.simulation_request_queue,
             body=request_data,
             properties=pika.BasicProperties(
-                delivery_mode=2  # make message persistent
+                delivery_mode=2
             )
         )
         return
@@ -356,18 +386,20 @@ class NSGA(OptimizationBase):
     def evaluate_population(self, pop):
 
         invalid_ind = [ind for ind in pop if not ind.fitness.valid]
-        print('Initial fitnesses:')
-        print([ind.fitness.values for ind in pop])
 
         results = {}
         for _id, ind in enumerate(invalid_ind):
-            self.send_simulation_jobs(
+            self.publish_simulation_job(
                 ind, _id
             )
 
         consumer_tag = str(uuid.uuid4())
         def consumer_callback(channel, method, properties, body):
+            channel.basic_ack(delivery_tag = method.delivery_tag)
             content = json.loads(body.decode())
+            if content['status_code'] == '500':
+                raise Exception('Error during simulation occured. Returned 500 status code')
+    
             results[content['ind_id']] = content['fitness']
             if len(results) == len(invalid_ind):
                 print('Fetched all results from the simulation response queue: '+self.simulation_response_queue)
@@ -380,17 +412,12 @@ class NSGA(OptimizationBase):
         self.simulation_response_channel.basic_consume(
             consumer_callback=consumer_callback,
             queue=self.simulation_response_queue,
-            no_ack=True,
-            exclusive=False,
             consumer_tag=consumer_tag
         )
         self.simulation_response_channel.start_consuming()
 
         for _id, ind in enumerate(invalid_ind):
             ind.fitness.values = results[_id]
-
-        print('Result fitnesses:')
-        print([ind.fitness.values for ind in pop])
 
         return pop
     
@@ -544,14 +571,20 @@ class NelderMead(OptimizationBase):
     def evaluate_single_solution(self, individual, *weights):
         """Returns scalar fitness if weghts, else vector fitness of a single individual"""
 
-        self.send_simulation_jobs(individual, 0)
+        self.publish_simulation_job(individual, 0)
 
         fitness = []
         consumer_tag = str(uuid.uuid4())
         def consumer_callback(channel, method, properties, body):
+            channel.basic_ack(delivery_tag = method.delivery_tag)
             content = json.loads(body.decode())
+            
+            if content['status_code'] == '500':
+                raise Exception('Error during simulation occured. Returned 500 status code')
+    
             for i in content['fitness']:
                 fitness.append(i)
+
             print('Fetched result from the simulation response queue: '+self.simulation_response_queue)
             self.simulation_response_channel.basic_cancel(
                 consumer_tag=consumer_tag
@@ -562,8 +595,6 @@ class NelderMead(OptimizationBase):
         self.simulation_response_channel.basic_consume(
             consumer_callback=consumer_callback,
             queue=self.simulation_response_queue,
-            no_ack=True,
-            exclusive=False,
             consumer_tag=consumer_tag
         )
         self.simulation_response_channel.start_consuming()
