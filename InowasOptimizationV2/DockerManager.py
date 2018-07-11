@@ -2,23 +2,24 @@ import docker
 import os
 
 class DockerManager(object):
-    optimization_image = 'aybulat/modflow-optimization'
-    simulation_image = 'aybulat/modflow-simulation'
+    
+    _simulation_server_command = 'python /Simulation/SimulationServer.py'
+    _optimization_server_command = 'python /Optimization/OptimizationManager.py'
 
-    volumes = {
-        os.path.realpath('./optimization_temp_data'): {'bind': '/optimization_temp_data', 'mode': 'rw'},
-        os.path.realpath('./Optimization'): {'bind': '/Optimization', 'mode': 'rw'},
-        os.path.realpath('./Simulation'): {'bind': '/Simulation', 'mode': 'rw'}
-    }
-    simulation_server_command = 'python /Simulation/SimulationServer.py'
-    optimization_server_command = 'python /Optimization/OptimizationManager.py'
-
-    def __init__(self, environment):
-        self.environment = environment
+    def __init__(self, configuration):
+        self.configuration = configuration
         self.client = docker.from_env()
         self.optimization_containers = []
         self.simulation_containers = []
+
+        self.optimization_image = self.configuration['OPTIMIZATION_IMAGE']
+        self.simulation_image = self.configuration['SIMULATION_IMAGE']
     
+        self.volumes = {
+            os.path.realpath(self.configuration['HOST_TEMP_FOLDER']): {'bind': self.configuration['DOCKER_TEMP_FOLDER'], 'mode': 'rw'},
+            os.path.realpath('./Optimization'): {'bind': '/Optimization', 'mode': 'rw'},
+            os.path.realpath('./Simulation'): {'bind': '/Simulation', 'mode': 'rw'}
+        }
     def get_containers(self, container_type, status='running'):
         if container_type == 'optimization':
             image = self.optimization_image
@@ -48,8 +49,8 @@ class DockerManager(object):
         for _ in range(number):
             container = self.client.containers.run(
                 self.optimization_image,
-                command=self.optimization_server_command,
-                environment=self.environment,
+                command=self._optimization_server_command,
+                environment=self.configuration,
                 volumes=self.volumes,
                 detach=True
             )
@@ -60,8 +61,8 @@ class DockerManager(object):
         for _ in range(number):
             container = self.client.containers.run(
                 self.simulation_image,
-                command=self.simulation_server_command,
-                environment=self.environment,
+                command=self._simulation_server_command,
+                environment=self.configuration,
                 volumes=self.volumes,
                 detach=True
             )

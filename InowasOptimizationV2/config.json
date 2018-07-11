@@ -2,7 +2,7 @@
     "HTTP_PROXY": "http://172.22.1.3:3128",
     "HTTPS_PROXY": "http://172.22.1.3:3128",
     "HOST_TEMP_FOLDER": "./optimization_temp_data",
-    "DOCKER_TEMP_FOLDER": "./optimization_temp_data",
+    "DOCKER_TEMP_FOLDER": "/optimization_temp_data",
     "MODEL_FILE_NAME": "model_config.json",
     "RABBITMQ_HOST": "sheep.rmq.cloudamqp.com",
     "RABBITMQ_PORT": "5672",
@@ -13,5 +13,7 @@
     "RESPONSE_QUEUE": "optimization_response_queue",
     "SIMULATION_REQUEST_QUEUE": "simulation_request_queue",
     "SIMULATION_RESPONSE_QUEUE": "simulation_response_queue",
-    "NUM_SOLVERS_GA": 2
+    "NUM_SOLVERS_GA": 2,
+    "OPTIMIZATION_IMAGE": "aybulat/modflow-optimization",
+    "SIMULATION_IMAGE": "aybulat/modflow-simulation"
 }
