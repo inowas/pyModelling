@@ -26,7 +26,6 @@ class Server(object):
                 host=self.configuration['RABBITMQ_HOST'],
                 port=int(self.configuration['RABBITMQ_PORT']),
                 virtual_host=self.configuration['RABBITMQ_VIRTUAL_HOST'],
-                socket_timeout=5,
                 credentials=pika.PlainCredentials(
                     self.configuration['RABBITMQ_USER'], self.configuration['RABBITMQ_PASSWORD']
                 )
