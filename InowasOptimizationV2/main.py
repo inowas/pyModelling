@@ -8,23 +8,14 @@ from DockerManager import DockerManager
 
 
 class Server(object):
-    host_temp_folder = './optimization_temp_data'
-    solvers_per_ga_job = 2
-    solvers_per_simplex_job = 1
-    configuration = {
-        'TEMP_FOLDER': './optimization_temp_data',
-        'CONFIG_FILE_NAME': 'config.json',
-        'HOST': 'sheep.rmq.cloudamqp.com',
-        'PORT': '5672',
-        'VIRTUAL_HOST': 'ylfqreqi',
-        'USER': 'ylfqreqi',
-        'PASSWORD': 'oe3Hqc_nPWomlp2eDnq5Chwtnfy3jnBk',
-        'REQUEST_QUEUE': 'optimization_request_queue',
-        'RESPONSE_QUEUE': 'optimization_response_queue',
-        'SIMULATION_REQUEST_QUEUE': 'simulation_request_queue',
-        'SIMULATION_RESPONSE_QUEUE': 'simulation_response_queue',
-    }
+
     def __init__(self):
+        try:
+            with open('./config.json') as f:
+                self.configuration = json.load(f)
+        except:
+            print('ERROR: Could not load configuration from config.json file')
+
         self.docker_manager = DockerManager(self.configuration)
         self.request_channel = None
         self.response_channel = None
@@ -32,11 +23,11 @@ class Server(object):
     def connect(self):
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(
-                host=self.configuration['HOST'],
-                port=int(self.configuration['PORT']),
-                virtual_host=self.configuration['VIRTUAL_HOST'],
+                host=self.configuration['RABBITMQ_HOST'],
+                port=int(self.configuration['RABBITMQ_PORT']),
+                virtual_host=self.configuration['RABBITMQ_VIRTUAL_HOST'],
                 credentials=pika.PlainCredentials(
-                    self.configuration['USER'], self.configuration['PASSWORD']
+                    self.configuration['RABBITMQ_USER'], self.configuration['RABBITMQ_PASSWORD']
                 ),
                 heartbeat_interval=0
             )
@@ -80,19 +71,14 @@ class Server(object):
 
         optimization_id = str(uuid.uuid4())
         self.configuration['OPTIMIZATION_ID'] = optimization_id
-        
-        solvers_per_job = self.solvers_per_simplex_job
-        if content['optimization']['parameters']['method'] == 'GA':
-            solvers_per_job = self.solvers_per_ga_job
-        
 
         data_dir = os.path.join(
-            os.path.realpath(self.host_temp_folder),
+            os.path.realpath(self.configuration['HOST_TEMP_FOLDER']),
             str(optimization_id)
         )
         config_file = os.path.join(
             data_dir,
-            self.configuration['CONFIG_FILE_NAME']
+            self.configuration['MODEL_FILE_NAME']
         )
 
         if not os.path.exists(data_dir):
@@ -100,6 +86,10 @@ class Server(object):
 
         with open(config_file, 'w') as f:
             json.dump(content, f)
+        
+        solvers_per_job = 1
+        if content['optimization']['parameters']['method'] == 'GA':
+            solvers_per_job = self.configuration['NUM_SOLVERS_GA']
 
         print(' [.] Accepted Optimization request. \
         Starting 1 Optimization and {} Simulation containers.'\

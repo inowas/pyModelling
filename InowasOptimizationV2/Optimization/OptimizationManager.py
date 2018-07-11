@@ -11,11 +11,11 @@ class OptimizationManager(object):
     def __init__(self):
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(
-                host=os.environ['HOST'],
-                port=int(os.environ['PORT']),
-                virtual_host=os.environ['VIRTUAL_HOST'],
+                host=os.environ['RABBITMQ_HOST'],
+                port=int(os.environ['RABBITMQ_PORT']),
+                virtual_host=os.environ['RABBITMQ_VIRTUAL_HOST'],
                 credentials=pika.PlainCredentials(
-                    os.environ['USER'], os.environ['PASSWORD']
+                    os.environ['RABBITMQ_USER'], os.environ['RABBITMQ_PASSWORD']
                 ),
                 heartbeat_interval=0
             )
@@ -48,9 +48,9 @@ class OptimizationManager(object):
     def run(self):
 
         config_file = os.path.join(
-            os.path.realpath(os.environ['TEMP_FOLDER']),
+            os.path.realpath(os.environ['DOCKER_TEMP_FOLDER']),
             os.environ['OPTIMIZATION_ID'],
-            os.environ['CONFIG_FILE_NAME']
+            os.environ['MODEL_FILE_NAME']
         )
 
         with open(config_file) as f:
@@ -61,11 +61,11 @@ class OptimizationManager(object):
             'request_data': content,
             'response_channel': self.response_channel,
             'response_queue': os.environ['RESPONSE_QUEUE'],
-            'rabbit_host': os.environ['HOST'], 
-            'rabbit_port': os.environ['PORT'],
-            'rabbit_vhost': os.environ['VIRTUAL_HOST'],
-            'rabbit_user': os.environ['USER'],
-            'rabbit_password': os.environ['PASSWORD'],
+            'rabbit_host': os.environ['RABBITMQ_HOST'], 
+            'rabbit_port': os.environ['RABBITMQ_PORT'],
+            'rabbit_vhost': os.environ['RABBITMQ_VIRTUAL_HOST'],
+            'rabbit_user': os.environ['RABBITMQ_USER'],
+            'rabbit_password': os.environ['RABBITMQ_PASSWORD'],
             'simulation_request_queue': os.environ['SIMULATION_REQUEST_QUEUE'],
             'simulation_response_queue': os.environ['SIMULATION_RESPONSE_QUEUE']
         }

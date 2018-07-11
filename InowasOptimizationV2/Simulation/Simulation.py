@@ -12,7 +12,7 @@ class Simulation(object):
     def __init__(self, simulation_id):
         # Set model workspace
         self.model_ws = os.path.join(
-            os.path.realpath(os.environ['TEMP_FOLDER']),
+            os.path.realpath(os.environ['DOCKER_TEMP_FOLDER']),
             os.environ['OPTIMIZATION_ID'],
             simulation_id
         )
@@ -20,9 +20,9 @@ class Simulation(object):
         
         # Set configuration file name
         config_file = os.path.join(
-            os.path.realpath(os.environ['TEMP_FOLDER']),
+            os.path.realpath(os.environ['DOCKER_TEMP_FOLDER']),
             os.environ['OPTIMIZATION_ID'],
-            os.environ['CONFIG_FILE_NAME']
+            os.environ['MODEL_FILE_NAME']
         )
 
         print('Reading configulation file {}'.format(config_file))

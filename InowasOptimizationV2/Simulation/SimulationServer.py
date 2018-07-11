@@ -24,10 +24,10 @@ class SimulationServer(object):
     def connect(self):
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(
-                host=os.environ['HOST'],
-                port=int(os.environ['PORT']),
-                virtual_host=os.environ['VIRTUAL_HOST'],
-                credentials=pika.PlainCredentials(os.environ['USER'], os.environ['PASSWORD'])
+                host=os.environ['RABBITMQ_HOST'],
+                port=int(os.environ['RABBITMQ_PORT']),
+                virtual_host=os.environ['RABBITMQ_VIRTUAL_HOST'],
+                credentials=pika.PlainCredentials(os.environ['RABBITMQ_USER'], os.environ['RABBITMQ_PASSWORD'])
             )
         )
         self.request_channel = self.connection.channel()
