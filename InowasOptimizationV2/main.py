@@ -28,7 +28,8 @@ class Server(object):
                 virtual_host=self.configuration['RABBITMQ_VIRTUAL_HOST'],
                 credentials=pika.PlainCredentials(
                     self.configuration['RABBITMQ_USER'], self.configuration['RABBITMQ_PASSWORD']
-                )
+                ),
+                heartbeat_interval=0
             )
         )
 
