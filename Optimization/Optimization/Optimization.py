@@ -36,7 +36,11 @@ class OptimizationBase(object):
         
         self._progress_log = []
         self._iter_count = 0
-
+        self._iter_total = 0
+        if self.request_data['optimization']['parameters']['method'] == 'GA':
+            self._iter_total = self.request_data['optimization']['parameters']['pop_size']
+        elif self.request_data['optimization']['parameters']['method'] == 'Simplex':
+            self._iter_total = self.request_data['optimization']['parameters']['maxf']
         
         self.var_template = copy.deepcopy(self.request_data['optimization']['objects'])
 
@@ -286,11 +290,43 @@ class NSGA(OptimizationBase):
     def callback(self, pop, final, status_code=200):
         """
         Generate response json of the NSGA algorithm
+        exmple of response
+        response = {
+            status_code: 200,
+            solutions: [
+                {
+                    fitness: [1.0, 2.0],
+                    variables: [1,2,3,1,2,3...],
+                    objects: [
+                        {
+                            id: 1,
+                            lay: {
+                                "min": 0,
+                                "max": 5,
+                                "result: 3
+                            },
+                            row... etc.
+                            
+                        },
+                        .....
+                    ]
+                },
+                .....
+            ],
+            progress: {
+                progress_log: [1,2,3...],
+                iteration: 30,
+                iteration_total: 30,
+                final: true
+            }
+            
+        }
         """
         self._iter_count += 1
         response = {}
         response['status_code'] = status_code
         response['solutions'] = []
+        response['progress'] = {}
         for individual in pop:
             response['solutions'].append(
                 {
@@ -299,9 +335,11 @@ class NSGA(OptimizationBase):
                     'objects': self.apply_individual(individual)
                 }
             )
-        response['progess_log'] = self._progress_log
-        response['iteration'] = self._iter_count
-        response['final'] = final
+        
+        response['progress']['progess_log'] = self._progress_log
+        response['progress']['iteration'] = self._iter_count
+        response['progress']['iteration_total'] = self._iter_total
+        response['progress']['final'] = final
         
         response = json.dumps(response).encode()
 
@@ -544,6 +582,7 @@ class NelderMead(OptimizationBase):
 
         response = {}
         response['status_code'] = status_code
+        response['progress'] = {}
         response['solutions'] = [
             {
                 'fitness': list(self._best_fitness),
@@ -551,9 +590,10 @@ class NelderMead(OptimizationBase):
                 'objects': self.apply_individual(self._best_individual)
             }
         ]
-        response['progess_log'] = self._progress_log
-        response['iteration'] = self._iter_count
-        response['final'] = final
+        response['progress']['progess_log'] = self._progress_log
+        response['progress']['iteration'] = self._iter_count
+        response['progress']['iteration_total'] = self._iter_total
+        response['progress']['final'] = final
         
         response = json.dumps(response).encode()
 
