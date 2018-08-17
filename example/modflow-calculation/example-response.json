@@ -1,0 +1,40 @@
+{
+  "status_code": "200",
+  "model_id": "f0d9e967-de87-4ec2-8e3f-559893b65071",
+  "calculation_id": "71e880a68b2c55610f7687fb7e7e988c",
+  "message": " \n                                  MODFLOW-NWT-SWR1  \n    U.S. GEOLOGICAL SURVEY MODULAR FINITE-DIFFERENCE GROUNDWATER-FLOW MODEL \n                             WITH NEWTON FORMULATION \n                             Version 1.1.2, 9/15/2016                         \n                    BASED ON MODFLOW-2005 Version 1.11.0 08/08/2013                        \n \n                    SWR1 Version 1.04.0 09/15/2016                        \n \n Using NAME file: 71e880a68b2c55610f7687fb7e7e988c.nam  \n Run start date and time (yyyy/mm/dd hh:mm:ss): 2018/08/17  8:27:37 \n \n Solving:  Stress period:     1    Time step:     1    Groundwater-Flow Eqn. \n Solving:  Stress period:     2    Time step:     1    Groundwater-Flow Eqn. \n Solving:  Stress period:     3    Time step:     1    Groundwater-Flow Eqn. \n Solving:  Stress period:     4    Time step:     1    Groundwater-Flow Eqn. \n Solving:  Stress period:     5    Time step:     1    Groundwater-Flow Eqn. \n Solving:  Stress period:     6    Time step:     1    Groundwater-Flow Eqn. \n Solving:  Stress period:     7    Time step:     1    Groundwater-Flow Eqn. \n Solving:  Stress period:     8    Time step:     1    Groundwater-Flow Eqn. \n Solving:  Stress period:     9    Time step:     1    Groundwater-Flow Eqn. \n Solving:  Stress period:    10    Time step:     1    Groundwater-Flow Eqn. \n Solving:  Stress period:    11    Time step:     1    Groundwater-Flow Eqn. \n Solving:  Stress period:    12    Time step:     1    Groundwater-Flow Eqn. \n Solving:  Stress period:    13    Time step:     1    Groundwater-Flow Eqn. \n Run end date and time (yyyy/mm/dd hh:mm:ss): 2018/08/17  8:27:37 \n Elapsed run time:  0.126 Seconds \n \n  Normal termination of simulation \nTrue",
+  "data": {
+    "number_of_layers": 1,
+    "budgets": [
+      30.0,
+      60.0,
+      90.0,
+      120.0,
+      150.0,
+      180.0,
+      210.0,
+      240.0,
+      270.0,
+      300.0,
+      330.0,
+      360.0,
+      390.0
+    ],
+    "heads": [
+      30.0,
+      60.0,
+      90.0,
+      120.0,
+      150.0,
+      180.0,
+      210.0,
+      240.0,
+      270.0,
+      300.0,
+      330.0,
+      360.0,
+      390.0
+    ],
+    "drawdowns": []
+  }
+}
