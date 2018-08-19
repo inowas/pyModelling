@@ -3,7 +3,7 @@ import sys
 import json
 import numpy as np
 import flopy
-
+import uuid
 """
 Create test data including Modflow, Mt3dms models and optimization problem
 """
@@ -93,20 +93,17 @@ ssm = flopy.mt3d.Mt3dSsm(mt, stress_period_data=ssm_data)
 gcg = flopy.mt3d.Mt3dGcg(mt, iter1=100)
 
 
-mf.write_input()
-mf.run_model()
-mt.write_input()
-mt.run_model()
+# mf.write_input()
+# mf.run_model()
+# mt.write_input()
+# mt.run_model()
 
 # Make json
 
 model_input_ga = {
-    "author": "Aybulat F",
-    "project": "Test model with Mt3d",
-    "type": "optimization",
+    "type": "optimization_start",
     "version": "3.2.6",
-    "model_id": "test_model_id",
-    "calculation_id": "test_calculation_id",
+    "optimization_id": 'test_optimization',
     "optimization": {
         "parameters": {
             "method": "GA",
@@ -118,7 +115,6 @@ model_input_ga = {
             "indpb": 0.2,
             "diversity_flg": True,
             "ncls": 3,
-            "maxf": 10,
             "qbound": 0.25
         },
         "objectives": [
@@ -521,12 +517,9 @@ model_input_ga = {
 }
 
 model_input_simplex = {
-    "author": "Aybulat F",
-    "project": "Test model with Mt3d",
-    "type": "optimization",
+    "type": "optimization_start",
     "version": "3.2.6",
-    "model_id": "test_model_id",
-    "calculation_id": "test_calculation_id",
+    "optimization_id": 'test_optimization',
     "optimization": {
         "parameters": {
             "method": "Simplex",
@@ -791,8 +784,8 @@ model_input_simplex = {
     }
 }
 
-with open('test_optimization_ga.json', 'w') as f:
+with open('input_optimization_ga.json', 'w') as f:
      json.dump(model_input_ga, f)
     
-with open('test_optimization_simplex.json', 'w') as f:
+with open('input_optimization_simplex.json', 'w') as f:
      json.dump(model_input_simplex, f)

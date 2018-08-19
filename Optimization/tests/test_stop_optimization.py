@@ -1,9 +1,6 @@
 import pika
 import json
 
-with open('./input_optimization_simplex.json') as f:
-    data = json.load(f)
-
 
 connection = pika.BlockingConnection(
     pika.ConnectionParameters(
@@ -21,7 +18,10 @@ channel.queue_declare(queue='optimization_request_queue', durable=True)
 channel.basic_publish(
     exchange='',
     routing_key='optimization_request_queue',
-    body=json.dumps(data).encode()
+    body=json.dumps({
+        'optimization_id': 'test_optimization',
+        'type': 'optimization_stop'
+    }).encode()
 )
 
 print(" [x] Sent Test Data")

@@ -28,10 +28,9 @@ class OptimizationManager(object):
 
     def reply_error(self, exception):
         response = {
-            'status_code': "500",
-            'solutions': None,
+            'status_code': '500',
+            'optimization_id': os.environ['OPTIMIZATION_ID'],
             'message': str(exception),
-            'final': True
         }
     
         response = json.dumps(response).encode()
