@@ -4,16 +4,17 @@ import json
 import numpy as np
 import flopy
 import uuid
+
 """
 Create test data including Modflow, Mt3dms models and optimization problem
 """
 
 nlay, nrow, ncol = 1, 90, 90
 nper = 10
-perlen = [30]*int(nper)
-nstp = [1]*int(nper)
+perlen = [30] * int(nper)
+nstp = [1] * int(nper)
 
-ibound = np.ones((nlay,nrow,ncol), dtype=np.int)
+ibound = np.ones((nlay, nrow, ncol), dtype=np.int)
 
 botm = -50.
 top = 0.
@@ -21,12 +22,11 @@ hk = 2.5
 ss = 0.0002
 sy = 0.1
 
-
 half_of_grid = np.hstack((
-    np.ones(2)*1000,
-    np.ones(1)*300,
-    np.ones(42)*5
-    ))
+    np.ones(2) * 1000,
+    np.ones(1) * 300,
+    np.ones(42) * 5
+))
 
 delr = np.hstack((half_of_grid, np.flipud(half_of_grid)))
 delc = np.hstack((half_of_grid, np.flipud(half_of_grid)))
@@ -60,23 +60,22 @@ for j in range(nper):
 for i in range(nrow):
     for j in range(nper):
         chd_data[j].append((0, i, 0, -7.5, -7.5))
-        chd_data[j].append((0, i, ncol-1, 7.5, 7.5))
+        chd_data[j].append((0, i, ncol - 1, 7.5, 7.5))
         ssm_data[j].append((0, i, 0, 1.9, itype['CHD']))
-        ssm_data[j].append((0, i, ncol-1, 1.9, itype['CHD']))
+        ssm_data[j].append((0, i, ncol - 1, 1.9, itype['CHD']))
 
 chd = flopy.modflow.ModflowChd(mf, stress_period_data=chd_data)
 
-wel_data[0].append((0,45,45, -100))
-wel_data[1].append((0,45,45, -100))
-wel_data[2].append((0,45,45, -100))
-wel_data[3].append((0,45,45, -100))
-wel_data[4].append((0,45,45, -100))
-wel_data[5].append((0,45,45, -100))
-wel_data[6].append((0,45,45, -100))
-wel_data[7].append((0,45,45, -100))
-wel_data[8].append((0,45,45, -100))
-wel_data[9].append((0,45,45, -100))
-
+wel_data[0].append((0, 45, 45, -100))
+wel_data[1].append((0, 45, 45, -100))
+wel_data[2].append((0, 45, 45, -100))
+wel_data[3].append((0, 45, 45, -100))
+wel_data[4].append((0, 45, 45, -100))
+wel_data[5].append((0, 45, 45, -100))
+wel_data[6].append((0, 45, 45, -100))
+wel_data[7].append((0, 45, 45, -100))
+wel_data[8].append((0, 45, 45, -100))
+wel_data[9].append((0, 45, 45, -100))
 
 wel = flopy.modflow.ModflowWel(mf, stress_period_data=wel_data)
 
@@ -91,7 +90,6 @@ adv = flopy.mt3d.Mt3dAdv(mt, mixelm=0)
 dsp = flopy.mt3d.Mt3dDsp(mt, al=5., trpt=0.1, dmcoef=1e-9)
 ssm = flopy.mt3d.Mt3dSsm(mt, stress_period_data=ssm_data)
 gcg = flopy.mt3d.Mt3dGcg(mt, iter1=100)
-
 
 # mf.write_input()
 # mf.run_model()
@@ -785,7 +783,7 @@ model_input_simplex = {
 }
 
 with open('input_optimization_ga.json', 'w') as f:
-     json.dump(model_input_ga, f)
-    
+    json.dump(model_input_ga, f)
+
 with open('input_optimization_simplex.json', 'w') as f:
-     json.dump(model_input_simplex, f)
+    json.dump(model_input_simplex, f)

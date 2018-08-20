@@ -14,7 +14,8 @@ System recuirements:
 - Docker version >= 18
 - Python libraries: pika, doker
 
-Configuration is defined in the ./config.json file, where:
+A default configuration is defined in the ./config.json file.
+All parameters can be overridden with environment variables with the same name, where:
     
     "HTTP_PROXY" and "HTTPS_PROXY": proxy ports if proxy server is used,
     "HOST_TEMP_FOLDER": folder on the host to which temporary model files will be written,

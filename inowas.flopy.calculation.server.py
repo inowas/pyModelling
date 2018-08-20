@@ -10,24 +10,13 @@ import warnings
 from InowasFlopyAdapter.InowasFlopyCalculationAdapter import InowasFlopyCalculationAdapter
 
 warnings.filterwarnings("ignore")
-connection = pika.BlockingConnection(
-    pika.ConnectionParameters(
-        host=sys.argv[2],
-        port=int(sys.argv[3]),
-        virtual_host=sys.argv[4],
-        credentials=pika.PlainCredentials(sys.argv[5], sys.argv[6]),
-        heartbeat_interval=0
-    ))
-read_channel = connection.channel()
-read_channel.queue_declare(queue='flopy_calculation_queue', durable=True)
 
-write_channel = connection.channel()
-write_channel.queue_declare(queue='flopy_calculation_finished_queue', durable=True)
 
-datafolder = os.path.realpath(sys.argv[1])
+def get_config_parameter(name):
+    if os.environ[name]:
+        return os.environ[name]
 
-scriptfolder = os.path.dirname(os.path.realpath(__file__))
-binfolder = os.path.join(scriptfolder, 'bin')
+    raise Exception('Parameter with name ' + name + ' not found in environment-variables.')
 
 
 def process(content):
@@ -105,8 +94,34 @@ def on_request(ch, method, props, body):
             delivery_mode=2  # make message persistent
         ))
 
+
+print(os.environ)
+
+connection = pika.BlockingConnection(
+    pika.ConnectionParameters(
+        host=get_config_parameter('RABBITMQ_HOST'),
+        port=int(get_config_parameter('RABBITMQ_PORT')),
+        virtual_host=get_config_parameter('RABBITMQ_VIRTUAL_HOST'),
+        credentials=pika.PlainCredentials(
+            get_config_parameter('RABBITMQ_USER'),
+            get_config_parameter('RABBITMQ_PASSWORD')
+        ),
+        heartbeat_interval=0
+    ))
+
+read_channel = connection.channel()
+read_channel.queue_declare(queue=get_config_parameter('CALCULATION_QUEUE'), durable=True)
+
+write_channel = connection.channel()
+write_channel.queue_declare(queue=get_config_parameter('CALCULATION_FINISHED_QUEUE'), durable=True)
+
+datafolder = os.path.realpath(sys.argv[1])
+
+scriptfolder = os.path.dirname(os.path.realpath(__file__))
+binfolder = os.path.join(scriptfolder, 'bin')
+
 read_channel.basic_qos(prefetch_count=1)
-read_channel.basic_consume(on_request, queue='flopy_calculation_queue')
+read_channel.basic_consume(on_request, queue=get_config_parameter('CALCULATION_QUEUE'))
 
 print(" [x] Awaiting RPC requests")
 read_channel.start_consuming()

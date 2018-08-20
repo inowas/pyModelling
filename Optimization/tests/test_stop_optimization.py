@@ -1,7 +1,6 @@
 import pika
 import json
 
-
 connection = pika.BlockingConnection(
     pika.ConnectionParameters(
         host='sheep.rmq.cloudamqp.com',
