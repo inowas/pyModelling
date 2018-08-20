@@ -1,7 +1,7 @@
 import pika
 import json
 
-with open('./test_optimization_ga.json') as f:
+with open('./input_optimization_ga.json') as f:
     data = json.load(f)
 
 

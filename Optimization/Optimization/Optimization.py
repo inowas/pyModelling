@@ -36,11 +36,8 @@ class OptimizationBase(object):
         
         self._progress_log = []
         self._iter_count = 0
-        self._iter_total = 0
-        if self.request_data['optimization']['parameters']['method'] == 'GA':
-            self._iter_total = self.request_data['optimization']['parameters']['pop_size']
-        elif self.request_data['optimization']['parameters']['method'] == 'Simplex':
-            self._iter_total = self.request_data['optimization']['parameters']['maxf']
+        self.response = {'optimization_id': self.optimization_id,
+                         'message': ''}
         
         self.var_template = copy.deepcopy(self.request_data['optimization']['objects'])
 
@@ -49,8 +46,8 @@ class OptimizationBase(object):
         self.var_map, self.bounds, self.initial_values = self.read_optimitation_data()
 
         # Rabbit stuf
-        self.simulation_request_queue = simulation_request_queue+self.optimization_id
-        self.simulation_response_queue = simulation_response_queue+self.optimization_id
+        self.simulation_request_queue = simulation_request_queue
+        self.simulation_response_queue = simulation_response_queue
 
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(
@@ -61,39 +58,38 @@ class OptimizationBase(object):
             )
         )
 
-        self.simulation_request_channel = self.connection.channel()
+        self.channel = self.connection.channel()
         print('Declaring simulation request queue: '+self.simulation_request_queue)
-        self.simulation_request_channel.queue_declare(
+        self.channel.queue_declare(
             queue=self.simulation_request_queue,
             durable=True
         )
-        
-        self.simulation_response_channel = self.connection.channel()
+
         print('Declaring simulation response queue: '+simulation_response_queue)
-        self.simulation_response_channel.queue_declare(
+        self.channel.queue_declare(
             queue=self.simulation_response_queue,
             durable=True
         )
     
     def clean(self):
         try:
-            print('Sinding Stop commands to the workers...')
-            self.simulation_request_channel.basic_publish(
+            print('Sending Stop commands to the workers...')
+            self.channel.basic_publish(
                 exchange='',
                 routing_key=self.simulation_request_queue,
                 body = json.dumps({"time_to_die": True}).encode(),
                 properties=pika.BasicProperties(
-                    delivery_mode=2  # make message persistent
+                    delivery_mode=2
                 )
             )
         except:
             pass
         try:
             print('Deleting simulation queues...')
-            self.simulation_request_channel.queue_delete(
+            self.channel.queue_delete(
                 queue=self.simulation_request_queue
             )
-            self.simulation_response_channel.queue_delete(
+            self.channel.queue_delete(
                 queue=self.simulation_response_queue
             )
         
@@ -135,7 +131,7 @@ class OptimizationBase(object):
         }
         request_data = json.dumps(request_data).encode()
 
-        self.simulation_request_channel.basic_publish(
+        self.channel.basic_publish(
             exchange='',
             routing_key=self.simulation_request_queue,
             body=request_data,
@@ -292,6 +288,7 @@ class NSGA(OptimizationBase):
         Generate response json of the NSGA algorithm
         exmple of response
         response = {
+            optimization_id: 1,
             status_code: 200,
             solutions: [
                 {
@@ -323,12 +320,12 @@ class NSGA(OptimizationBase):
         }
         """
         self._iter_count += 1
-        response = {}
-        response['status_code'] = status_code
-        response['solutions'] = []
-        response['progress'] = {}
+        
+        self.response['status_code'] = status_code
+        self.response['solutions'] = []
+        self.response['progress'] = {}
         for individual in pop:
-            response['solutions'].append(
+            self.response['solutions'].append(
                 {
                     'fitness': list(individual.fitness.values),
                     'variables': list(individual),
@@ -336,17 +333,15 @@ class NSGA(OptimizationBase):
                 }
             )
         
-        response['progress']['progess_log'] = self._progress_log
-        response['progress']['iteration'] = self._iter_count
-        response['progress']['iteration_total'] = self._iter_total
-        response['progress']['final'] = final
-        
-        response = json.dumps(response).encode()
+        self.response['progress']['progess_log'] = self._progress_log
+        self.response['progress']['iteration'] = self._iter_count
+        self.response['progress']['iteration_total'] = self.request_data['optimization']['parameters']['ngen']
+        self.response['progress']['final'] = final
 
         self.response_channel.basic_publish(
             exchange='',
             routing_key=self.response_queue,
-            body=response,
+            body=json.dumps(self.response).encode(),
             properties=pika.BasicProperties(
                 delivery_mode=2  # make message persistent
             )
@@ -441,18 +436,18 @@ class NSGA(OptimizationBase):
             results[content['ind_id']] = content['fitness']
             if len(results) == len(invalid_ind):
                 print('Fetched all results from the simulation response queue: '+self.simulation_response_queue)
-                self.simulation_response_channel.basic_cancel(
+                self.channel.basic_cancel(
                     consumer_tag=consumer_tag
                 )
             return
 
         print('Consuming results from the simulation response queue: '+self.simulation_response_queue)
-        self.simulation_response_channel.basic_consume(
+        self.channel.basic_consume(
             consumer_callback=consumer_callback,
             queue=self.simulation_response_queue,
             consumer_tag=consumer_tag
         )
-        self.simulation_response_channel.start_consuming()
+        self.channel.start_consuming()
 
         for _id, ind in enumerate(invalid_ind):
             ind.fitness.values = results[_id]
@@ -580,29 +575,26 @@ class NelderMead(OptimizationBase):
         self._iter_count += 1
         self._progress_log.append(self._best_scalar_fitness*-1)
 
-        response = {}
-        response['status_code'] = status_code
-        response['progress'] = {}
-        response['solutions'] = [
+        self.response['status_code'] = status_code
+        self.response['progress'] = {}
+        self.response['solutions'] = [
             {
                 'fitness': list(self._best_fitness),
                 'variables': list(self._best_individual),
                 'objects': self.apply_individual(self._best_individual)
             }
         ]
-        response['progress']['progess_log'] = self._progress_log
-        response['progress']['iteration'] = self._iter_count
-        response['progress']['iteration_total'] = self._iter_total
-        response['progress']['final'] = final
-        
-        response = json.dumps(response).encode()
+        self.response['progress']['progess_log'] = self._progress_log
+        self.response['progress']['iteration'] = self._iter_count
+        self.response['progress']['iteration_total'] = self.request_data['optimization']['parameters']['maxf']
+        self.response['progress']['final'] = final
 
         self.response_channel.basic_publish(
             exchange='',
             routing_key=self.response_queue,
-            body=response,
+            body=json.dumps(self.response).encode(),
             properties=pika.BasicProperties(
-                delivery_mode=2  # make message persistent
+                delivery_mode=2
             )
         )
 
@@ -626,18 +618,18 @@ class NelderMead(OptimizationBase):
                 fitness.append(i)
 
             print('Fetched result from the simulation response queue: '+self.simulation_response_queue)
-            self.simulation_response_channel.basic_cancel(
+            self.channel.basic_cancel(
                 consumer_tag=consumer_tag
             )
             return
 
         print('Consuming results from the simulation response queue: '+self.simulation_response_queue)
-        self.simulation_response_channel.basic_consume(
+        self.channel.basic_consume(
             consumer_callback=consumer_callback,
             queue=self.simulation_response_queue,
             consumer_tag=consumer_tag
         )
-        self.simulation_response_channel.start_consuming()
+        self.channel.start_consuming()
 
         scalar_fitness = 0
         for value, weight in zip(fitness, weights):
