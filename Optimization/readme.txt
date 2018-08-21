@@ -9,10 +9,32 @@ When the job is finished containers are stopped automatically.
 Example input can be found in ./tests.
 
 
-System recuirements:
+Requirements for the main process:
 - Python version >= 3.5
 - Docker version >= 18
-- Python libraries: pika, doker
+- Python libraries: pika==0.12.0, docker==3.4.1
+
+Requirements for the Optimization container (./Optimization/Dockerfile):
+- Python version >= 3.5
+- Python libraries:
+    scipy=1.1.0
+    flopy==3.2.9
+    pika==0.12.0
+    mystic==0.3.1
+    sklearn=0.19.1
+    deap==1.2.2
+
+Requirements for the Simulation container (./Simulation/Dockerfile):
+- Python version >= 3.5
+- Python libraries:
+    scipy=1.1.0
+    flopy==3.2.9
+    pika==0.12.0
+- Executables:
+    mf2005
+    mfnwt
+    mt3dusgs
+
 
 Configuration is defined in the ./config.json file, where:
     
