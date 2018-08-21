@@ -46,15 +46,21 @@ class DockerManager(object):
                 self._running_containers[job_id].append(container)
             except KeyError:
                 self._running_containers[job_id] = [container]
-
         return
 
     def stop_all_job_containers(self, job_id, remove=True):
+        not_stopped_containers = []
         for container in self._running_containers[job_id]:
-            container.stop()
-            if remove:
-                container.remove()
-                del container
+            try:
+                container.stop()
+                if remove:
+                    container.remove()
+                    del container
+            except Exception as e:
+                not_stopped_containers.append(container)
+                print(str(e))
+        return not_stopped_containers
+
         del self._running_containers[job_id]
 
     def clean(self):

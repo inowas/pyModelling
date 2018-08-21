@@ -22,7 +22,7 @@ class OptimizationManager(object):
         )
         self.response_channel = self.connection.channel()
         self.response_channel.queue_declare(
-            os.environ['RESPONSE_QUEUE'],
+            os.environ['OPTIMIZATION_RESPONSE_QUEUE'],
             durable=True
         )
 
@@ -37,7 +37,7 @@ class OptimizationManager(object):
 
         self.response_channel.basic_publish(
             exchange='',
-            routing_key=os.environ['RESPONSE_QUEUE'],
+            routing_key=os.environ['OPTIMIZATION_RESPONSE_QUEUE'],
             body=response,
             properties=pika.BasicProperties(
                 delivery_mode=2
@@ -59,7 +59,7 @@ class OptimizationManager(object):
             'optimization_id': os.environ['OPTIMIZATION_ID'],
             'request_data': content,
             'response_channel': self.response_channel,
-            'response_queue': os.environ['RESPONSE_QUEUE'],
+            'response_queue': os.environ['OPTIMIZATION_RESPONSE_QUEUE'],
             'rabbit_host': os.environ['RABBITMQ_HOST'], 
             'rabbit_port': os.environ['RABBITMQ_PORT'],
             'rabbit_vhost': os.environ['RABBITMQ_VIRTUAL_HOST'],
