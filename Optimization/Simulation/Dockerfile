@@ -4,9 +4,9 @@ RUN apt-get update \
     && apt-get install -y g++ gfortran wget unzip make
 
 RUN pip install numpy \
-    && pip install scipy \
-    && pip install flopy \
-    && pip install pika
+    && pip install scipy=1.1.0 \
+    && pip install flopy==3.2.9 \
+    && pip install pika==0.12.0
 
 # installing pymake
 RUN pip install https://github.com/modflowpy/pymake/zipball/master
