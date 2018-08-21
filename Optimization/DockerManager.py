@@ -3,6 +3,7 @@ import os
 from copy import deepcopy
 
 
+# Todo: Remove code commented out
 class DockerManager(object):
     _simulation_server_command = 'python /Simulation/SimulationServer.py'
     _optimization_server_command = 'python /Optimization/OptimizationManager.py'
@@ -15,19 +16,21 @@ class DockerManager(object):
         self.simulation_image = self.configuration['SIMULATION_IMAGE']
 
         self.volumes = {
-            os.path.realpath(self.configuration['HOST_TEMP_FOLDER']): {'bind': self.configuration['DOCKER_TEMP_FOLDER'],
-                                                                       'mode': 'rw'},
-            os.path.realpath('./Optimization'): {'bind': '/Optimization', 'mode': 'rw'},
-            os.path.realpath('./Simulation'): {'bind': '/Simulation', 'mode': 'rw'}
+            os.path.realpath(self.configuration['HOST_TEMP_FOLDER']):
+                {'bind': self.configuration['DOCKER_TEMP_FOLDER'], 'mode': 'rw'},
+            # os.path.realpath('./Optimization'): {'bind': '/Optimization', 'mode': 'rw'},
+            # os.path.realpath('./Simulation'): {'bind': '/Simulation', 'mode': 'rw'}
         }
 
     def run_container(self, container_type, job_id, number):
         if container_type == "optimization":
             image = self.optimization_image
-            command = self._optimization_server_command
+            # command = self._optimization_server_command
         elif container_type == "simulation":
             image = self.simulation_image
-            command = self._simulation_server_command
+            # command = self._simulation_server_command
+        else:
+            return
 
         environment = deepcopy(self.configuration)
         environment['OPTIMIZATION_ID'] = job_id
@@ -37,7 +40,7 @@ class DockerManager(object):
         for _ in range(number):
             container = self.client.containers.run(
                 image,
-                command=command,
+                # command=command,
                 environment=environment,
                 volumes=self.volumes,
                 detach=True
