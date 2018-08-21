@@ -22,7 +22,7 @@ class OptimizationManager(object):
         )
         self.response_channel = self.connection.channel()
         self.response_channel.queue_declare(
-            os.environ['RESPONSE_QUEUE'],
+            os.environ['OPTIMIZATION_RESPONSE_QUEUE'],
             durable=True
         )
 

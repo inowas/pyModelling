@@ -33,7 +33,7 @@ class Server(object):
         self.response_channel = None
 
     def get_config_parameter(self, name):
-        if os.environ[name]:
+        if name in os.environ:
             return os.environ[name]
 
         if self.configuration[name]:
@@ -98,11 +98,14 @@ class Server(object):
         try:
             optimization_id = content['optimization_id']
         except KeyError:
+            message="Error. Failed to read optimization ID"
+            print(message)
             self.send_response(
                 success=False,
                 optimization_id=None,
-                message="Error. Failed to read optimization ID"
+                message=message
             )
+            return
         print(' [.] Received {} request'.format(content['type']))
         if content['type'] == 'optimization_start':
             success, message = self.start_optimization(content)
@@ -133,6 +136,7 @@ class Server(object):
             optimization_id = str(content['optimization_id'])
         except Exception as e:
             message = "Error. Failed to read optimization ID. " + str(e)
+            print(message)
             return False, message
 
         try:
@@ -152,6 +156,7 @@ class Server(object):
                 json.dump(content, f)
         except Exception as e:
             message = "Error. Could not write model configuration to {} . ".format(config_file) + str(e)
+            print(message)
             return False, message
         try:
             solvers_per_job = 1
@@ -159,6 +164,7 @@ class Server(object):
                 solvers_per_job = self.get_config_parameter('NUM_SOLVERS_GA')
         except Exception as e:
             message = "Error. " + str(e)
+            print(message)
             return False, message
 
         try:
@@ -178,6 +184,7 @@ class Server(object):
             print(' [.] {} Simulation container(s) started'.format(solvers_per_job))
         except Exception as e:
             message = "Error. Failed to start workers. " + str(e)
+            print(message)
             return False, message
 
         message = 'Successfully started 1 optimization and {} model solver containers.'.format(solvers_per_job)
@@ -185,15 +192,20 @@ class Server(object):
         return True, message
 
     def stop_optimization(self, optimization_id):
+        message=""
         try:
             print(' [.] Stopping containers...')
-            self.docker_manager.stop_all_job_containers(
+            not_stopped_containers = self.docker_manager.stop_all_job_containers(
                 job_id=optimization_id,
                 remove=True
             )
+            if not_stopped_containers:
+                message += "Warning. Could not stop some workers. "+str(not_stopped_containers) + "\r\n"
+                print(message)
+
         except Exception as e:
-            message = "Warning. Could not stop workers. " + str(e)
-            return True, message
+            message += "Warning. Could not stop workers. "+str(e) + "\r\n"
+            print(message)
 
         try:
             print(' [.] Deleting temporary files...')
@@ -203,9 +215,9 @@ class Server(object):
             )
             shutil.rmtree(temp_optimization_folder)
         except Exception as e:
-            message = "Warning. Could not delete temporary files in {}. " \
-                          .format(temp_optimization_folder) + str(e)
-            return True, message
+            message += "Warning. Could not delete temporary files in {}. " \
+                                .format(temp_optimization_folder) + str(e) + "\r\n"
+            print(message)
 
         try:
             print(' [.] Deleting simulation queues...')
@@ -217,10 +229,12 @@ class Server(object):
             )
 
         except:
-            message = "Warning. Could not delete simulation queues. " + str(e)
-            return True, message
+            message += "Warning. Could not delete simulation queues. " + str(e) + "\r\n"
+            print(message)
+        
+        if message == "":
+            message = 'Successfully terminated optimization.'
 
-        message = 'Successfully terminated optimization.'
         return True, message
 
 
