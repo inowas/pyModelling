@@ -17,11 +17,12 @@ Requirements for the main process:
 Requirements for the Optimization container (./Optimization/Dockerfile):
 - Python version >= 3.5
 - Python libraries:
-    scipy=1.1.0
+    scipy==1.1.0
     flopy==3.2.9
     pika==0.12.0
     mystic==0.3.1
-    sklearn=0.19.1
+    numpy==1.12.0
+    scikit-learn==0.19.1
     deap==1.2.2
 
 Requirements for the Simulation container (./Simulation/Dockerfile):
@@ -29,6 +30,7 @@ Requirements for the Simulation container (./Simulation/Dockerfile):
 - Python libraries:
     scipy=1.1.0
     flopy==3.2.9
+    numpy==1.12.0
     pika==0.12.0
 - Executables:
     mf2005

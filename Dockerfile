@@ -9,9 +9,10 @@ RUN buildDeps="netcat libgdal-dev" && \
     rm -rf /var/lib/apt/lists/*
 
 COPY . /pymodelling
-
-WORKDIR /pymodelling
+COPY ./bin/* /usr/local/bin/
 
 RUN pip install pygdal==$(gdal-config --version).*
 RUN pip install numpy==1.12.0
 RUN pip install -r requirements.txt
+
+WORKDIR /pymodelling
