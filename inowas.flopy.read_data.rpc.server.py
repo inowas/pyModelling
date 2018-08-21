@@ -8,24 +8,14 @@ import traceback
 import warnings
 from InowasFlopyAdapter.InowasFlopyReadAdapter import InowasFlopyReadAdapter
 
-print(sys.argv)
-
 warnings.filterwarnings("ignore")
-connection = pika.BlockingConnection(
-    pika.ConnectionParameters(
-        host=sys.argv[2],
-        port=int(sys.argv[3]),
-        virtual_host=sys.argv[4],
-        credentials=pika.PlainCredentials(sys.argv[5], sys.argv[6]),
-        heartbeat_interval=0
-    )
-)
 
-channel = connection.channel()
-channel.queue_declare(queue=sys.argv[7])
-datafolder = os.path.realpath(sys.argv[1])
 
-print(datafolder)
+def get_config_parameter(name):
+    if os.environ[name]:
+        return os.environ[name]
+
+    raise Exception('Parameter with name ' + name + ' not found in environment-variables.')
 
 
 def process(content):
@@ -70,8 +60,29 @@ def on_request(ch, method, props, body):
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
 
+print(os.environ)
+
+connection = pika.BlockingConnection(
+    pika.ConnectionParameters(
+        host=get_config_parameter('RABBITMQ_HOST'),
+        port=int(get_config_parameter('RABBITMQ_PORT')),
+        virtual_host=get_config_parameter('RABBITMQ_VIRTUAL_HOST'),
+        credentials=pika.PlainCredentials(
+            get_config_parameter('RABBITMQ_USER'),
+            get_config_parameter('RABBITMQ_PASSWORD')
+        ),
+        heartbeat_interval=0
+    )
+)
+
+channel = connection.channel()
+channel.queue_declare(queue=get_config_parameter('READ_DATA_QUEUE'))
+datafolder = os.path.realpath(sys.argv[1])
+
+print(datafolder)
+
 channel.basic_qos(prefetch_count=1)
-channel.basic_consume(on_request, queue=sys.argv[7])
+channel.basic_consume(on_request, queue=get_config_parameter('READ_DATA_QUEUE'))
 
 print(" [x] Awaiting RPC requests")
 channel.start_consuming()

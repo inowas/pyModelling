@@ -2,7 +2,6 @@ import pika
 import json
 import uuid
 
-
 connection = pika.BlockingConnection(
     pika.ConnectionParameters(
         host='sheep.rmq.cloudamqp.com',
@@ -16,8 +15,10 @@ channel = connection.channel()
 
 channel.queue_declare(queue='optimization_response_queue', durable=True)
 
-results=[]
+results = []
 consumer_tag = str(uuid.uuid4())
+
+
 def consumer_callback(channel, method, properties, body):
     content = json.loads(body.decode())
     results.append(content)
@@ -26,6 +27,8 @@ def consumer_callback(channel, method, properties, body):
             consumer_tag=consumer_tag
         )
     return
+
+
 channel.basic_consume(
     queue='optimization_response_queue',
     consumer_callback=consumer_callback,

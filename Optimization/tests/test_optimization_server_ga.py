@@ -4,7 +4,6 @@ import json
 with open('./input_optimization_ga.json') as f:
     data = json.load(f)
 
-
 connection = pika.BlockingConnection(
     pika.ConnectionParameters(
         host='sheep.rmq.cloudamqp.com',
