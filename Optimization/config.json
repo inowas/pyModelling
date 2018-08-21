@@ -14,6 +14,6 @@
     "SIMULATION_REQUEST_QUEUE": "simulation_request_queue",
     "SIMULATION_RESPONSE_QUEUE": "simulation_response_queue",
     "NUM_SOLVERS_GA": 2,
-    "OPTIMIZATION_IMAGE": "aybulat/modflow-optimization",
-    "SIMULATION_IMAGE": "aybulat/modflow-simulation"
+    "OPTIMIZATION_IMAGE": "inowas/pymodelling:optimization",
+    "SIMULATION_IMAGE": "inowas/pymodelling:simulation"
 }

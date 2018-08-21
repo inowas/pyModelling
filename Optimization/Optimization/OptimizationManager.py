@@ -6,8 +6,8 @@ import json
 
 from Optimization import NSGA, NelderMead
 
-class OptimizationManager(object):
 
+class OptimizationManager(object):
     def __init__(self):
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(

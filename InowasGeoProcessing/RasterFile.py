@@ -1,4 +1,4 @@
-import gdal
+from osgeo import gdal
 from scipy.misc import imresize
 
 
