@@ -43,6 +43,7 @@ class DockerManager(object):
                 image,
                 environment=environment,
                 volumes=self.volumes,
+                network=self.configuration('RABBITMQ_NETWORK'),
                 detach=True
             )
             print('ContainerId: ' + str(container))

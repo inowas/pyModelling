@@ -9,6 +9,7 @@
     "RABBITMQ_VIRTUAL_HOST": "ylfqreqi",
     "RABBITMQ_USER": "ylfqreqi",
     "RABBITMQ_PASSWORD": "oe3Hqc_nPWomlp2eDnq5Chwtnfy3jnBk",
+    "RABBITMQ_NETWORK": "",
     "OPTIMIZATION_REQUEST_QUEUE": "optimization_request_queue",
     "OPTIMIZATION_RESPONSE_QUEUE": "optimization_response_queue",
     "SIMULATION_REQUEST_QUEUE": "simulation_request_queue",
