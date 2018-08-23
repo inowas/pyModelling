@@ -12,6 +12,9 @@ class SimulationServer(object):
 
     def __init__(self):
 
+        print(' ### Initializing Simulation Server ###')
+        print(' Environment: ', os.environ)
+
         self.optimization_id = os.environ['OPTIMIZATION_ID']
         self.simulation_request_queue = os.environ['SIMULATION_REQUEST_QUEUE']
         self.simulation_response_queue = os.environ['SIMULATION_RESPONSE_QUEUE']
@@ -45,7 +48,7 @@ class SimulationServer(object):
         print(" [x] Simulation server awaiting requests")
         self.channel.start_consuming()
 
-    def on_request(self, channel, method, properties, body):
+    def on_request(self, channel, method, body):
         channel.basic_ack(delivery_tag = method.delivery_tag)
         content = json.loads(body.decode("utf-8"))
 
@@ -94,6 +97,7 @@ class SimulationServer(object):
 
 
 if __name__ == "__main__":
+    print(os.environ)
     ss = SimulationServer()
     ss.connect()
     ss.consume()

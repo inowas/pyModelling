@@ -12,44 +12,48 @@ class Server(object):
     def __init__(self):
 
         print(' Initialization...\r\n')
+        config_from_file = False
 
         try:
             with open(os.path.join(
                     os.path.dirname(os.path.realpath(__file__)),
                     './config.json')
             ) as f:
-                self.configuration = json.load(f)
+                config_from_file = json.load(f)
         except:
             print('ERROR: Could not load configuration from ./config.json file')
 
         print(' Configuration File: \r\n')
-        print(self.configuration)
-        print('\r\n\r\n')
+        print(config_from_file)
+        print('\r\n')
         print(' Environment Variables: \r\n')
         print(os.environ)
+        print('\r\n')
+        print(' Merged Config Variables: \r\n')
+        self.configuration = self.mergeConfigurationWithEnvVariables(config_from_file)
+        print(self.configuration)
 
         self.docker_manager = DockerManager(self.configuration)
         self.request_channel = None
         self.response_channel = None
 
-    def get_config_parameter(self, name):
-        if name in os.environ:
-            return os.environ[name]
+    # noinspection PyMethodMayBeStatic
+    def mergeConfigurationWithEnvVariables(self, configuration):
+        for name in configuration:
+            if name in os.environ:
+                configuration[name] = os.environ[name]
 
-        if self.configuration[name]:
-            return self.configuration[name]
-
-        raise Exception('Parameter with name ' + name + ' not found in environment-variables nor config-file.')
+        return configuration
 
     def connect(self):
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(
-                host=self.get_config_parameter('RABBITMQ_HOST'),
-                port=int(self.get_config_parameter('RABBITMQ_PORT')),
-                virtual_host=self.get_config_parameter('RABBITMQ_VIRTUAL_HOST'),
+                host=self.configuration['RABBITMQ_HOST'],
+                port=int(self.configuration['RABBITMQ_PORT']),
+                virtual_host=self.configuration['RABBITMQ_VIRTUAL_HOST'],
                 credentials=pika.PlainCredentials(
-                    self.get_config_parameter('RABBITMQ_USER'),
-                    self.get_config_parameter('RABBITMQ_PASSWORD')
+                    self.configuration['RABBITMQ_USER'],
+                    self.configuration['RABBITMQ_PASSWORD']
                 ),
                 heartbeat_interval=0
             )
@@ -57,11 +61,11 @@ class Server(object):
 
         self.channel = self.connection.channel()
         self.channel.queue_declare(
-            queue=self.get_config_parameter('OPTIMIZATION_REQUEST_QUEUE'),
+            queue=self.configuration['OPTIMIZATION_REQUEST_QUEUE'],
             durable=True
         )
         self.channel.queue_declare(
-            queue=self.get_config_parameter('OPTIMIZATION_RESPONSE_QUEUE'),
+            queue=self.configuration['OPTIMIZATION_RESPONSE_QUEUE'],
             durable=True
         )
 
@@ -75,7 +79,7 @@ class Server(object):
 
         self.channel.basic_publish(
             exchange='',
-            routing_key=self.get_config_parameter('OPTIMIZATION_RESPONSE_QUEUE'),
+            routing_key=self.configuration['OPTIMIZATION_RESPONSE_QUEUE'],
             body=response,
             properties=pika.BasicProperties(
                 delivery_mode=2
@@ -84,7 +88,7 @@ class Server(object):
 
     def consume(self):
         self.channel.basic_consume(
-            self.on_request, queue=self.get_config_parameter('OPTIMIZATION_REQUEST_QUEUE')
+            self.on_request, queue=self.configuration['OPTIMIZATION_REQUEST_QUEUE']
         )
         print(" [x] Optimization server awaiting requests")
         self.channel.start_consuming()
@@ -98,7 +102,7 @@ class Server(object):
         try:
             optimization_id = content['optimization_id']
         except KeyError:
-            message="Error. Failed to read optimization ID"
+            message = "Error. Failed to read optimization ID"
             print(message)
             self.send_response(
                 success=False,
@@ -106,7 +110,9 @@ class Server(object):
                 message=message
             )
             return
+
         print(' [.] Received {} request'.format(content['type']))
+
         if content['type'] == 'optimization_start':
             success, message = self.start_optimization(content)
             self.send_response(
@@ -125,7 +131,7 @@ class Server(object):
             self.send_response(
                 success=False,
                 optimization_id=optimization_id,
-                message='Error. Unknown requets type: {}'.format(content['type'])
+                message='Error. Unknown request type: {}'.format(content['type'])
             )
 
         channel.basic_ack(delivery_tag=method.delivery_tag)
@@ -141,12 +147,12 @@ class Server(object):
 
         try:
             data_dir = os.path.join(
-                os.path.realpath(self.get_config_parameter('HOST_TEMP_FOLDER')),
+                os.path.realpath(self.configuration['HOST_TEMP_FOLDER']),
                 optimization_id
             )
             config_file = os.path.join(
                 data_dir,
-                self.get_config_parameter('MODEL_FILE_NAME')
+                self.configuration['MODEL_FILE_NAME']
             )
 
             if not os.path.exists(data_dir):
@@ -161,7 +167,7 @@ class Server(object):
         try:
             solvers_per_job = 1
             if content['optimization']['parameters']['method'] == 'GA':
-                solvers_per_job = self.get_config_parameter('NUM_SOLVERS_GA')
+                solvers_per_job = self.configuration['NUM_SOLVERS_GA']
         except Exception as e:
             message = "Error. " + str(e)
             print(message)
@@ -192,7 +198,7 @@ class Server(object):
         return True, message
 
     def stop_optimization(self, optimization_id):
-        message=""
+        message = ""
         try:
             print(' [.] Stopping containers...')
             not_stopped_containers = self.docker_manager.stop_all_job_containers(
@@ -200,38 +206,38 @@ class Server(object):
                 remove=True
             )
             if not_stopped_containers:
-                message += "Warning. Could not stop some workers. "+str(not_stopped_containers) + "\r\n"
+                message += "Warning. Could not stop some workers. " + str(not_stopped_containers) + "\r\n"
                 print(message)
 
         except Exception as e:
-            message += "Warning. Could not stop workers. "+str(e) + "\r\n"
+            message += "Warning. Could not stop workers. " + str(e) + "\r\n"
             print(message)
 
         try:
             print(' [.] Deleting temporary files...')
             temp_optimization_folder = os.path.join(
-                os.path.realpath(self.get_config_parameter('HOST_TEMP_FOLDER')),
+                os.path.realpath(self.configuration['HOST_TEMP_FOLDER']),
                 str(optimization_id)
             )
             shutil.rmtree(temp_optimization_folder)
         except Exception as e:
             message += "Warning. Could not delete temporary files in {}. " \
-                                .format(temp_optimization_folder) + str(e) + "\r\n"
+                           .format(temp_optimization_folder) + str(e) + "\r\n"
             print(message)
 
         try:
             print(' [.] Deleting simulation queues...')
             self.channel.queue_delete(
-                queue=self.get_config_parameter('SIMULATION_REQUEST_QUEUE') + optimization_id
+                queue=self.configuration['SIMULATION_REQUEST_QUEUE'] + optimization_id
             )
             self.channel.queue_delete(
-                queue=self.get_config_parameter('SIMULATION_RESPONSE_QUEUE') + optimization_id
+                queue=self.configuration['SIMULATION_RESPONSE_QUEUE'] + optimization_id
             )
 
         except:
             message += "Warning. Could not delete simulation queues. " + str(e) + "\r\n"
             print(message)
-        
+
         if message == "":
             message = 'Successfully terminated optimization.'
 

@@ -9,6 +9,10 @@ from Optimization import NSGA, NelderMead
 
 class OptimizationManager(object):
     def __init__(self):
+
+        print(' ### Initializing Optimization Manager ###')
+        print(' Environment: ', os.environ)
+
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(
                 host=os.environ['RABBITMQ_HOST'],
@@ -97,5 +101,3 @@ class OptimizationManager(object):
 if __name__ == "__main__":
     om = OptimizationManager()
     om.run()
-
-
