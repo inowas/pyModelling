@@ -42,9 +42,9 @@ A default configuration is defined in the ./config.json file.
 All parameters can be overridden with environment variables with the same name, where:
     
     "HTTP_PROXY" and "HTTPS_PROXY": proxy ports if proxy server is used,
-    "HOST_TEMP_FOLDER": folder on the host to which temporary model files will be written,
-    "DOCKER_TEMP_FOLDER": folder in the docker containers to which temporary model files will be written,
     "MODEL_FILE_NAME": name of optimization-model input file that will be created,
+    "OPTIMIZATION_DATA_FOLDER_AT_HOST": folder on the host to which temporary model files will be written,
+    "OPTIMIZATION_DATA_FOLDER_IN_CONTAINER": folder in the docker containers to which temporary model files will be written,
     "RABBITMQ_HOST": rabbitmq server host,
     "RABBITMQ_PORT": rabbitmq server port,
     "RABBITMQ_VIRTUAL_HOST": rabbitmq server virtual host,

@@ -1,8 +1,8 @@
 {
     "HTTP_PROXY": "http://172.22.1.3:3128",
     "HTTPS_PROXY": "http://172.22.1.3:3128",
-    "HOST_TEMP_FOLDER": "./optimization_temp_data",
-    "DOCKER_TEMP_FOLDER": "/optimization_temp_data",
+    "OPTIMIZATION_DATA_FOLDER_AT_HOST": "./optimization_temp_data",
+    "OPTIMIZATION_DATA_FOLDER_IN_CONTAINER": "/optimization_temp_data",
     "MODEL_FILE_NAME": "model_config.json",
     "RABBITMQ_HOST": "sheep.rmq.cloudamqp.com",
     "RABBITMQ_PORT": "5672",

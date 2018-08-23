@@ -106,7 +106,7 @@ class OptimizationBase(object):
             print('Deleting optimization temp folder...')
             shutil.rmtree(
                 os.path.join(
-                    os.path.realpath(os.environ['DOCKER_TEMP_FOLDER']),
+                    os.path.realpath(os.environ['OPTIMIZATION_DATA_FOLDER_IN_CONTAINER']),
                     os.environ['OPTIMIZATION_ID']
                 )
             )

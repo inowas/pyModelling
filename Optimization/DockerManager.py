@@ -1,12 +1,8 @@
-import docker
-import os
 from copy import deepcopy
+import docker
 
 
-# Todo: Remove code commented out
 class DockerManager(object):
-    _simulation_server_command = 'python /Simulation/SimulationServer.py'
-    _optimization_server_command = 'python /Optimization/OptimizationManager.py'
     _running_containers = {}
 
     def __init__(self, configuration):
@@ -17,11 +13,14 @@ class DockerManager(object):
         self.configuration = configuration
         self.client = docker.from_env()
         self.optimization_image = self.configuration['OPTIMIZATION_IMAGE']
+        self.client.images.pull(self.optimization_image)
+
         self.simulation_image = self.configuration['SIMULATION_IMAGE']
+        self.client.images.pull(self.simulation_image)
 
         self.volumes = {
-            os.path.abspath(self.configuration['HOST_TEMP_FOLDER']):
-                {'bind': self.configuration['DOCKER_TEMP_FOLDER'], 'mode': 'rw'}
+            self.configuration['OPTIMIZATION_DATA_FOLDER_IN_CONTAINER']:
+                {'bind': self.configuration['OPTIMIZATION_DATA_FOLDER_IN_CONTAINER'], 'mode': 'rw'}
         }
 
     def run_container(self, container_type, job_id, number):
@@ -64,9 +63,10 @@ class DockerManager(object):
             except Exception as e:
                 not_stopped_containers.append(container)
                 print(str(e))
-        return not_stopped_containers
 
         del self._running_containers[job_id]
+
+        return not_stopped_containers
 
     def clean(self):
         for job_id in self._running_containers:

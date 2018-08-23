@@ -146,14 +146,8 @@ class Server(object):
             return False, message
 
         try:
-            data_dir = os.path.join(
-                os.path.realpath(self.configuration['HOST_TEMP_FOLDER']),
-                optimization_id
-            )
-            config_file = os.path.join(
-                data_dir,
-                self.configuration['MODEL_FILE_NAME']
-            )
+            data_dir = os.path.join(self.configuration['OPTIMIZATION_DATA_FOLDER_IN_CONTAINER'], optimization_id)
+            config_file = os.path.join(data_dir, self.configuration['MODEL_FILE_NAME'])
 
             if not os.path.exists(data_dir):
                 os.makedirs(data_dir)
@@ -164,6 +158,7 @@ class Server(object):
             message = "Error. Could not write model configuration to {} . ".format(config_file) + str(e)
             print(message)
             return False, message
+
         try:
             solvers_per_job = 1
             if content['optimization']['parameters']['method'] == 'GA':
@@ -216,7 +211,7 @@ class Server(object):
         try:
             print(' [.] Deleting temporary files...')
             temp_optimization_folder = os.path.join(
-                os.path.realpath(self.configuration['HOST_TEMP_FOLDER']),
+                os.path.realpath(self.configuration['OPTIMIZATION_DATA_FOLDER_IN_CONTAINER']),
                 str(optimization_id)
             )
             shutil.rmtree(temp_optimization_folder)
