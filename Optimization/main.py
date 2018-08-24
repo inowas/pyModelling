@@ -30,7 +30,7 @@ class Server(object):
         print(os.environ)
         print('\r\n')
         print(' Merged Config Variables: \r\n')
-        self.configuration = self.mergeConfigurationWithEnvVariables(config_from_file)
+        self.configuration = self.mergeConfigurationWithEnvVariables(config_from_file, os.environ)
         print(self.configuration)
 
         self.docker_manager = DockerManager(self.configuration)
@@ -38,10 +38,14 @@ class Server(object):
         self.response_channel = None
 
     # noinspection PyMethodMayBeStatic
-    def mergeConfigurationWithEnvVariables(self, configuration):
+    def mergeConfigurationWithEnvVariables(self, configuration, additional):
         for name in configuration:
             if name in os.environ:
                 configuration[name] = os.environ[name]
+
+        for name in additional:
+            if name not in configuration:
+                configuration[name] = additional[name]
 
         return configuration
 
@@ -138,6 +142,7 @@ class Server(object):
         print(" [x] Optimization server awaiting requests")
 
     def start_optimization(self, content):
+        print(' [.] Start Optimization')
         try:
             optimization_id = str(content['optimization_id'])
         except Exception as e:
@@ -149,11 +154,16 @@ class Server(object):
             data_dir = os.path.join(self.configuration['OPTIMIZATION_DATA_FOLDER'], optimization_id)
             config_file = os.path.join(data_dir, self.configuration['MODEL_FILE_NAME'])
 
+            print(' [.] Data folder is {}'.format(data_dir))
+
             if not os.path.exists(data_dir):
+                print(' [.] Create data folder is {}'.format(data_dir))
                 os.makedirs(data_dir)
 
             with open(config_file, 'w') as f:
+                print(' [.] Write configuration to {}'.format(config_file))
                 json.dump(content, f)
+
         except Exception as e:
             message = "Error. Could not write model configuration to {} . ".format(config_file) + str(e)
             print(message)

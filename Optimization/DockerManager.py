@@ -21,9 +21,9 @@ class DockerManager(object):
         print(' ### Pulling image ' + str(self.simulation_image))
         self.client.images.pull(self.simulation_image)
 
-        volume = self.client.volumes.create(name='optimization_data', driver='local')
-        self.volumes = {volume.name: {'bind': self.configuration['OPTIMIZATION_DATA_FOLDER'], 'mode': 'rw'}}
-        self.network = self.configuration['RABBITMQ_NETWORK']
+        volume_name = self.configuration['OPTIMIZATION_DATA_VOLUME']
+        self.volumes = {volume_name: {'bind': self.configuration['OPTIMIZATION_DATA_FOLDER'], 'mode': 'rw'}}
+        self.network = self.configuration['COMPOSE_PROJECT_NAME'].lower() + '_' + self.configuration['RABBITMQ_NETWORK']
 
     def run_container(self, container_type, job_id, number):
         if container_type == "optimization":
