@@ -6,6 +6,8 @@ RUN buildDeps="g++ gfortran wget unzip make" && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+COPY . /Simulation
+
 RUN pip install numpy==1.12.0
 RUN pip install -r /Simulation/requirements.txt
 
@@ -31,8 +33,4 @@ RUN wget https://water.usgs.gov/ogw/mt3d-usgs/mt3d-usgs_1.0.zip \
     && python -m pymake.pymake ./mt3d-usgs_Distribution/src /usr/local/bin/mt3dusgs
 
 
-COPY . /Simulation
-
 CMD python /Simulation/SimulationServer.py
-
-
