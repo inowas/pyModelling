@@ -173,7 +173,7 @@ class Server(object):
         try:
             solvers_per_job = 1
             if content['optimization']['parameters']['method'] == 'GA':
-                solvers_per_job = self.configuration['NUM_SOLVERS_GA']
+                solvers_per_job = int(self.configuration['NUM_SOLVERS_GA'])
         except Exception as e:
             message = "Error. " + str(e)
             print(message)
