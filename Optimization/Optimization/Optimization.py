@@ -42,12 +42,10 @@ class OptimizationBase(object):
                          'message': ''}
 
         self.var_template = copy.deepcopy(self.request_data['optimization']['objects'])
-
         self.weights = [i["weight"] for i in self.request_data["optimization"]["objectives"]]
-
         self.var_map, self.bounds, self.initial_values = self.read_optimization_data()
 
-        # Rabbit stuf
+        # Rabbit stuff
         self.simulation_request_queue = simulation_request_queue
         self.simulation_response_queue = simulation_response_queue
 
@@ -73,16 +71,12 @@ class OptimizationBase(object):
             durable=True
         )
 
-
     def publish_simulation_job(self, individual, ind_id):
-
         print(" Requesting fitness for individual {}".format(individual))
-        print(" Publishing simulation job for individual {} to the queue: {}" \
+        print(" Publishing simulation job for individual {} to the queue: {}"
               .format(individual, self.simulation_request_queue))
 
-        objects_data = self.apply_individual(
-            individual=individual
-        )
+        objects_data = self.apply_individual(individual=individual)
 
         request_data = {
             'ind_id': ind_id,
