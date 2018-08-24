@@ -6,6 +6,9 @@ RUN buildDeps="g++ gfortran wget unzip make" && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+RUN pip install numpy==1.12.0
+RUN pip install -r /Simulation/requirements.txt
+
 # installing pymake
 RUN pip install https://github.com/modflowpy/pymake/zipball/master
 
@@ -27,10 +30,8 @@ RUN wget https://water.usgs.gov/ogw/mt3d-usgs/mt3d-usgs_1.0.zip \
     && rm mt3d-usgs_1.0.zip \
     && python -m pymake.pymake ./mt3d-usgs_Distribution/src /usr/local/bin/mt3dusgs
 
-COPY . /Simulation
 
-RUN pip install numpy==1.12.0
-RUN pip install -r /Simulation/requirements.txt
+COPY . /Simulation
 
 CMD python /Simulation/SimulationServer.py
 
