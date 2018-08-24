@@ -389,7 +389,10 @@ class NSGA(OptimizationBase):
             channel.basic_ack(delivery_tag=method.delivery_tag)
             content = json.loads(body.decode())
             if content['status_code'] == '500':
-                raise Exception('Error during simulation occured. Returned 500 status code')
+                raise Exception(
+                    'Error during simulation occured.'+'\r\n'+\
+                     content['message']
+                )
 
             results[content['ind_id']] = content['fitness']
             if len(results) == len(invalid_ind):
@@ -570,7 +573,10 @@ class NelderMead(OptimizationBase):
             content = json.loads(body.decode())
 
             if content['status_code'] == '500':
-                raise Exception('Error during simulation occured. Returned 500 status code')
+                raise Exception(
+                    'Error during simulation occured.'+'\r\n'+\
+                     content['message']
+                )
 
             for i in content['fitness']:
                 fitness.append(i)
