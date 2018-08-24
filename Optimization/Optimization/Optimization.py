@@ -390,7 +390,7 @@ class NSGA(OptimizationBase):
             content = json.loads(body.decode())
             if content['status_code'] == '500':
                 raise Exception(
-                    'Error during simulation occured.'+'\r\n'+\
+                    'Error during evaluation occured.'+'\r\n'+\
                      content['message']
                 )
 
@@ -574,7 +574,7 @@ class NelderMead(OptimizationBase):
 
             if content['status_code'] == '500':
                 raise Exception(
-                    'Error during simulation occured.'+'\r\n'+\
+                    'Error during evaluation occured.'+'\r\n'+\
                      content['message']
                 )
 
