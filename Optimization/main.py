@@ -97,6 +97,7 @@ class Server(object):
         print(" [x] Optimization server awaiting requests")
         self.channel.start_consuming()
 
+    # noinspection PyUnusedLocal
     def on_request(self, channel, method, properties, body):
 
         print(' [.] Deleting inactive containers...')

@@ -18,7 +18,7 @@ class SimulationServer(object):
         self.optimization_id = os.environ['OPTIMIZATION_ID']
         self.simulation_request_queue = os.environ['SIMULATION_REQUEST_QUEUE']
         self.simulation_response_queue = os.environ['SIMULATION_RESPONSE_QUEUE']
-    
+
         self.request_consumer_tag = 'simulation_request_consumer'
 
     def connect(self):
@@ -48,8 +48,9 @@ class SimulationServer(object):
         print(" [x] Simulation server awaiting requests")
         self.channel.start_consuming()
 
-    def on_request(self, channel, method, body):
-        channel.basic_ack(delivery_tag = method.delivery_tag)
+    # noinspection PyUnusedLocal
+    def on_request(self, channel, method, properties, body):
+        channel.basic_ack(delivery_tag=method.delivery_tag)
         content = json.loads(body.decode("utf-8"))
 
         if 'time_to_die' in content and content['time_to_die'] == True:
@@ -69,8 +70,8 @@ class SimulationServer(object):
                 'status_code': '200',
                 'ind_id': ind_id,
                 'fitness': fitness,
-                'message': 'Successfully finished simulation task for optimization: {}, simulation: {}'\
-                .format(self.optimization_id, simulation_id),
+                'message': 'Successfully finished simulation task for optimization: {}, simulation: {}' \
+                    .format(self.optimization_id, simulation_id),
             }
 
         except Exception as e:
@@ -84,8 +85,8 @@ class SimulationServer(object):
 
         response = json.dumps(response).encode()
 
-        print(' [.] Publishing result to the simulation response queue: {}'\
-        .format(self.simulation_response_queue))
+        print(' [.] Publishing result to the simulation response queue: {}' \
+              .format(self.simulation_response_queue))
         self.channel.basic_publish(
             exchange='',
             routing_key=self.simulation_response_queue,
@@ -101,5 +102,3 @@ if __name__ == "__main__":
     ss = SimulationServer()
     ss.connect()
     ss.consume()
-
-
