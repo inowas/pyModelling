@@ -3,6 +3,7 @@ import sys
 import pika
 import warnings
 import json
+import shutil
 
 from Optimization import NSGA, NelderMead
 
@@ -24,11 +25,12 @@ class OptimizationManager(object):
                 heartbeat_interval=0
             )
         )
-        self.response_channel = self.connection.channel()
-        self.response_channel.queue_declare(
+        self.channel = self.connection.channel()
+        self.channel.queue_declare(
             os.environ['OPTIMIZATION_RESPONSE_QUEUE'],
             durable=True
         )
+        self.algorithm = None
 
     def reply_error(self, exception):
         response = {
@@ -39,7 +41,7 @@ class OptimizationManager(object):
     
         response = json.dumps(response).encode()
 
-        self.response_channel.basic_publish(
+        self.channel.basic_publish(
             exchange='',
             routing_key=os.environ['OPTIMIZATION_RESPONSE_QUEUE'],
             body=response,
@@ -47,55 +49,95 @@ class OptimizationManager(object):
                 delivery_mode=2
             )
         )
+    
+    def clean(self):
+        try:
+            print('Sending Stop commands to the workers...')
+            self.channel.basic_publish(
+                exchange='',
+                routing_key=os.environ['SIMULATION_REQUEST_QUEUE'],
+                body=json.dumps({"time_to_die": True}).encode(),
+                properties=pika.BasicProperties(
+                    delivery_mode=2
+                )
+            )
+        except:
+            pass
+        try:
+            print('Deleting simulation queues...')
+            self.channel.queue_delete(
+                queue=os.environ['SIMULATION_REQUEST_QUEUE']
+            )
+            self.channel.queue_delete(
+                queue=os.environ['SIMULATION_RESPONSE_QUEUE']
+            )
 
-    def run(self):
-
-        config_file = os.path.join(
-            os.path.realpath(os.environ['OPTIMIZATION_DATA_FOLDER']),
-            os.environ['OPTIMIZATION_ID'],
-            os.environ['MODEL_FILE_NAME']
-        )
-
-        with open(config_file) as f:
-            content = json.load(f)
-
-        kwargs = {
-            'optimization_id': os.environ['OPTIMIZATION_ID'],
-            'request_data': content,
-            'response_channel': self.response_channel,
-            'response_queue': os.environ['OPTIMIZATION_RESPONSE_QUEUE'],
-            'rabbit_host': os.environ['RABBITMQ_HOST'], 
-            'rabbit_port': os.environ['RABBITMQ_PORT'],
-            'rabbit_vhost': os.environ['RABBITMQ_VIRTUAL_HOST'],
-            'rabbit_user': os.environ['RABBITMQ_USER'],
-            'rabbit_password': os.environ['RABBITMQ_PASSWORD'],
-            'simulation_request_queue': os.environ['SIMULATION_REQUEST_QUEUE'],
-            'simulation_response_queue': os.environ['SIMULATION_RESPONSE_QUEUE']
-        }
+        except:
+            pass
 
         try:
+            print('Closing connection...')
+            self.connection.close()
+            self.algorithm.connection.close()
+        except:
+            pass
+
+        try:
+            print('Deleting optimization temp folder...')
+            shutil.rmtree(
+                os.path.join(
+                    os.path.realpath(os.environ['OPTIMIZATION_DATA_FOLDER']),
+                    os.environ['OPTIMIZATION_ID']
+                )
+            )
+        except:
+            pass
+
+    def run(self):
+        try:
+            config_file = os.path.join(
+                os.path.realpath(os.environ['OPTIMIZATION_DATA_FOLDER']),
+                os.environ['OPTIMIZATION_ID'],
+                os.environ['MODEL_FILE_NAME']
+            )
+
+            with open(config_file) as f:
+                content = json.load(f)
+
+            kwargs = {
+                'optimization_id': os.environ['OPTIMIZATION_ID'],
+                'request_data': content,
+                'response_channel': self.channel,
+                'response_queue': os.environ['OPTIMIZATION_RESPONSE_QUEUE'],
+                'rabbit_host': os.environ['RABBITMQ_HOST'], 
+                'rabbit_port': os.environ['RABBITMQ_PORT'],
+                'rabbit_vhost': os.environ['RABBITMQ_VIRTUAL_HOST'],
+                'rabbit_user': os.environ['RABBITMQ_USER'],
+                'rabbit_password': os.environ['RABBITMQ_PASSWORD'],
+                'simulation_request_queue': os.environ['SIMULATION_REQUEST_QUEUE'],
+                'simulation_response_queue': os.environ['SIMULATION_RESPONSE_QUEUE']
+            }
+
             if content['optimization']['parameters']['method'] == 'GA':
-                algorithm = NSGA(
+                self.algorithm = NSGA(
                     **kwargs
                 )
             elif content['optimization']['parameters']['method'] == 'Simplex':
-                algorithm = NelderMead(
+                self.algorithm = NelderMead(
                     **kwargs
                 )
         except Exception as e:
             self.reply_error(e)
-            self.connection.close()
+            self.clean()
             raise
 
         try:
-            algorithm.run()
-            
+            self.algorithm.run()        
         except Exception as e:
             self.reply_error(e)
-        
         finally:
-            algorithm.clean()
-            self.connection.close()
+            self.clean()
+
 
 
 if __name__ == "__main__":

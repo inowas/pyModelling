@@ -73,47 +73,6 @@ class OptimizationBase(object):
             durable=True
         )
 
-    def clean(self):
-        try:
-            print('Sending Stop commands to the workers...')
-            self.channel.basic_publish(
-                exchange='',
-                routing_key=self.simulation_request_queue,
-                body=json.dumps({"time_to_die": True}).encode(),
-                properties=pika.BasicProperties(
-                    delivery_mode=2
-                )
-            )
-        except:
-            pass
-        try:
-            print('Deleting simulation queues...')
-            self.channel.queue_delete(
-                queue=self.simulation_request_queue
-            )
-            self.channel.queue_delete(
-                queue=self.simulation_response_queue
-            )
-
-        except:
-            pass
-
-        try:
-            print('Closing connection...')
-            self.connection.close()
-        except:
-            pass
-
-        try:
-            print('Deleting optimization temp folder...')
-            shutil.rmtree(
-                os.path.join(
-                    os.path.realpath(os.environ['OPTIMIZATION_DATA_FOLDER']),
-                    os.environ['OPTIMIZATION_ID']
-                )
-            )
-        except:
-            pass
 
     def publish_simulation_job(self, individual, ind_id):
 
