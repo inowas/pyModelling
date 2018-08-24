@@ -51,7 +51,7 @@ class OptimizationManager(object):
     def run(self):
 
         config_file = os.path.join(
-            os.path.realpath(os.environ['OPTIMIZATION_DATA_FOLDER_IN_CONTAINER']),
+            os.path.realpath(os.environ['OPTIMIZATION_DATA_FOLDER']),
             os.environ['OPTIMIZATION_ID'],
             os.environ['MODEL_FILE_NAME']
         )

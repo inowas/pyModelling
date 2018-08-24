@@ -146,7 +146,7 @@ class Server(object):
             return False, message
 
         try:
-            data_dir = os.path.join(self.configuration['OPTIMIZATION_DATA_FOLDER_IN_CONTAINER'], optimization_id)
+            data_dir = os.path.join(self.configuration['OPTIMIZATION_DATA_FOLDER'], optimization_id)
             config_file = os.path.join(data_dir, self.configuration['MODEL_FILE_NAME'])
 
             if not os.path.exists(data_dir):
@@ -211,7 +211,7 @@ class Server(object):
         try:
             print(' [.] Deleting temporary files...')
             temp_optimization_folder = os.path.join(
-                os.path.realpath(self.configuration['OPTIMIZATION_DATA_FOLDER_IN_CONTAINER']),
+                os.path.realpath(self.configuration['OPTIMIZATION_DATA_FOLDER']),
                 str(optimization_id)
             )
             shutil.rmtree(temp_optimization_folder)

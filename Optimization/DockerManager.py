@@ -12,16 +12,18 @@ class DockerManager(object):
 
         self.configuration = configuration
         self.client = docker.from_env()
+
         self.optimization_image = self.configuration['OPTIMIZATION_IMAGE']
+        print(' ### Pulling image ' + str(self.optimization_image))
         self.client.images.pull(self.optimization_image)
 
         self.simulation_image = self.configuration['SIMULATION_IMAGE']
+        print(' ### Pulling image ' + str(self.simulation_image))
         self.client.images.pull(self.simulation_image)
 
-        self.volumes = {
-            self.configuration['OPTIMIZATION_DATA_FOLDER_IN_CONTAINER']:
-                {'bind': self.configuration['OPTIMIZATION_DATA_FOLDER_IN_CONTAINER'], 'mode': 'rw'}
-        }
+        volume = self.client.volumes.create(name='optimization_data', driver='local')
+        self.volumes = {volume.name: {'bind': self.configuration['OPTIMIZATION_DATA_FOLDER'], 'mode': 'rw'}}
+        self.network = self.configuration['RABBITMQ_NETWORK']
 
     def run_container(self, container_type, job_id, number):
         if container_type == "optimization":
@@ -43,9 +45,10 @@ class DockerManager(object):
                 image,
                 environment=environment,
                 volumes=self.volumes,
-                network=self.configuration('RABBITMQ_NETWORK'),
+                network=self.network,
                 detach=True
             )
+
             print('ContainerId: ' + str(container))
             try:
                 self._running_containers[job_id].append(container)
