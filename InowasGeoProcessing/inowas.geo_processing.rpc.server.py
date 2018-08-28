@@ -7,7 +7,7 @@ import sys
 import traceback
 import warnings
 
-from InowasGeoProcessing.InowasGeoProcessing import InowasGeoProcessing
+from InowasGeoProcessing import InowasGeoProcessing
 
 warnings.filterwarnings("ignore")
 
