@@ -49,9 +49,12 @@ def process(content):
         with open(os.path.join(target_directory, 'configuration.json'), 'w') as outfile:
             json.dump(content, outfile)
 
-        data['mf']['mf']['modelname'] = calculation_id
+        data['mf']['mf']['modelname'] = 'mf'
         data['mf']['mf']['model_ws'] = target_directory
-        data['mf']['mf']['exe_name'] = os.path.join(binfolder, sys.platform, data['mf']['mf']['exe_name'])
+
+        if 'mt' in data:
+            data['mt']['mt']['modelname'] = 'mt'
+            data['mt']['mt']['model_ws'] = target_directory
 
         try:
             flopy = InowasFlopyCalculationAdapter(version, data, calculation_id)
