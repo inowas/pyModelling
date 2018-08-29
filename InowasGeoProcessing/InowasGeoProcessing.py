@@ -1,5 +1,5 @@
 import os
-from .RasterFile import RasterFile
+from RasterFile import RasterFile
 
 """
 This module offers some helpers por geoprocessing

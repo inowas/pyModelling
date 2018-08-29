@@ -12,7 +12,7 @@ class Simulation(object):
     def __init__(self, simulation_id):
         # Set model workspace
         self.model_ws = os.path.join(
-            os.path.realpath(os.environ['DOCKER_TEMP_FOLDER']),
+            os.path.realpath(os.environ['OPTIMIZATION_DATA_FOLDER']),
             os.environ['OPTIMIZATION_ID'],
             simulation_id
         )
@@ -20,7 +20,7 @@ class Simulation(object):
         
         # Set configuration file name
         config_file = os.path.join(
-            os.path.realpath(os.environ['DOCKER_TEMP_FOLDER']),
+            os.path.realpath(os.environ['OPTIMIZATION_DATA_FOLDER']),
             os.environ['OPTIMIZATION_ID'],
             os.environ['MODEL_FILE_NAME']
         )
@@ -56,6 +56,11 @@ class Simulation(object):
         flopy_adapter = InowasFlopyCalculationAdapter(
             self.flopy_version, self.model_data, self.simulation_id
         )
+        if not flopy_adapter.success:
+            raise Exception(
+                'Error during simulation occured.'+'\r\n'+\
+                flopy_adapter.response_message()
+            )
 
         fitness = InowasFlopyReadFitness(
             self.optimization_data, flopy_adapter

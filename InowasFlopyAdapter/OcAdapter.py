@@ -24,7 +24,8 @@ class OcAdapter:
     def merge(self):
         default = self.default()
         for key in self._data:
-            default[key] = self._data[key]
+            if not key.startswith('_'):
+                default[key] = self._data[key]
 
         if 'stress_period_data' in self._data:
             default['stress_period_data'] = self.get_stress_period_data(self._data['stress_period_data'])

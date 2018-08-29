@@ -15,6 +15,7 @@ from deap import tools
 import copy
 import pika
 
+
 class OptimizationBase(object):
     """
     Optimization algorithm class
@@ -22,7 +23,8 @@ class OptimizationBase(object):
     """
 
     def __init__(self, optimization_id, request_data, response_channel, response_queue, rabbit_host,
-                 rabbit_port, rabbit_vhost, rabbit_user, rabbit_password, simulation_request_queue, simulation_response_queue):
+                 rabbit_port, rabbit_vhost, rabbit_user, rabbit_password, simulation_request_queue,
+                 simulation_response_queue):
 
         self.optimization_id = optimization_id
         self.response_queue = response_queue
@@ -33,19 +35,17 @@ class OptimizationBase(object):
         self.password = rabbit_password
         self.virtualhost = rabbit_vhost
         self.request_data = request_data
-        
+
         self._progress_log = []
         self._iter_count = 0
         self.response = {'optimization_id': self.optimization_id,
                          'message': ''}
-        
+
         self.var_template = copy.deepcopy(self.request_data['optimization']['objects'])
-
         self.weights = [i["weight"] for i in self.request_data["optimization"]["objectives"]]
-        
-        self.var_map, self.bounds, self.initial_values = self.read_optimitation_data()
+        self.var_map, self.bounds, self.initial_values = self.read_optimization_data()
 
-        # Rabbit stuf
+        # Rabbit stuff
         self.simulation_request_queue = simulation_request_queue
         self.simulation_response_queue = simulation_response_queue
 
@@ -59,69 +59,24 @@ class OptimizationBase(object):
         )
 
         self.channel = self.connection.channel()
-        print('Declaring simulation request queue: '+self.simulation_request_queue)
+        print('Declaring simulation request queue: ' + self.simulation_request_queue)
         self.channel.queue_declare(
             queue=self.simulation_request_queue,
             durable=True
         )
 
-        print('Declaring simulation response queue: '+simulation_response_queue)
+        print('Declaring simulation response queue: ' + simulation_response_queue)
         self.channel.queue_declare(
             queue=self.simulation_response_queue,
             durable=True
         )
-    
-    def clean(self):
-        try:
-            print('Sending Stop commands to the workers...')
-            self.channel.basic_publish(
-                exchange='',
-                routing_key=self.simulation_request_queue,
-                body = json.dumps({"time_to_die": True}).encode(),
-                properties=pika.BasicProperties(
-                    delivery_mode=2
-                )
-            )
-        except:
-            pass
-        try:
-            print('Deleting simulation queues...')
-            self.channel.queue_delete(
-                queue=self.simulation_request_queue
-            )
-            self.channel.queue_delete(
-                queue=self.simulation_response_queue
-            )
-        
-        except:
-            pass
-        
-        try:
-            print('Closing connection...')
-            self.connection.close()
-        except:
-            pass
-        
-        try:
-            print('Deleting optimization temp folder...')
-            shutil.rmtree(
-                os.path.join(
-                    os.path.realpath(os.environ['DOCKER_TEMP_FOLDER']),
-                    os.environ['OPTIMIZATION_ID']
-                )
-            )
-        except:
-            pass
 
     def publish_simulation_job(self, individual, ind_id):
-
         print(" Requesting fitness for individual {}".format(individual))
-        print(" Publishing simulation job for individual {} to the queue: {}"\
-        .format(individual, self.simulation_request_queue))
+        print(" Publishing simulation job for individual {} to the queue: {}"
+              .format(individual, self.simulation_request_queue))
 
-        objects_data = self.apply_individual(
-            individual = individual
-        )
+        objects_data = self.apply_individual(individual=individual)
 
         request_data = {
             'ind_id': ind_id,
@@ -142,7 +97,7 @@ class OptimizationBase(object):
         return
 
     def apply_individual(self, individual):
-        """Write individual values to variable template and return the filled template"""    
+        """Write individual values to variable template and return the filled template"""
         for ind_value, keys in zip(individual, self.var_map):
             if keys[1] == 'concentration':
                 for object_ in self.var_template:
@@ -154,15 +109,14 @@ class OptimizationBase(object):
                     if object_['id'] == keys[0]:
                         object_[keys[1]][keys[2]]['result'] = ind_value
                         break
-                    
-        
+
         return self.var_template
 
-    def read_optimitation_data(self):
+    def read_optimization_data(self):
         """
         Example of variables template, where values are fixed ones and Nones are optimized:
         
-        Example of variables map and variables boundries:
+        Example of variables map and variables boundaries:
         var_map = [(0, flux, 0), (0, concentration, 0),(0, position, row),(0, position, col)]
         var_bounds = [(0, 10), (0, 1),(0, 30),(0, 30)]
         """
@@ -182,7 +136,7 @@ class OptimizationBase(object):
                             initial_values.append(axis_data.get('initial'))
                         else:
                             object_['position'][axis]['result'] = axis_data['min']
-                            
+
 
                 elif parameter == 'flux':
                     for period, period_data in value.items():
@@ -193,8 +147,8 @@ class OptimizationBase(object):
                             initial_values.append(period_data.get('initial'))
                         else:
                             object_['flux'][period]['result'] = period_data['min']
-                        
-                
+
+
                 elif parameter == 'concentration':
                     for period, period_data in value.items():
                         for component, component_data in period_data.items():
@@ -205,7 +159,6 @@ class OptimizationBase(object):
                                 initial_values.append(component_data.get('initial'))
                             else:
                                 object_[parameter][period][component]['result'] = component_data['min']
-                    
 
         return var_map, var_bounds, initial_values
 
@@ -216,7 +169,7 @@ class NSGA(OptimizationBase):
 
         self._hypervolume_ref_point = None
         self._diversity_ref_point = None
-    
+
     def run(self):
 
         ngen = self.request_data['optimization']['parameters']['ngen']
@@ -276,10 +229,10 @@ class NSGA(OptimizationBase):
                 pop = self.check_diversity(combined_pop, ncls, qbound, mu)
             else:
                 pop = self.toolbox.select(combined_pop, mu)
-    
+
             self.calculate_hypervolume(pop)
             print('Generating response for iteration No. {}'.format(gen))
-            self.callback(pop=pop, final=gen==ngen-1)
+            self.callback(pop=pop, final=gen == ngen - 1)
 
         return
 
@@ -320,7 +273,7 @@ class NSGA(OptimizationBase):
         }
         """
         self._iter_count += 1
-        
+
         self.response['status_code'] = status_code
         self.response['solutions'] = []
         self.response['progress'] = {}
@@ -332,7 +285,7 @@ class NSGA(OptimizationBase):
                     'objects': self.apply_individual(individual)
                 }
             )
-        
+
         self.response['progress']['progess_log'] = self._progress_log
         self.response['progress']['iteration'] = self._iter_count
         self.response['progress']['iteration_total'] = self.request_data['optimization']['parameters']['ngen']
@@ -354,7 +307,7 @@ class NSGA(OptimizationBase):
         offspring = []
         for _ in range(lambda_):
             op_choice = random.random()
-            if op_choice < cxpb:            # Apply crossover
+            if op_choice < cxpb:  # Apply crossover
                 ind1, ind2 = map(self.toolbox.clone, random.sample(pop, 2))
                 ind1, ind2 = self.toolbox.mate(ind1, ind2)
                 del ind1.fitness.values
@@ -364,19 +317,19 @@ class NSGA(OptimizationBase):
                 ind, = self.toolbox.mutate(ind)
                 del ind.fitness.values
                 offspring.append(ind)
-            else:                           # Apply reproduction
+            else:  # Apply reproduction
                 offspring.append(random.choice(pop))
-        
+
         return offspring
-    
+
     def check_diversity(self, pop, ncls, qbound, mu):
 
         Q_diversity, cluster_labels = self.project_and_cluster(n_clasters=ncls, pop=pop)
         if self._diversity_ref_point is None:
             self._diversity_ref_point = qbound * Q_diversity
-    
+
         print('Performing clustering and diversity calculation...'.format(gen))
-        
+
         if Q_diversity < Q_diversity_bound:
             print(' Q diversity index {} lower than boundary {}. Diversity will be enhanced...'.format(
                 Q_diversity, self._diversity_ref_point
@@ -388,11 +341,11 @@ class NSGA(OptimizationBase):
             )
         else:
             pop = self.toolbox.select(pop, mu)
-        
+
         self._diversity_ref_point = qbound * Q_diversity
 
         return pop
-    
+
     def calculate_hypervolume(self, pop):
 
         print('Calculating hypervolume...')
@@ -410,11 +363,9 @@ class NSGA(OptimizationBase):
                     worst_values.append(mins[i])
             self._hypervolume_ref_point = np.array(worst_values)
 
-
         hv = hypervolume(pop, self._hypervolume_ref_point)
         self._progress_log.append(hv)
         print('Hypervolume of the generation: {}'.format(self._progress_log[-1]))
-        
 
     def evaluate_population(self, pop):
 
@@ -427,21 +378,25 @@ class NSGA(OptimizationBase):
             )
 
         consumer_tag = str(uuid.uuid4())
+
         def consumer_callback(channel, method, properties, body):
-            channel.basic_ack(delivery_tag = method.delivery_tag)
+            channel.basic_ack(delivery_tag=method.delivery_tag)
             content = json.loads(body.decode())
             if content['status_code'] == '500':
-                raise Exception('Error during simulation occured. Returned 500 status code')
-    
+                raise Exception(
+                    'Error during evaluation occured.'+'\r\n'+\
+                     content['message']
+                )
+
             results[content['ind_id']] = content['fitness']
             if len(results) == len(invalid_ind):
-                print('Fetched all results from the simulation response queue: '+self.simulation_response_queue)
+                print('Fetched all results from the simulation response queue: ' + self.simulation_response_queue)
                 self.channel.basic_cancel(
                     consumer_tag=consumer_tag
                 )
             return
 
-        print('Consuming results from the simulation response queue: '+self.simulation_response_queue)
+        print('Consuming results from the simulation response queue: ' + self.simulation_response_queue)
         self.channel.basic_consume(
             consumer_callback=consumer_callback,
             queue=self.simulation_response_queue,
@@ -453,7 +408,7 @@ class NSGA(OptimizationBase):
             ind.fitness.values = results[_id]
 
         return pop
-    
+
     @staticmethod
     def make_candidate(bounds):
         """Generates random initial individual"""
@@ -469,14 +424,14 @@ class NSGA(OptimizationBase):
         maximals = np.max(fitnesses, axis=0)
         ws = maximals ** -1
         for i, fitness in enumerate(fitnesses):
-            fitnesses_reprojected[i] = ((1-np.dot(ws, fitness))/np.dot(ws, ws)) * ws + fitness
+            fitnesses_reprojected[i] = ((1 - np.dot(ws, fitness)) / np.dot(ws, ws)) * ws + fitness
 
-        #Applying K-means clustering
+        # Applying K-means clustering
         kmeans = KMeans(n_clusters=n_clasters, random_state=0).fit(fitnesses_reprojected)
         cluster_labels = kmeans.labels_
         centroids = kmeans.cluster_centers_
 
-        #Calculating cluster diversity index
+        # Calculating cluster diversity index
         Q_diversity = 0
         for cluster_label, centroid in zip(np.unique(cluster_labels), centroids):
             cluster_inds = [i for i, j in zip(pop, cluster_labels) if j == cluster_label]
@@ -519,7 +474,7 @@ class NSGA(OptimizationBase):
     #     w = [] # weight factors
     #     for i, j in zip(z_max, z_min):
     #         w.append(1 / (i - j))
-        
+
     #     vector = []
 
     #     for i, j, k in zip(fitness, reference_point, w):
@@ -538,13 +493,12 @@ class NelderMead(OptimizationBase):
         self._best_scalar_fitness = None
         self._best_fitness = None
         self._best_individual = None
-    
+
     def run(self):
         print('Start local optimization...')
         maxf = self.request_data['optimization']['parameters']['maxf']
         xtol = self.request_data['optimization']['parameters']['xtol']
         ftol = self.request_data['optimization']['parameters']['ftol']
-
 
         solver = NelderMeadSimplexSolver(len(self.initial_values))
         solver.SetInitialPoints(self.initial_values)
@@ -560,7 +514,7 @@ class NelderMead(OptimizationBase):
         )
         solver.enable_signal_handler()
 
-        #Finally
+        # Finally
         self.callback(
             individual=solver.Solution(),
             final=True
@@ -573,7 +527,7 @@ class NelderMead(OptimizationBase):
         Generate response json of the NSGA algorithm
         """
         self._iter_count += 1
-        self._progress_log.append(self._best_scalar_fitness*-1)
+        self._progress_log.append(self._best_scalar_fitness * -1)
 
         self.response['status_code'] = status_code
         self.response['progress'] = {}
@@ -599,7 +553,7 @@ class NelderMead(OptimizationBase):
         )
 
         return
-    
+
     def evaluate_single_solution(self, individual, *weights):
         """Returns scalar fitness if weghts, else vector fitness of a single individual"""
 
@@ -607,23 +561,27 @@ class NelderMead(OptimizationBase):
 
         fitness = []
         consumer_tag = str(uuid.uuid4())
+
         def consumer_callback(channel, method, properties, body):
-            channel.basic_ack(delivery_tag = method.delivery_tag)
+            channel.basic_ack(delivery_tag=method.delivery_tag)
             content = json.loads(body.decode())
-            
+
             if content['status_code'] == '500':
-                raise Exception('Error during simulation occured. Returned 500 status code')
-    
+                raise Exception(
+                    'Error during evaluation occured.'+'\r\n'+\
+                     content['message']
+                )
+
             for i in content['fitness']:
                 fitness.append(i)
 
-            print('Fetched result from the simulation response queue: '+self.simulation_response_queue)
+            print('Fetched result from the simulation response queue: ' + self.simulation_response_queue)
             self.channel.basic_cancel(
                 consumer_tag=consumer_tag
             )
             return
 
-        print('Consuming results from the simulation response queue: '+self.simulation_response_queue)
+        print('Consuming results from the simulation response queue: ' + self.simulation_response_queue)
         self.channel.basic_consume(
             consumer_callback=consumer_callback,
             queue=self.simulation_response_queue,
@@ -634,14 +592,13 @@ class NelderMead(OptimizationBase):
         scalar_fitness = 0
         for value, weight in zip(fitness, weights):
             scalar_fitness += value * weight
-        
+
         if self._best_scalar_fitness is not None and scalar_fitness >= self._best_scalar_fitness:
             return scalar_fitness
-        
+
         else:
             self._best_scalar_fitness = scalar_fitness
             self._best_fitness = fitness
             self._best_individual = individual
-        
+
         return scalar_fitness
-    

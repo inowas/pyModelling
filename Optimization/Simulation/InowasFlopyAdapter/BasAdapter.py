@@ -24,7 +24,8 @@ class BasAdapter:
     def merge(self):
         default = self.default()
         for key in self._data:
-            default[key] = self._data[key]
+            if not key.startswith('_'):
+                default[key] = self._data[key]
         return default
 
     def get_package(self, _mf):

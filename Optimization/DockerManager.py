@@ -1,34 +1,35 @@
-import docker
-import os
 from copy import deepcopy
+import docker
 
 
-# Todo: Remove code commented out
 class DockerManager(object):
-    _simulation_server_command = 'python /Simulation/SimulationServer.py'
-    _optimization_server_command = 'python /Optimization/OptimizationManager.py'
     _running_containers = {}
 
     def __init__(self, configuration):
+
+        print(' ### Initializing DockerManager ### ')
+        print(' ### Configuration:', configuration)
+
         self.configuration = configuration
         self.client = docker.from_env()
-        self.optimization_image = self.configuration['OPTIMIZATION_IMAGE']
-        self.simulation_image = self.configuration['SIMULATION_IMAGE']
 
-        self.volumes = {
-            os.path.realpath(self.configuration['HOST_TEMP_FOLDER']):
-                {'bind': self.configuration['DOCKER_TEMP_FOLDER'], 'mode': 'rw'},
-            # os.path.realpath('./Optimization'): {'bind': '/Optimization', 'mode': 'rw'},
-            # os.path.realpath('./Simulation'): {'bind': '/Simulation', 'mode': 'rw'}
-        }
+        self.optimization_image = self.configuration['OPTIMIZATION_IMAGE']
+        print(' ### Pulling image ' + str(self.optimization_image))
+        self.client.images.pull(self.optimization_image)
+
+        self.simulation_image = self.configuration['SIMULATION_IMAGE']
+        print(' ### Pulling image ' + str(self.simulation_image))
+        self.client.images.pull(self.simulation_image)
+
+        volume_name = self.configuration['OPTIMIZATION_DATA_VOLUME']
+        self.volumes = {volume_name: {'bind': self.configuration['OPTIMIZATION_DATA_FOLDER'], 'mode': 'rw'}}
+        self.network = self.configuration['COMPOSE_PROJECT_NAME'].lower() + '_' + self.configuration['RABBITMQ_NETWORK']
 
     def run_container(self, container_type, job_id, number):
         if container_type == "optimization":
             image = self.optimization_image
-            # command = self._optimization_server_command
         elif container_type == "simulation":
             image = self.simulation_image
-            # command = self._simulation_server_command
         else:
             return
 
@@ -37,14 +38,18 @@ class DockerManager(object):
         environment['SIMULATION_RESPONSE_QUEUE'] += job_id
         environment['SIMULATION_REQUEST_QUEUE'] += job_id
 
+        print('Run container type ' + container_type + '.', environment)
+
         for _ in range(number):
             container = self.client.containers.run(
                 image,
-                # command=command,
                 environment=environment,
                 volumes=self.volumes,
+                network=self.network,
                 detach=True
             )
+
+            print('ContainerId: ' + str(container))
             try:
                 self._running_containers[job_id].append(container)
             except KeyError:
@@ -62,9 +67,10 @@ class DockerManager(object):
             except Exception as e:
                 not_stopped_containers.append(container)
                 print(str(e))
-        return not_stopped_containers
 
         del self._running_containers[job_id]
+
+        return not_stopped_containers
 
     def clean(self):
         for job_id in self._running_containers:
