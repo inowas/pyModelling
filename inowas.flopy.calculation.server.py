@@ -51,8 +51,10 @@ def process(content):
 
         data['mf']['mf']['modelname'] = 'mf'
         data['mf']['mf']['model_ws'] = target_directory
-        data['mf']['mt']['modelname'] = 'mt'
-        data['mf']['mt']['model_ws'] = target_directory
+
+        if 'mt' in data:
+            data['mt']['mt']['modelname'] = 'mt'
+            data['mt']['mt']['model_ws'] = target_directory
 
         try:
             flopy = InowasFlopyCalculationAdapter(version, data, calculation_id)
