@@ -36,7 +36,7 @@ class OptimizationManager(object):
             'optimization_id': os.environ['OPTIMIZATION_ID'],
             'message': str(exception),
         }
-    
+
         response = json.dumps(response).encode()
 
         self.channel.basic_publish(
@@ -47,7 +47,7 @@ class OptimizationManager(object):
                 delivery_mode=2
             )
         )
-    
+
     def clean(self):
         try:
             print('Sending Stop commands to the workers...')
@@ -107,7 +107,7 @@ class OptimizationManager(object):
                 'request_data': content,
                 'response_channel': self.channel,
                 'response_queue': os.environ['OPTIMIZATION_RESPONSE_QUEUE'],
-                'rabbit_host': os.environ['RABBITMQ_HOST'], 
+                'rabbit_host': os.environ['RABBITMQ_HOST'],
                 'rabbit_port': os.environ['RABBITMQ_PORT'],
                 'rabbit_vhost': os.environ['RABBITMQ_VIRTUAL_HOST'],
                 'rabbit_user': os.environ['RABBITMQ_USER'],
@@ -126,8 +126,8 @@ class OptimizationManager(object):
                 )
             else:
                 raise Exception(
-                    'Invalid optimization method name: {}'\
-                    .format(content['optimization']['parameters']['method'])+'\r\n'
+                    'Invalid optimization method name: {}' \
+                    .format(content['optimization']['parameters']['method']) + '\r\n'
                 )
         except Exception as e:
             self.reply_error(e)
@@ -135,12 +135,11 @@ class OptimizationManager(object):
             raise
 
         try:
-            self.algorithm.run()        
+            self.algorithm.run()
         except Exception as e:
             self.reply_error(e)
         finally:
             self.clean()
-
 
 
 if __name__ == "__main__":
