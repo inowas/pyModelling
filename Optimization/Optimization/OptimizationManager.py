@@ -1,7 +1,5 @@
 import os
-import sys
 import pika
-import warnings
 import json
 import shutil
 
@@ -82,16 +80,16 @@ class OptimizationManager(object):
         except:
             pass
 
-        try:
-            print('Deleting optimization temp folder...')
-            shutil.rmtree(
-                os.path.join(
-                    os.path.realpath(os.environ['OPTIMIZATION_DATA_FOLDER']),
-                    os.environ['OPTIMIZATION_ID']
-                )
-            )
-        except:
-            pass
+        # try:
+        #     print('Deleting optimization temp folder...')
+        #     shutil.rmtree(
+        #         os.path.join(
+        #             os.path.realpath(os.environ['OPTIMIZATION_DATA_FOLDER']),
+        #             os.environ['OPTIMIZATION_ID']
+        #         )
+        #     )
+        # except:
+        #     pass
 
     def run(self):
         try:

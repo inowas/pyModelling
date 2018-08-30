@@ -384,8 +384,8 @@ class NSGA(OptimizationBase):
             content = json.loads(body.decode())
             if content['status_code'] == '500':
                 raise Exception(
-                    'Error during evaluation occured.'+'\r\n'+\
-                     content['message']
+                    'Error during evaluation occured.' + '\r\n' + \
+                    content['message']
                 )
 
             results[content['ind_id']] = content['fitness']
@@ -568,17 +568,14 @@ class NelderMead(OptimizationBase):
 
             if content['status_code'] == '500':
                 raise Exception(
-                    'Error during evaluation occured.'+'\r\n'+\
-                     content['message']
+                    'Error during evaluation occurred.' + '\r\n' + content['message']
                 )
 
             for i in content['fitness']:
                 fitness.append(i)
 
             print('Fetched result from the simulation response queue: ' + self.simulation_response_queue)
-            self.channel.basic_cancel(
-                consumer_tag=consumer_tag
-            )
+            self.channel.basic_cancel(consumer_tag=consumer_tag)
             return
 
         print('Consuming results from the simulation response queue: ' + self.simulation_response_queue)

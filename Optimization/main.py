@@ -219,17 +219,17 @@ class Server(object):
             message += "Warning. Could not stop workers. " + str(e) + "\r\n"
             print(message)
 
-        try:
-            print(' [.] Deleting temporary files...')
-            temp_optimization_folder = os.path.join(
-                os.path.realpath(self.configuration['OPTIMIZATION_DATA_FOLDER']),
-                str(optimization_id)
-            )
-            shutil.rmtree(temp_optimization_folder)
-        except Exception as e:
-            message += "Warning. Could not delete temporary files in {}. " \
-                           .format(temp_optimization_folder) + str(e) + "\r\n"
-            print(message)
+        # try:
+        #     print(' [.] Deleting temporary files...')
+        #     temp_optimization_folder = os.path.join(
+        #         os.path.realpath(self.configuration['OPTIMIZATION_DATA_FOLDER']),
+        #         str(optimization_id)
+        #     )
+        #     shutil.rmtree(temp_optimization_folder)
+        # except Exception as e:
+        #     message += "Warning. Could not delete temporary files in {}. " \
+        #                    .format(temp_optimization_folder) + str(e) + "\r\n"
+        #     print(message)
 
         try:
             print(' [.] Deleting simulation queues...')
