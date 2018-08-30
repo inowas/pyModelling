@@ -126,6 +126,11 @@ class OptimizationManager(object):
                 self.algorithm = NelderMead(
                     **kwargs
                 )
+            else:
+                raise Exception(
+                    'Invalid optimization method name: {}'\
+                    .format(content['optimization']['parameters']['method'])+'\r\n'
+                )
         except Exception as e:
             self.reply_error(e)
             self.clean()
