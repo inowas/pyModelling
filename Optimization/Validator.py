@@ -29,6 +29,8 @@ def validate_spd(data):
                 = convert_list_to_dict(package_data["stress_period_data"])
         except KeyError:
             pass
+    
+    return data
         
 
             
