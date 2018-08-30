@@ -12,22 +12,22 @@ def validate_spd(data):
         if type(_object["concentration"]) == list:
             data["optimization"]["objects"][idx]["concentration"] = convert_list_to_dict(_object["concentration"])
 
-    # convert modflow spd data
-    for package_name, package_data in data["data"]["mf"].items():
-        try:
-            if type(package_data["stress_period_data"]) == list:
-                data["data"]["mf"][package_name]["stress_period_data"] \
-                    = convert_list_to_dict(package_data["stress_period_data"])
-        except KeyError:
-            pass
-
-    # convert mt3d spd data
-    for package_name, package_data in data["data"]["mt"].items():
-        try:
-            if type(package_data["stress_period_data"]) == list:
-                data["data"]["mt"][package_name]["stress_period_data"] \
-                    = convert_list_to_dict(package_data["stress_period_data"])
-        except KeyError:
-            pass
+    # # convert modflow spd data
+    # for package_name, package_data in data["data"]["mf"].items():
+    #     try:
+    #         if type(package_data["stress_period_data"]) == list:
+    #             data["data"]["mf"][package_name]["stress_period_data"] \
+    #                 = convert_list_to_dict(package_data["stress_period_data"])
+    #     except KeyError:
+    #         pass
+    #
+    # # convert mt3d spd data
+    # for package_name, package_data in data["data"]["mt"].items():
+    #     try:
+    #         if type(package_data["stress_period_data"]) == list:
+    #             data["data"]["mt"][package_name]["stress_period_data"] \
+    #                 = convert_list_to_dict(package_data["stress_period_data"])
+    #     except KeyError:
+    #         pass
 
     return data

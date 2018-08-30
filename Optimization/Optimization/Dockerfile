@@ -1,4 +1,4 @@
-FROM python:3.6-jessie
+FROM inowas/modflow:latest
 
 COPY . /Optimization
 

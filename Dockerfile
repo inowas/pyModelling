@@ -12,4 +12,7 @@ WORKDIR /
 
 COPY . /pymodelling
 
+RUN pip install numpy==1.12.0
+RUN pip install -r /pymodelling/requirements.txt
+
 WORKDIR /pymodelling
