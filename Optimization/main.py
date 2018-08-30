@@ -5,6 +5,7 @@ import pika
 import json
 import shutil
 from DockerManager import DockerManager
+from Validator import validate_spd
 
 
 class Server(object):
@@ -104,6 +105,7 @@ class Server(object):
         self.docker_manager.remove_exited_containers()
 
         content = json.loads(body.decode())
+        content = validate_spd(content)
         try:
             optimization_id = content['optimization_id']
         except KeyError:
