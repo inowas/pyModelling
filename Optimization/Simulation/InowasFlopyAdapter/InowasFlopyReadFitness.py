@@ -101,7 +101,6 @@ class InowasFlopyReadFitness:
             
             value = self.summary(value, constraint["summary_method"])
             
-            
             if constraint["operator"] == "less":
                 if value > constraint["value"]:
                     print("Constraint value {} exceeded max value {}, penalty will be assigned".format(value, constraint["value"]))
