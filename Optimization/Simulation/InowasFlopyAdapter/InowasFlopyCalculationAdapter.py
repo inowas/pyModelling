@@ -10,6 +10,8 @@ from .BasAdapter import BasAdapter
 from .ChdAdapter import ChdAdapter
 from .DisAdapter import DisAdapter
 from .GhbAdapter import GhbAdapter
+from .HobAdapter import HobAdapter
+from .HobStatistics import HobStatistics
 from .LpfAdapter import LpfAdapter
 from .MfAdapter import MfAdapter
 from .NwtAdapter import NwtAdapter
@@ -67,13 +69,12 @@ class InowasFlopyCalculationAdapter:
         if self._mf_data is not None:
             package_content = self.read_packages(self._mf_data)
             self.create_model(self.mf_package_order, package_content)
+            self.write_input_model(self._mf)
+            self.success, report = self.run_model(self._mf, model_type='mf')
 
-            if self._mf_data.get("write_input"):
-                self.write_input_model(self._mf)
-
-            if self._mf_data.get("run_model"):
-                self.success, report = self.run_model(self._mf, model_type='mf')
-                self._report += report
+            if "hob" in self._mf_data["packages"]:
+                print('Calculate hob-statistics and write to file %s.hob.stat' % uuid)
+                self.run_hob_statistics(self._mf)
 
             if self._mt_data is not None:
                 package_content = self.read_packages(self._mt_data)
@@ -85,6 +86,7 @@ class InowasFlopyCalculationAdapter:
                 if self._mt_data.get("run_model"):
                     self.success, report = self.run_model(self._mt, model_type='mt')
                     self._report += report
+
     @staticmethod
     def read_packages(data):
         package_content = {}
@@ -106,14 +108,23 @@ class InowasFlopyCalculationAdapter:
 
     @staticmethod
     def run_model(model, model_type):
-        normal_msg='normal termination'
+        normal_msg = 'normal termination'
         if model_type == 'mt':
-            normal_msg='Program completed'
+            normal_msg = 'Program completed'
+
         print('Run the %s model' % model)
         print(model.namefile)
         print(model.exe_name)
         success, report = model.run_model(report=True, silent=True, normal_msg=normal_msg)
         return success, ' \n'.join(str(e) for e in report)
+
+    @staticmethod
+    def run_hob_statistics(model):
+        model_ws = model.model_ws
+        name = model.name
+
+        print('Calculate hob-statistics for model %s' % name)
+        HobStatistics(model_ws, name).write_to_file()
 
     def check_model(self):
         if self._mf is not None:
@@ -122,7 +133,7 @@ class InowasFlopyCalculationAdapter:
             self._mt.check()
 
     def create_package(self, name, content):
-        # Modlfow packages
+        # Modflow packages
         if name == 'mf':
             self._mf = MfAdapter(content).get_package()
         if name == 'dis':
@@ -149,6 +160,8 @@ class InowasFlopyCalculationAdapter:
             ChdAdapter(content).get_package(self._mf)
         if name == 'ghb':
             GhbAdapter(content).get_package(self._mf)
+        if name == 'hob':
+            HobAdapter(content).get_package(self._mf)
         if name == 'lmt':
             LmtAdapter(content).get_package(self._mf)
 
