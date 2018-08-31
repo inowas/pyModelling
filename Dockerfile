@@ -1,4 +1,4 @@
-FROM inowas/modflow:latest
+FROM inowas/pymodelling:modflow
 
 MAINTAINER Ralf Junghanns <ralf.junghanns@gmail.com>
 
