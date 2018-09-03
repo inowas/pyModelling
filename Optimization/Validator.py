@@ -6,11 +6,14 @@ def validate_spd(data):
         return spd_dict
 
     # convert optimization objects' data
-    for idx, _object in enumerate(data["optimization"]["objects"]):
-        if type(_object["flux"]) == list:
-            data["optimization"]["objects"][idx]["flux"] = convert_list_to_dict(_object["flux"])
-        if type(_object["concentration"]) == list:
-            data["optimization"]["objects"][idx]["concentration"] = convert_list_to_dict(_object["concentration"])
+    try:
+        for idx, _object in enumerate(data["optimization"]["objects"]):
+            if type(_object["flux"]) == list:
+                data["optimization"]["objects"][idx]["flux"] = convert_list_to_dict(_object["flux"])
+            if type(_object["concentration"]) == list:
+                data["optimization"]["objects"][idx]["concentration"] = convert_list_to_dict(_object["concentration"])
+    except KeyError:
+        pass
 
     # # convert modflow spd data
     # for package_name, package_data in data["data"]["mf"].items():
