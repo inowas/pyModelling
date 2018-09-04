@@ -62,7 +62,6 @@ class InowasFlopyReadFitness:
                 value = self.read_input_concentration(objective, self.objects)
             
             value = self.summary(value, objective["summary_method"])
-            print('Fitness value: {}'.format(value))
             fitness.append(value.item())
 
         return fitness
@@ -148,10 +147,8 @@ class InowasFlopyReadFitness:
 
             head_file_object.close()
 
-        except Exception as e:
+        except:
             print('Head file of the model: '+model_name+' could not be opened')
-            print(str(e))
-            return head
 
         return head
     
@@ -171,10 +168,9 @@ class InowasFlopyReadFitness:
 
             conc_file_object.close()
         
-        except Exception as e:
+        except:
             print('Concentrations file of the model: '+model_name+' could not be opened')
-            print(str(e))
-            return conc
+            return None
 
         return conc
     
