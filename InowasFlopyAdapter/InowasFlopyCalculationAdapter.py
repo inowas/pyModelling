@@ -64,13 +64,13 @@ class InowasFlopyCalculationAdapter:
         self._mt_data = data.get("mt")
         self._version = version
         self._uuid = uuid
+        self.success = False
 
         if self._mf_data is not None:
             package_content = self.read_packages(self._mf_data)
-
             self.create_model(self.mf_package_order, package_content)
             self.write_input_model(self._mf)
-            self._report += self.run_model(self._mf)
+            self.success, report = self.run_model(self._mf, model_type='mf')
 
             if "hob" in self._mf_data["packages"]:
                 print('Calculate hob-statistics and write to file %s.hob.stat' % uuid)
@@ -79,12 +79,9 @@ class InowasFlopyCalculationAdapter:
             if self._mt_data is not None:
                 package_content = self.read_packages(self._mt_data)
                 self.create_model(self.mt_package_order, package_content)
-
-                if self._mt_data.get("write_input"):
-                    self.write_input_model(self._mt)
-
-                if self._mt_data.get("run_model"):
-                    self._report += self.run_model(self._mt)
+                self.write_input_model(self._mt)
+                self.success, report = self.run_model(self._mt, model_type='mt')
+                self._report += report
 
     @staticmethod
     def read_packages(data):
@@ -106,12 +103,16 @@ class InowasFlopyCalculationAdapter:
         model.write_input()
 
     @staticmethod
-    def run_model(model):
+    def run_model(model, model_type):
+        normal_msg = 'normal termination'
+        if model_type == 'mt':
+            normal_msg = 'Program completed'
+
         print('Run the %s model' % model)
         print(model.namefile)
         print(model.exe_name)
-        success, report = model.run_model(report=True)
-        return ' \n'.join(str(e) for e in report + [success])
+        success, report = model.run_model(report=True, silent=True, normal_msg=normal_msg)
+        return success, ' \n'.join(str(e) for e in report)
 
     @staticmethod
     def run_hob_statistics(model):
