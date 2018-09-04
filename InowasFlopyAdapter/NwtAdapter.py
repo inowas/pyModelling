@@ -30,7 +30,6 @@ class NwtAdapter:
 
     def get_package(self, _mf):
         content = self.merge()
-        print(content)
         return mf.ModflowNwt(
             _mf,
             **content

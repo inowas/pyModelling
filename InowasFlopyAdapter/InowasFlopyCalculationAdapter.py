@@ -109,8 +109,8 @@ class InowasFlopyCalculationAdapter:
             normal_msg = 'Program completed'
 
         print('Run the %s model' % model)
-        print(model.namefile)
-        print(model.exe_name)
+        print('Model namefile %s:' % model.namefile)
+        print('Model executable %s:' % model.exe_name)
         success, report = model.run_model(report=True, silent=True, normal_msg=normal_msg)
         return success, ' \n'.join(str(e) for e in report)
 

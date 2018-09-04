@@ -2,7 +2,6 @@ import numpy
 import json
 import os
 import sys
-import traceback
 from InowasFlopyAdapter.InowasFlopyCalculationAdapter import InowasFlopyCalculationAdapter
 from InowasFlopyAdapter.InowasFlopyReadAdapter import InowasFlopyReadAdapter
 from InowasInterpolation import Gaussian
@@ -40,12 +39,12 @@ def process(content, datafolder):
         with open(os.path.join(target_directory, 'configuration.json'), 'w') as outfile:
             json.dump(content, outfile)
 
-        try:
-            data['mf']['mf']['modelname'] = calculation_id
-            data['mf']['mf']['model_ws'] = target_directory
-            data['mf']['mf']['exe_name'] = os.path.join(binfolder, sys.platform, data['mf']['mf']['exe_name'])
-        except KeyError:
-            pass
+        data['mf']['mf']['modelname'] = 'mf'
+        data['mf']['mf']['model_ws'] = target_directory
+
+        if 'mt' in data:
+            data['mt']['mt']['modelname'] = 'mt'
+            data['mt']['mt']['model_ws'] = target_directory
 
         flopy = InowasFlopyCalculationAdapter(version, data, calculation_id)
         response = {}

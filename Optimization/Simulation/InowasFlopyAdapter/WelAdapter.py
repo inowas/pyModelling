@@ -24,9 +24,22 @@ class WelAdapter:
     def merge(self):
         default = self.default()
         for key in self._data:
-            if not key.startswith('_'):
-                default[key] = self._data[key]
+            if key.startswith('_'):
+                continue
+            if key == 'stress_period_data':
+                default[key] = self.to_dict(self._data[key])
+                continue
+
+            default[key] = self._data[key]
         return default
+
+    def to_dict(self, data):
+        if type(data) == list:
+            spd_dict = {}
+            for stress_period, record in enumerate(data):
+                spd_dict[stress_period] = record
+            return spd_dict
+        return data
 
     def get_package(self, _mf):
         content = self.merge()
