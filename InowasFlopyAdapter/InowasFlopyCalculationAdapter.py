@@ -20,6 +20,7 @@ from .PcgAdapter import PcgAdapter
 from .RchAdapter import RchAdapter
 from .RivAdapter import RivAdapter
 from .ReadBudget import ReadBudget
+from .ReadConcentration import ReadConcentration
 from .ReadDrawdown import ReadDrawdown
 from .ReadHead import ReadHead
 from .UpwAdapter import UpwAdapter
@@ -192,13 +193,16 @@ class InowasFlopyCalculationAdapter:
         if 'MF' in self._mf_data:
             key = 'MF'
 
-        heads = ReadHead(self._mf_data[key]['model_ws'])
-        drawdowns = ReadDrawdown(self._mf_data[key]['model_ws'])
         budgets = ReadBudget(self._mf_data[key]['model_ws'])
+        concentrations = ReadConcentration(self._mf_data[key]['model_ws'])
+        drawdowns = ReadDrawdown(self._mf_data[key]['model_ws'])
+        heads = ReadHead(self._mf_data[key]['model_ws'])
+
         response = {}
-        response['heads'] = heads.read_times()
-        response['drawdowns'] = drawdowns.read_times()
         response['budgets'] = budgets.read_times()
+        response['concentrations'] = concentrations.read_times()
+        response['drawdowns'] = drawdowns.read_times()
+        response['heads'] = heads.read_times()
         response['number_of_layers'] = heads.read_number_of_layers()
 
         return response
