@@ -50,7 +50,7 @@ class InowasFlopyCalculationAdapter:
 
     mf_package_order = [
         'mf', 'dis', 'bas', 'bas6',
-        'riv', 'wel', 'rch', 'chd', 'ghb',
+        'riv', 'wel', 'rch', 'chd', 'ghb', 'hob',
         'lpf', 'upw', 'pcg', 'nwt', 'oc', 'lmt', 'lmt6'
     ]
 
@@ -79,13 +79,9 @@ class InowasFlopyCalculationAdapter:
             if self._mt_data is not None:
                 package_content = self.read_packages(self._mt_data)
                 self.create_model(self.mt_package_order, package_content)
-
-                if self._mt_data.get("write_input"):
-                    self.write_input_model(self._mt)
-
-                if self._mt_data.get("run_model"):
-                    self.success, report = self.run_model(self._mt, model_type='mt')
-                    self._report += report
+                self.write_input_model(self._mt)
+                self.success, report = self.run_model(self._mt, model_type='mt')
+                self._report += report
 
     @staticmethod
     def read_packages(data):
