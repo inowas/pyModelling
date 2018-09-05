@@ -7,6 +7,7 @@ EMail: ralf.junghanns@gmail.com
 """
 
 from .ReadBudget import ReadBudget
+from .ReadConcentration import ReadConcentration
 from .ReadDrawdown import ReadDrawdown
 from .ReadHead import ReadHead
 from .ReadFile import ReadFile
@@ -32,6 +33,14 @@ class InowasFlopyReadAdapter:
     def read_head_ts(self, layer, row, column):
         head_file = ReadHead(self._projectfolder)
         return head_file.read_ts(layer=layer, row=row, column=column)
+
+    def read_concentration(self, totim, layer):
+        concentration_file = ReadConcentration(self._projectfolder)
+        return concentration_file.read_layer(totim=totim, layer=layer)
+
+    def read_concentration_ts(self, layer, row, column):
+        concentration_file = ReadConcentration(self._projectfolder)
+        return concentration_file.read_ts(layer=layer, row=row, column=column)
 
     def read_drawdown(self, totim, layer):
         drawdown_file = ReadDrawdown(self._projectfolder)
@@ -72,15 +81,20 @@ class InowasFlopyReadAdapter:
                 data = self.read_incremental_budget(totim=totim)
 
         if 'layerdata' in request:
-            if request['layerdata']['type'] == 'head':
+            if request['layerdata']['type'] == 'concentration':
                 totim = request['layerdata']['totim']
                 layer = request['layerdata']['layer']
-                data = self.read_head(totim=totim, layer=layer)
+                data = self.read_concentration(totim=totim, layer=layer)
 
             if request['layerdata']['type'] == 'drawdown':
                 totim = request['layerdata']['totim']
                 layer = request['layerdata']['layer']
                 data = self.read_drawdown(totim=totim, layer=layer)
+
+            if request['layerdata']['type'] == 'head':
+                totim = request['layerdata']['totim']
+                layer = request['layerdata']['layer']
+                data = self.read_head(totim=totim, layer=layer)
 
         if 'file' in request:
             data = [self.read_file(request['file'])]
@@ -89,17 +103,23 @@ class InowasFlopyReadAdapter:
             data = self.read_file_list()
 
         if 'timeseries' in request:
-            if request['timeseries']['type'] == 'head':
+            if request['timeseries']['type'] == 'concentration':
                 layer = request['timeseries']['layer']
                 row = request['timeseries']['row']
                 column = request['timeseries']['column']
-                data = self.read_head_ts(layer=layer, row=row, column=column)
+                data = self.read_concentration_ts(layer=layer, row=row, column=column)
 
             if request['timeseries']['type'] == 'drawdown':
                 layer = request['timeseries']['layer']
                 row = request['timeseries']['row']
                 column = request['timeseries']['column']
                 data = self.read_drawdown_ts(layer=layer, row=row, column=column)
+
+            if request['timeseries']['type'] == 'head':
+                layer = request['timeseries']['layer']
+                row = request['timeseries']['row']
+                column = request['timeseries']['column']
+                data = self.read_head_ts(layer=layer, row=row, column=column)
 
         if data is not None:
             return dict(
