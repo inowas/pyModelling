@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Build the main image which runs the main services
-docker build ./InowasModflow --tag inowas/pymodelling:modflow
+#docker build ./InowasModflow --tag inowas/pymodelling:modflow
 
 # Build the main image which runs the main services
 docker build . --tag inowas/pymodelling:latest
