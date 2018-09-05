@@ -121,6 +121,14 @@ class Server(object):
         print(' [.] Received {} request'.format(content['type']))
 
         if content['type'] == 'optimization_start':
+            if optimization_id in self.docker_manager._running_containers:
+                success, message = self.stop_optimization(content['optimization_id'])
+                response_message = 'Optimization with id {} already in progress. Will be restarted'.format(optimization_id)+'\r\n'+message
+                self.send_response(
+                    success=success,
+                    optimization_id=optimization_id,
+                    message=response_message
+                )
             success, message = self.start_optimization(content)
             self.send_response(
                 success=success,

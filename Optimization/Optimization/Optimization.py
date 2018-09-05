@@ -99,6 +99,9 @@ class OptimizationBase(object):
     def apply_individual(self, individual):
         """Write individual values to variable template and return the filled template"""
         for ind_value, keys in zip(individual, self.var_map):
+            if keys[1] == 'position':
+                ind_value = int(ind_value)
+                
             if keys[1] == 'concentration':
                 for object_ in self.var_template:
                     if object_['id'] == keys[0]:
