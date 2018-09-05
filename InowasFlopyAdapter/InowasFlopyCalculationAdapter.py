@@ -72,6 +72,7 @@ class InowasFlopyCalculationAdapter:
             self.create_model(self.mf_package_order, package_content)
             self.write_input_model(self._mf)
             self.success, report = self.run_model(self._mf, model_type='mf')
+            self._report += report
 
             if "hob" in self._mf_data["packages"]:
                 print('Calculate hob-statistics and write to file %s.hob.stat' % uuid)
