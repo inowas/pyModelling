@@ -76,7 +76,8 @@
         "operator": "less",
         "value": 2,
         "location": {
-          "type": "bbox",
+          "type": "object",
+          "objects": ["0"],
           "ts": [
             0,
             9
@@ -98,7 +99,7 @@
     ],
     "objects": [
       {
-        "id": 0,
+        "id": "0",
         "type": "well",
         "position": {
           "row": {
