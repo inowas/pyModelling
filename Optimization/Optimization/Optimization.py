@@ -38,8 +38,14 @@ class OptimizationBase(object):
         self.password = rabbit_password
         self.virtualhost = rabbit_vhost
         self.request_data = request_data
+        try:
+            self.report_frequency = int(self.request_data['optimization']['parameters']['report_frequency'])
+        except Exception:
+            self.logger.warning('report_frequency is not defined, set to 0')
+            self.report_frequency = 0
 
         self._progress_log = []
+        self._simulation_count = 0
         self._iter_count = 0
         self.response = {'optimization_id': self.optimization_id,
                          'message': ''}
@@ -242,7 +248,7 @@ class NSGA(OptimizationBase):
 
         return
 
-    def callback(self, pop, final, status_code=200):
+    def callback(self, pop=[], final=False, status_code=200):
         """
         Generate response json of the NSGA algorithm
         exmple of response
@@ -271,6 +277,8 @@ class NSGA(OptimizationBase):
             ],
             progress: {
                 progress_log: [1,2,3...],
+                simulation: 12,
+                simulation_total: 50,
                 iteration: 30,
                 iteration_total: 30,
                 final: true
@@ -278,7 +286,6 @@ class NSGA(OptimizationBase):
             
         }
         """
-        self._iter_count += 1
 
         self.response['status_code'] = status_code
         self.response['solutions'] = []
@@ -293,6 +300,8 @@ class NSGA(OptimizationBase):
             )
 
         self.response['progress']['progess_log'] = self._progress_log
+        self.response['progress']['simulation'] = self._simulation_count
+        self.response['progress']['simulation_total'] = self.request_data['optimization']['parameters']['pop_size']
         self.response['progress']['iteration'] = self._iter_count
         self.response['progress']['iteration_total'] = self.request_data['optimization']['parameters']['ngen']
         self.response['progress']['final'] = final
@@ -374,6 +383,8 @@ class NSGA(OptimizationBase):
         self.logger.info('Hypervolume of the generation: {}'.format(self._progress_log[-1]))
 
     def evaluate_population(self, pop):
+        self._simulation_count = 0
+        self._iter_count += 1
 
         invalid_ind = [ind for ind in pop if not ind.fitness.valid]
 
@@ -386,6 +397,12 @@ class NSGA(OptimizationBase):
         consumer_tag = str(uuid.uuid4())
 
         def consumer_callback(channel, method, properties, body):
+            self._simulation_count += 1
+            if self.report_frequency > 0 and \
+               self._simulation_count % int(self.request_data['optimization']['parameters']['pop_size'] \
+                                            /self.report_frequency) == 0:
+                self.callback()
+
             channel.basic_ack(delivery_tag=method.delivery_tag)
             content = json.loads(body.decode())
             if content['status_code'] == '500':
@@ -400,6 +417,7 @@ class NSGA(OptimizationBase):
                 self.channel.basic_cancel(
                     consumer_tag=consumer_tag
                 )
+                
             return
 
         self.logger.debug('Consuming results from the simulation response queue: ' + self.simulation_response_queue)
@@ -545,6 +563,8 @@ class NelderMead(OptimizationBase):
             }
         ]
         self.response['progress']['progess_log'] = self._progress_log
+        self.response['progress']['simulation'] = 1
+        self.response['progress']['simulation_total'] = 1
         self.response['progress']['iteration'] = self._iter_count
         self.response['progress']['iteration_total'] = self.request_data['optimization']['parameters']['maxf']
         self.response['progress']['final'] = final

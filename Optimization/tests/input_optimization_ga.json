@@ -4,6 +4,7 @@
   "optimization_id": "test_optimization",
   "optimization": {
     "parameters": {
+      "report_frequency": 3,
       "method": "GA",
       "ngen": 5,
       "pop_size": 10,
