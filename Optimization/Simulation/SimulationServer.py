@@ -108,7 +108,7 @@ if __name__ == "__main__":
         log_file_name = os.path.join(
             os.path.realpath(os.environ['OPTIMIZATION_DATA_FOLDER']),
             os.environ['OPTIMIZATION_ID'],
-            'optimization.log'
+            'optimization-'+os.environ['OPTIMIZATION_ID']+'.log'
         )
         log_config['handlers']['file_handler']['filename'] = log_file_name
         logging.config.dictConfig(log_config)

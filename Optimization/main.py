@@ -16,7 +16,7 @@ class Server(object):
 
     def __init__(self):
 
-        self.logger.info('Initialization...\r\n')
+        self.logger.info('Initialization...')
         config_from_file = False
 
         try:
@@ -31,12 +31,9 @@ class Server(object):
         except:
             self.logger.error('ERROR: Could not load configuration from ./config.json file')
 
-        self.logger.info('Configuration File: \r\n')
-        self.logger.info(str(config_from_file)+'\r\n')
-        self.logger.info('Environment Variables: \r\n')
-        self.logger.info(str(os.environ)+'\r\n')
-        self.logger.info('Merged Config Variables: \r\n')
-        self.logger.info(str(self.configuration))
+        self.logger.info('Configuration File: \r\n'+str(config_from_file))
+        self.logger.info('Environment Variables: \r\n'+str(os.environ))
+        self.logger.info('Merged Config Variables: \r\n'+str(self.configuration))
 
         self.docker_manager = DockerManager(self.configuration)
         self.request_channel = None

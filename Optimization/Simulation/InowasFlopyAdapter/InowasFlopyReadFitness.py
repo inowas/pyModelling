@@ -8,10 +8,13 @@ import os
 import math
 import numpy as np
 import flopy
+import logging
+import logging.config
 
 
 class InowasFlopyReadFitness:
     """Calculation of objective values of a model """
+    logger = logging.getLogger('inowas_flopy_read_fitness')
 
     def __init__(self, optimization_data, flopy_adapter):
 
@@ -102,22 +105,21 @@ class InowasFlopyReadFitness:
             
             if constraint["operator"] == "less":
                 if value > constraint["value"]:
-                    print("Constraint value {} exceeded max value {}, penalty will be assigned".format(value, constraint["value"]))
+                    self.logger.debug("Constraint value {} exceeded max value {}, penalty will be assigned".format(value, constraint["value"]))
                     constraints_exceeded.append(True)
                 else:
                     constraints_exceeded.append(False)
                 
             elif constraint["operator"] == "more":
                 if value < constraint["value"]:
-                    print("Constraint value {} lower than min value {}, penalty will be assigned".format(value, constraint["value"]))
+                    self.logger.debug("Constraint value {} lower than min value {}, penalty will be assigned".format(value, constraint["value"]))
                     constraints_exceeded.append(True)
                 else:
                     constraints_exceeded.append(False)
 
         return constraints_exceeded
     
-    @staticmethod
-    def summary(result, method):
+    def summary(self, result, method):
         if method == 'mean':
             result = np.nanmean(result)
         elif method == 'max':
@@ -125,17 +127,16 @@ class InowasFlopyReadFitness:
         elif method == 'min':
             result = np.min(result)
         else:
-            print("Unknown summary method {}. Using max".format(method))
+            self.logger.debug("Unknown summary method {}. Using max".format(method))
             result = np.max(result)
         
         return result
 
 
-    @staticmethod
-    def read_head(data, mask, model_ws, model_name):
+    def read_head(self, data, mask, model_ws, model_name):
         "Reads head file"
 
-        print('Read head values at location: {}'.format(data['location']))
+        self.logger.debug('Read head values at location: {}'.format(data['location']))
         
         try:
             head_file_object = flopy.utils.HeadFile(
@@ -148,15 +149,14 @@ class InowasFlopyReadFitness:
             head_file_object.close()
 
         except:
-            print('Head file of the model: '+model_name+' could not be opened')
+            self.logger.error('Head file of the model: '+model_name+' could not be opened')
 
         return head
     
-    @staticmethod
-    def read_concentration(data, mask, model_ws, model_name):
+    def read_concentration(self, data, mask, model_ws, model_name):
         "Reads concentrations file"
 
-        print('Read concentration values at location: {}'.format(data['location']))
+        self.logger.debug('Read concentration values at location: {}'.format(data['location']))
 
         try:
             conc_file_object = flopy.utils.UcnFile(
@@ -169,23 +169,23 @@ class InowasFlopyReadFitness:
             conc_file_object.close()
         
         except:
-            print('Concentrations file of the model: '+model_name+' could not be opened')
+            self.logger.error('Concentrations file of the model: '+model_name+' could not be opened')
             return None
 
         return conc
     
-    @staticmethod
-    def read_flux(data, objects):
+
+    def read_flux(self, data, objects):
         "Reads wel fluxes"
 
-        print('Read flux values at location: {}'.format(data['location']))
+        self.logger.debug('Read flux values at location: {}'.format(data['location']))
 
         fluxes = np.array([])
 
         try:
             obj_ids = data["location"]["objects"]
         except KeyError:
-            print("ERROR! Objective location of type Flux has to be an Object!")
+            self.logger.error("ERROR! Objective location of type Flux has to be an Object!")
             return None
 
         for obj in objects:
@@ -201,23 +201,22 @@ class InowasFlopyReadFitness:
 
         return fluxes
     
-    @staticmethod
-    def read_input_concentration(data, objects):
+    def read_input_concentration(self, data, objects):
 
-        print('Read input_concentration values at location: {}'.format(data['location']))
+        self.logger.debug('Read input_concentration values at location: {}'.format(data['location']))
 
         input_concentrations = np.array([])
 
         try:
             component = data["component"]
         except KeyError:
-            print("ERROR! Concentration component for the Objective of type input_concentrations is not defined!")
+            self.logger.error("ERROR! Concentration component for the Objective of type input_concentrations is not defined!")
             return None
         
         try:
             obj_ids = data["location"]["objects"]
         except KeyError:
-            print("ERROR! Objective location of type input_concentrations has to be an Object!")
+            self.logger.error("ERROR! Objective location of type input_concentrations has to be an Object!")
             return None
         
         for obj in objects:
@@ -233,11 +232,10 @@ class InowasFlopyReadFitness:
 
         return input_concentrations
     
-    @staticmethod
-    def read_distance(data, objects):
+    def read_distance(self, data, objects):
         """Returns distance between two groups of objects"""
 
-        print('Read distance between {} and {}'.format(data['location_1'], data['location_2']))
+        self.logger.debug('Read distance between {} and {}'.format(data['location_1'], data['location_2']))
 
         location_1 = data["location_1"]
         location_2 = data["location_2"]
@@ -286,11 +284,10 @@ class InowasFlopyReadFitness:
         
         return distances
 
-    @staticmethod
-    def make_mask(location, objects, dis_package):
+    def make_mask(self, location, objects, dis_package):
         "Returns an array mask of location that has nper,nlay,nrow,ncol dimensions"
 
-        print('Making mask array for location: {}'.format(location))
+        self.logger.debug('Making mask array for location: {}'.format(location))
         nstp_flat = dis_package.nstp.array.sum()
         nrow = dis_package.nrow
         ncol = dis_package.ncol

@@ -33,6 +33,16 @@
             "level": "DEBUG",
             "handlers": ["console", "file_handler"],
             "propagate": false
+        },
+        "inowas_flopy_read_fitness": {
+            "level": "DEBUG",
+            "handlers": ["console", "file_handler"],
+            "propagate": false
+        },
+        "inowas_flopy_calculation_adapter": {
+            "level": "DEBUG",
+            "handlers": ["console", "file_handler"],
+            "propagate": false
         }
     },
 
