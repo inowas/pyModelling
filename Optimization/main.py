@@ -4,15 +4,19 @@ import os
 import pika
 import json
 import shutil
+import logging
+import logging.config
+
 from DockerManager import DockerManager
 from Validator import validate_spd
 
 
 class Server(object):
+    logger = logging.getLogger('main')
 
     def __init__(self):
 
-        print(' Initialization...\r\n')
+        self.logger.info('Initialization...\r\n')
         config_from_file = False
 
         try:
@@ -21,18 +25,18 @@ class Server(object):
                     './config.json')
             ) as f:
                 config_from_file = json.load(f)
-        except:
-            print('ERROR: Could not load configuration from ./config.json file')
+            
+            self.configuration = self.mergeConfigurationWithEnvVariables(config_from_file, os.environ)
 
-        print(' Configuration File: \r\n')
-        print(config_from_file)
-        print('\r\n')
-        print(' Environment Variables: \r\n')
-        print(os.environ)
-        print('\r\n')
-        print(' Merged Config Variables: \r\n')
-        self.configuration = self.mergeConfigurationWithEnvVariables(config_from_file, os.environ)
-        print(self.configuration)
+        except:
+            self.logger.error('ERROR: Could not load configuration from ./config.json file')
+
+        self.logger.info('Configuration File: \r\n')
+        self.logger.info(str(config_from_file)+'\r\n')
+        self.logger.info('Environment Variables: \r\n')
+        self.logger.info(str(os.environ)+'\r\n')
+        self.logger.info('Merged Config Variables: \r\n')
+        self.logger.info(str(self.configuration))
 
         self.docker_manager = DockerManager(self.configuration)
         self.request_channel = None
@@ -95,13 +99,13 @@ class Server(object):
         self.channel.basic_consume(
             self.on_request, queue=self.configuration['OPTIMIZATION_REQUEST_QUEUE']
         )
-        print(" [x] Optimization server awaiting requests")
+        self.logger.info("Optimization server awaiting requests")
         self.channel.start_consuming()
 
     # noinspection PyUnusedLocal
     def on_request(self, channel, method, properties, body):
 
-        print(' [.] Deleting inactive containers...')
+        self.logger.info('Deleting inactive containers...')
         self.docker_manager.remove_exited_containers()
 
         content = json.loads(body.decode())
@@ -110,7 +114,7 @@ class Server(object):
             optimization_id = content['optimization_id']
         except KeyError:
             message = "Error. Failed to read optimization ID"
-            print(message)
+            self.logger.info(message)
             self.send_response(
                 success=False,
                 optimization_id=None,
@@ -118,7 +122,7 @@ class Server(object):
             )
             return
 
-        print(' [.] Received {} request'.format(content['type']))
+        self.logger.info('Received {} request'.format(content['type']))
 
         if content['type'] == 'optimization_start':
             if optimization_id in self.docker_manager._running_containers:
@@ -150,34 +154,34 @@ class Server(object):
             )
 
         channel.basic_ack(delivery_tag=method.delivery_tag)
-        print(" [x] Optimization server awaiting requests")
+        self.logger.info("Optimization server awaiting requests")
 
     def start_optimization(self, content):
-        print(' [.] Start Optimization')
+        self.logger.info('Start Optimization')
         try:
             optimization_id = str(content['optimization_id'])
         except Exception as e:
             message = "Error. Failed to read optimization ID. " + str(e)
-            print(message)
+            self.logger.error(message)
             return False, message
 
         try:
             data_dir = os.path.join(self.configuration['OPTIMIZATION_DATA_FOLDER'], optimization_id)
             config_file = os.path.join(data_dir, self.configuration['MODEL_FILE_NAME'])
 
-            print(' [.] Data folder is {}'.format(data_dir))
+            self.logger.info('Data folder is {}'.format(data_dir))
 
             if not os.path.exists(data_dir):
-                print(' [.] Create data folder is {}'.format(data_dir))
+                self.logger.info('Create data folder is {}'.format(data_dir))
                 os.makedirs(data_dir)
 
             with open(config_file, 'w') as f:
-                print(' [.] Write configuration to {}'.format(config_file))
+                self.logger.info('Write configuration to {}'.format(config_file))
                 json.dump(content, f)
 
         except Exception as e:
             message = "Error. Could not write model configuration to {} . ".format(config_file) + str(e)
-            print(message)
+            self.logger.error(message)
             return False, message
 
         try:
@@ -186,7 +190,7 @@ class Server(object):
                 solvers_per_job = int(self.configuration['NUM_SOLVERS_GA'])
         except Exception as e:
             message = "Error. " + str(e)
-            print(message)
+            self.logger.error(message)
             return False, message
 
         try:
@@ -195,7 +199,7 @@ class Server(object):
                 job_id=optimization_id,
                 number=1
             )
-            print(' [.] Accepted Optimization request. Optimization container started')
+            self.logger.info('Accepted Optimization request. Optimization container started')
 
             self.docker_manager.run_container(
                 container_type="simulation",
@@ -203,10 +207,10 @@ class Server(object):
                 number=solvers_per_job
             )
 
-            print(' [.] {} Simulation container(s) started'.format(solvers_per_job))
+            self.logger.info('{} Simulation container(s) started'.format(solvers_per_job))
         except Exception as e:
             message = "Error. Failed to start workers. " + str(e)
-            print(message)
+            self.logger.error(message)
             return False, message
 
         message = 'Successfully started 1 optimization and {} model solver containers.'.format(solvers_per_job)
@@ -216,18 +220,18 @@ class Server(object):
     def stop_optimization(self, optimization_id):
         message = ""
         try:
-            print(' [.] Stopping containers...')
+            self.logger.info('Stopping containers...')
             not_stopped_containers = self.docker_manager.stop_all_job_containers(
                 job_id=optimization_id,
                 remove=True
             )
             if not_stopped_containers:
                 message += "Warning. Could not stop some workers. " + str(not_stopped_containers) + "\r\n"
-                print(message)
+                self.logger.warning(message)
 
         except Exception as e:
             message += "Warning. Could not stop workers. " + str(e) + "\r\n"
-            print(message)
+            self.logger.warning(message)
 
         # try:
         #     print(' [.] Deleting temporary files...')
@@ -242,7 +246,7 @@ class Server(object):
         #     print(message)
 
         try:
-            print(' [.] Deleting simulation queues...')
+            self.logger.info('Deleting simulation queues...')
             self.channel.queue_delete(
                 queue=self.configuration['SIMULATION_REQUEST_QUEUE'] + optimization_id
             )
@@ -252,7 +256,7 @@ class Server(object):
 
         except:
             message += "Warning. Could not delete simulation queues. " + str(e) + "\r\n"
-            print(message)
+            self.logger.warning(message)
 
         if message == "":
             message = 'Successfully terminated optimization.'
@@ -261,6 +265,20 @@ class Server(object):
 
 
 if __name__ == "__main__":
+    try:
+        with open(os.path.join(os.path.dirname(__file__), 'log_config.json'), 'rt') as f:
+            log_config = json.load(f)
+
+        log_file_name = os.path.join(
+            os.path.realpath(os.environ['OPTIMIZATION_DATA_FOLDER']),
+            'optimization.log'
+        )
+        log_config['handlers']['file_handler']['filename'] = log_file_name
+        logging.config.dictConfig(log_config)
+    except Exception:
+        logging.basicConfig(level=logging.DEBUG,
+            format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
+        )
     server = Server()
     server.connect()
     server.consume()

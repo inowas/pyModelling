@@ -2,15 +2,19 @@ import os
 import pika
 import json
 import shutil
+import logging
+import logging.config
 
 from Optimization import NSGA, NelderMead
 
 
 class OptimizationManager(object):
+    logger = logging.getLogger('optimization_manager')
+
     def __init__(self):
 
-        print(' ### Initializing Optimization Manager ###')
-        print(' Environment: ', os.environ)
+        self.logger.info('### Initializing Optimization Manager ###')
+        self.logger.debug('Environment: '+str(os.environ))
 
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(
@@ -50,7 +54,7 @@ class OptimizationManager(object):
 
     def clean(self):
         try:
-            print('Sending Stop commands to the workers...')
+            self.logger.info('Sending Stop commands to the workers...')
             self.channel.basic_publish(
                 exchange='',
                 routing_key=os.environ['SIMULATION_REQUEST_QUEUE'],
@@ -62,7 +66,7 @@ class OptimizationManager(object):
         except:
             pass
         try:
-            print('Deleting simulation queues...')
+            self.logger.info('Deleting simulation queues...')
             self.channel.queue_delete(
                 queue=os.environ['SIMULATION_REQUEST_QUEUE']
             )
@@ -74,7 +78,7 @@ class OptimizationManager(object):
             pass
 
         try:
-            print('Closing connection...')
+            self.logger.info('Closing connection...')
             self.connection.close()
             self.algorithm.connection.close()
         except:
@@ -130,6 +134,7 @@ class OptimizationManager(object):
                     .format(content['optimization']['parameters']['method']) + '\r\n'
                 )
         except Exception as e:
+            self.logger.error(str(e), exc_info=True)
             self.reply_error(e)
             self.clean()
             raise
@@ -137,11 +142,28 @@ class OptimizationManager(object):
         try:
             self.algorithm.run()
         except Exception as e:
+            self.logger.error(str(e), exc_info=True)
             self.reply_error(e)
         finally:
             self.clean()
 
 
 if __name__ == "__main__":
+    try:
+        with open(os.path.join(os.path.dirname(__file__), 'log_config.json'), 'rt') as f:
+            log_config = json.load(f)
+
+        log_file_name = os.path.join(
+            os.path.realpath(os.environ['OPTIMIZATION_DATA_FOLDER']),
+            os.environ['OPTIMIZATION_ID'],
+            'optimization.log'
+        )
+        log_config['handlers']['file_handler']['filename'] = log_file_name
+        logging.config.dictConfig(log_config)
+    except Exception:
+        logging.basicConfig(level=logging.DEBUG,
+            format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
+        )
+
     om = OptimizationManager()
     om.run()
