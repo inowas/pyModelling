@@ -1,0 +1,53 @@
+{
+    "version": 1,
+    "disable_existing_loggers": false,
+    "formatters": {
+        "record_format": {
+            "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        }
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": "DEBUG",
+            "formatter": "record_format",
+            "stream": "ext://sys.stdout"
+        },
+        "file_handler": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "level": "DEBUG",
+            "formatter": "record_format",
+            "filename": null,
+            "maxBytes": 10485760,
+            "backupCount": 20,
+            "encoding": "utf8"
+        }
+    },
+    "loggers": {
+        "simulation_server": {
+            "level": "DEBUG",
+            "handlers": ["console", "file_handler"],
+            "propagate": false
+        },
+        "simulation": {
+            "level": "DEBUG",
+            "handlers": ["console", "file_handler"],
+            "propagate": false
+        },
+        "inowas_flopy_read_fitness": {
+            "level": "DEBUG",
+            "handlers": ["console", "file_handler"],
+            "propagate": false
+        },
+        "inowas_flopy_calculation_adapter": {
+            "level": "DEBUG",
+            "handlers": ["console", "file_handler"],
+            "propagate": false
+        }
+    },
+
+    "root": {
+        "level": "DEBUG",
+        "handlers": ["console", "file_handler"]
+    }
+}
