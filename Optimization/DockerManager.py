@@ -1,29 +1,34 @@
 from copy import deepcopy
 import docker
+import logging
+import logging.config
 
 
 class DockerManager(object):
     _running_containers = {}
+    logger = logging.getLogger('docker_manager')
 
     def __init__(self, configuration):
 
-        print(' ### Initializing DockerManager ### ')
-        print(' ### Configuration:', configuration)
+        self.logger.info('### Initializing DockerManager ### ')
+        self.logger.info('### Configuration:'+str(configuration))
 
         self.configuration = configuration
         self.client = docker.from_env()
 
         self.optimization_image = self.configuration['OPTIMIZATION_IMAGE']
-        print(' ### Pulling image ' + str(self.optimization_image))
+        self.logger.info('### Pulling image ' + str(self.optimization_image))
         self.client.images.pull(self.optimization_image)
 
         self.simulation_image = self.configuration['SIMULATION_IMAGE']
-        print(' ### Pulling image ' + str(self.simulation_image))
+        self.logger.info('### Pulling image ' + str(self.simulation_image))
         self.client.images.pull(self.simulation_image)
 
         volume_name = self.configuration['OPTIMIZATION_DATA_VOLUME']
-        self.volumes = {volume_name: {'bind': self.configuration['OPTIMIZATION_DATA_FOLDER'], 'mode': 'rw'}}
-        self.network = self.configuration['COMPOSE_PROJECT_NAME'].lower() + '_' + self.configuration['RABBITMQ_NETWORK']
+        self.volumes = {
+            volume_name: {'bind': self.configuration['OPTIMIZATION_DATA_FOLDER'], 'mode': 'rw'}
+            }
+        self.network = self.configuration['COMPOSE_PROJECT_NAME'].lower().replace('_', '') + '_' + self.configuration['RABBITMQ_NETWORK']
 
     def run_container(self, container_type, job_id, number):
         if container_type == "optimization":
@@ -38,7 +43,7 @@ class DockerManager(object):
         environment['SIMULATION_RESPONSE_QUEUE'] += job_id
         environment['SIMULATION_REQUEST_QUEUE'] += job_id
 
-        print('Run container type ' + container_type + '.', environment)
+        self.logger.info('Run container type ' + container_type + '.', environment)
 
         for _ in range(number):
             container = self.client.containers.run(
@@ -49,7 +54,7 @@ class DockerManager(object):
                 detach=True
             )
 
-            print('ContainerId: ' + str(container))
+            self.logger.info('ContainerId: ' + str(container))
             try:
                 self._running_containers[job_id].append(container)
             except KeyError:
@@ -66,7 +71,7 @@ class DockerManager(object):
                     del container
             except Exception as e:
                 not_stopped_containers.append(container)
-                print(str(e))
+                self.logger.error(str(e), exc_info=True)
 
         del self._running_containers[job_id]
 

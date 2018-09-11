@@ -2,12 +2,14 @@ import os
 import sys
 import json
 import shutil
+import logging
 
 from InowasFlopyAdapter.InowasFlopyReadFitness import InowasFlopyReadFitness
 from InowasFlopyAdapter.InowasFlopyCalculationAdapter import InowasFlopyCalculationAdapter
 
 
 class Simulation(object):
+    logger = logging.getLogger('simulation')
 
     def __init__(self, simulation_id):
         # Set model workspace
@@ -16,7 +18,8 @@ class Simulation(object):
             os.environ['OPTIMIZATION_ID'],
             simulation_id
         )
-        print('Set model workspace to {}'.format(self.model_ws))
+        
+        self.logger.info('Set model workspace to {}'.format(self.model_ws))
         
         # Set configuration file name
         config_file = os.path.join(
@@ -25,7 +28,7 @@ class Simulation(object):
             os.environ['MODEL_FILE_NAME']
         )
 
-        print('Reading configulation file {}'.format(config_file))
+        self.logger.info('Reading configulation file {}'.format(config_file))
 
         with open(config_file) as f:
             data = json.load(f)
@@ -66,7 +69,7 @@ class Simulation(object):
             self.optimization_data, flopy_adapter
         )
 
-        print('Deleting model files in: {}'.format(self.model_ws))
+        self.logger.info('Deleting model files in: {}'.format(self.model_ws))
         shutil.rmtree(self.model_ws)
 
         return fitness.get_fitness()

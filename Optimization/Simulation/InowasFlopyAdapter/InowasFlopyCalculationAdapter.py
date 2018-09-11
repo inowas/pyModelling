@@ -6,6 +6,9 @@ Author: Ralf Junghanns
 EMail: ralf.junghanns@gmail.com
 """
 
+import logging
+import logging.config
+
 from .BasAdapter import BasAdapter
 from .ChdAdapter import ChdAdapter
 from .DisAdapter import DisAdapter
@@ -40,6 +43,8 @@ from .TobAdapter import TobAdapter
 from .UztAdapter import UztAdapter
 
 
+
+
 class InowasFlopyCalculationAdapter:
     """The Flopy Class"""
 
@@ -60,6 +65,8 @@ class InowasFlopyCalculationAdapter:
         "phc", "rct", "sft", "tob", "uzt"
     ]
 
+    logger = logging.getLogger('inowas_flopy_calculation_adapter')
+
     def __init__(self, version, data, uuid):
         self._mf_data = data.get("mf")
         self._mt_data = data.get("mt")
@@ -75,7 +82,7 @@ class InowasFlopyCalculationAdapter:
             self._report += report
 
             if "hob" in self._mf_data["packages"]:
-                print('Calculate hob-statistics and write to file %s.hob.stat' % uuid)
+                self.logger.debug('Calculate hob-statistics and write to file %s.hob.stat' % uuid)
                 self.run_hob_statistics(self._mf)
 
             if self._mt_data is not None:
@@ -85,43 +92,39 @@ class InowasFlopyCalculationAdapter:
                 self.success, report = self.run_model(self._mt, model_type='mt')
                 self._report += report
 
-    @staticmethod
-    def read_packages(data):
+    def read_packages(self, data):
         package_content = {}
         for package in data["packages"]:
-            print('Read Flopy Package: %s' % package)
+            self.logger.debug('Read Flopy Package: %s' % package)
             package_content[package.lower()] = data[package]
         return package_content
 
     def create_model(self, package_order, package_content):
         for package in package_order:
             if package in package_content:
-                print('Create Flopy Package: %s' % package)
+                self.logger.debug('Create Flopy Package: %s' % package)
                 self.create_package(package, package_content[package])
 
-    @staticmethod
-    def write_input_model(model):
-        print('Write %s input files' % model)
+    def write_input_model(self, model):
+        self.logger.debug('Write %s input files' % model)
         model.write_input()
 
-    @staticmethod
-    def run_model(model, model_type):
+    def run_model(self, model, model_type):
         normal_msg = 'normal termination'
         if model_type == 'mt':
             normal_msg = 'Program completed'
-
-        print('Run the %s model' % model)
-        print('Model namefile %s:' % model.namefile)
-        print('Model executable %s:' % model.exe_name)
+        
+        self.logger.debug('Run the %s model' % model)
+        self.logger.debug('Model namefile %s:' % model.namefile)
+        self.logger.debug('Model executable %s:' % model.exe_name)
         success, report = model.run_model(report=True, silent=True, normal_msg=normal_msg)
         return success, ' \n'.join(str(e) for e in report)
 
-    @staticmethod
-    def run_hob_statistics(model):
+    def run_hob_statistics(self, model):
         model_ws = model.model_ws
         name = model.name
 
-        print('Calculate hob-statistics for model %s' % name)
+        self.logger.debug('Calculate hob-statistics for model %s' % name)
         HobStatistics(model_ws, name).write_to_file()
 
     def check_model(self):

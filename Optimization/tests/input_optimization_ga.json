@@ -4,6 +4,7 @@
   "optimization_id": "test_optimization",
   "optimization": {
     "parameters": {
+      "report_frequency": 3,
       "method": "GA",
       "ngen": 5,
       "pop_size": 10,
@@ -76,7 +77,8 @@
         "operator": "less",
         "value": 2,
         "location": {
-          "type": "bbox",
+          "type": "object",
+          "objects": ["0"],
           "ts": [
             0,
             9
@@ -98,7 +100,7 @@
     ],
     "objects": [
       {
-        "id": 0,
+        "id": "0",
         "type": "well",
         "position": {
           "row": {

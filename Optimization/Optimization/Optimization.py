@@ -14,6 +14,8 @@ from deap import creator
 from deap import tools
 import copy
 import pika
+import logging
+import logging.config
 
 
 class OptimizationBase(object):
@@ -21,6 +23,7 @@ class OptimizationBase(object):
     Optimization algorithm class
 
     """
+    logger = logging.getLogger('optimization')
 
     def __init__(self, optimization_id, request_data, response_channel, response_queue, rabbit_host,
                  rabbit_port, rabbit_vhost, rabbit_user, rabbit_password, simulation_request_queue,
@@ -35,8 +38,14 @@ class OptimizationBase(object):
         self.password = rabbit_password
         self.virtualhost = rabbit_vhost
         self.request_data = request_data
+        try:
+            self.report_frequency = int(self.request_data['optimization']['parameters']['report_frequency'])
+        except Exception:
+            self.logger.warning('report_frequency is not defined, set to 0')
+            self.report_frequency = 0
 
         self._progress_log = []
+        self._simulation_count = 0
         self._iter_count = 0
         self.response = {'optimization_id': self.optimization_id,
                          'message': ''}
@@ -59,21 +68,21 @@ class OptimizationBase(object):
         )
 
         self.channel = self.connection.channel()
-        print('Declaring simulation request queue: ' + self.simulation_request_queue)
+        self.logger.info('Declaring simulation request queue: ' + self.simulation_request_queue)
         self.channel.queue_declare(
             queue=self.simulation_request_queue,
             durable=True
         )
 
-        print('Declaring simulation response queue: ' + simulation_response_queue)
+        self.logger.info('Declaring simulation response queue: ' + self.simulation_response_queue)
         self.channel.queue_declare(
             queue=self.simulation_response_queue,
             durable=True
         )
 
     def publish_simulation_job(self, individual, ind_id):
-        print(" Requesting fitness for individual {}".format(individual))
-        print(" Publishing simulation job for individual {} to the queue: {}"
+        self.logger.info("Requesting fitness for individual {}".format(individual))
+        self.logger.debug("Publishing simulation job for individual {} to the queue: {}"
               .format(individual, self.simulation_request_queue))
 
         objects_data = self.apply_individual(individual=individual)
@@ -99,6 +108,9 @@ class OptimizationBase(object):
     def apply_individual(self, individual):
         """Write individual values to variable template and return the filled template"""
         for ind_value, keys in zip(individual, self.var_map):
+            if keys[1] == 'position':
+                ind_value = int(ind_value)
+                
             if keys[1] == 'concentration':
                 for object_ in self.var_template:
                     if object_['id'] == keys[0]:
@@ -211,7 +223,7 @@ class NSGA(OptimizationBase):
         # no actual selection is done
         pop = self.toolbox.select(pop, len(pop))
         self.calculate_hypervolume(pop)
-        print('Generating response for iteration No. {}'.format(0))
+        self.logger.info('Generating response for iteration No. {}'.format(0))
         self.callback(pop=pop, final=False)
 
         # Begin the generational process
@@ -231,12 +243,12 @@ class NSGA(OptimizationBase):
                 pop = self.toolbox.select(combined_pop, mu)
 
             self.calculate_hypervolume(pop)
-            print('Generating response for iteration No. {}'.format(gen))
+            self.logger.info('Generating response for iteration No. {}'.format(gen))
             self.callback(pop=pop, final=gen == ngen - 1)
 
         return
 
-    def callback(self, pop, final, status_code=200):
+    def callback(self, pop=[], final=False, status_code=200):
         """
         Generate response json of the NSGA algorithm
         exmple of response
@@ -265,6 +277,8 @@ class NSGA(OptimizationBase):
             ],
             progress: {
                 progress_log: [1,2,3...],
+                simulation: 12,
+                simulation_total: 50,
                 iteration: 30,
                 iteration_total: 30,
                 final: true
@@ -272,7 +286,6 @@ class NSGA(OptimizationBase):
             
         }
         """
-        self._iter_count += 1
 
         self.response['status_code'] = status_code
         self.response['solutions'] = []
@@ -287,6 +300,8 @@ class NSGA(OptimizationBase):
             )
 
         self.response['progress']['progess_log'] = self._progress_log
+        self.response['progress']['simulation'] = self._simulation_count
+        self.response['progress']['simulation_total'] = self.request_data['optimization']['parameters']['pop_size']
         self.response['progress']['iteration'] = self._iter_count
         self.response['progress']['iteration_total'] = self.request_data['optimization']['parameters']['ngen']
         self.response['progress']['final'] = final
@@ -328,10 +343,10 @@ class NSGA(OptimizationBase):
         if self._diversity_ref_point is None:
             self._diversity_ref_point = qbound * Q_diversity
 
-        print('Performing clustering and diversity calculation...'.format(gen))
+        self.logger.info('Performing clustering and diversity calculation...'.format(gen))
 
         if Q_diversity < Q_diversity_bound:
-            print(' Q diversity index {} lower than boundary {}. Diversity will be enhanced...'.format(
+            self.logger.info(' Q diversity index {} lower than boundary {}. Diversity will be enhanced...'.format(
                 Q_diversity, self._diversity_ref_point
             ))
 
@@ -348,10 +363,10 @@ class NSGA(OptimizationBase):
 
     def calculate_hypervolume(self, pop):
 
-        print('Calculating hypervolume...')
+        self.logger.info('Calculating hypervolume...')
 
         if self._hypervolume_ref_point is None:
-            print('Calculating hypervolume reference point...')
+            self.logger.info('Calculating hypervolume reference point...')
             worst_values = []
             fitness_array = np.array([i.fitness.values for i in pop])
             maxs = np.max(fitness_array, 0)
@@ -365,9 +380,11 @@ class NSGA(OptimizationBase):
 
         hv = hypervolume(pop, self._hypervolume_ref_point)
         self._progress_log.append(hv)
-        print('Hypervolume of the generation: {}'.format(self._progress_log[-1]))
+        self.logger.info('Hypervolume of the generation: {}'.format(self._progress_log[-1]))
 
     def evaluate_population(self, pop):
+        self._simulation_count = 0
+        self._iter_count += 1
 
         invalid_ind = [ind for ind in pop if not ind.fitness.valid]
 
@@ -380,6 +397,12 @@ class NSGA(OptimizationBase):
         consumer_tag = str(uuid.uuid4())
 
         def consumer_callback(channel, method, properties, body):
+            self._simulation_count += 1
+            if self.report_frequency > 0 and \
+               self._simulation_count % int(self.request_data['optimization']['parameters']['pop_size'] \
+                                            /self.report_frequency) == 0:
+                self.callback()
+
             channel.basic_ack(delivery_tag=method.delivery_tag)
             content = json.loads(body.decode())
             if content['status_code'] == '500':
@@ -390,13 +413,14 @@ class NSGA(OptimizationBase):
 
             results[content['ind_id']] = content['fitness']
             if len(results) == len(invalid_ind):
-                print('Fetched all results from the simulation response queue: ' + self.simulation_response_queue)
+                self.logger.debug('Fetched results from the simulation response queue: ' + self.simulation_response_queue)
                 self.channel.basic_cancel(
                     consumer_tag=consumer_tag
                 )
+                
             return
 
-        print('Consuming results from the simulation response queue: ' + self.simulation_response_queue)
+        self.logger.debug('Consuming results from the simulation response queue: ' + self.simulation_response_queue)
         self.channel.basic_consume(
             consumer_callback=consumer_callback,
             queue=self.simulation_response_queue,
@@ -495,7 +519,7 @@ class NelderMead(OptimizationBase):
         self._best_individual = None
 
     def run(self):
-        print('Start local optimization...')
+        self.logger.info('Start local optimization...')
         maxf = self.request_data['optimization']['parameters']['maxf']
         xtol = self.request_data['optimization']['parameters']['xtol']
         ftol = self.request_data['optimization']['parameters']['ftol']
@@ -539,6 +563,8 @@ class NelderMead(OptimizationBase):
             }
         ]
         self.response['progress']['progess_log'] = self._progress_log
+        self.response['progress']['simulation'] = 1
+        self.response['progress']['simulation_total'] = 1
         self.response['progress']['iteration'] = self._iter_count
         self.response['progress']['iteration_total'] = self.request_data['optimization']['parameters']['maxf']
         self.response['progress']['final'] = final
