@@ -28,7 +28,7 @@ class DockerManager(object):
         self.volumes = {
             volume_name: {'bind': self.configuration['OPTIMIZATION_DATA_FOLDER'], 'mode': 'rw'}
             }
-        self.network = self.configuration['COMPOSE_PROJECT_NAME'].lower() + '_' + self.configuration['RABBITMQ_NETWORK']
+        self.network = self.configuration['COMPOSE_PROJECT_NAME'].lower().replace('_', '') + '_' + self.configuration['RABBITMQ_NETWORK']
 
     def run_container(self, container_type, job_id, number):
         if container_type == "optimization":
