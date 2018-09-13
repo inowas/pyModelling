@@ -57,7 +57,7 @@ class InowasFlopyReadFitness:
                 )
                 value = self.read_head(objective, mask, self.model_ws, self.model_name)
           
-          elif objective["type"] == "distance":
+            elif objective["type"] == "distance":
                 value = self.read_distance(objective, self.objects)
 
             elif objective["type"] == "flux":
