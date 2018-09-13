@@ -25,19 +25,19 @@
     },
     "loggers": {
         "optimization_manager": {
-            "level": "INFO",
+            "level": "DEBUG",
             "handlers": ["console", "file_handler"],
             "propagate": false
         },
         "optimization": {
-            "level": "INFO",
+            "level": "DEBUG",
             "handlers": ["console", "file_handler"],
             "propagate": false
         }
     },
 
     "root": {
-        "level": "INFO",
+        "level": "DEBUG",
         "handlers": ["console", "file_handler"]
     }
 }

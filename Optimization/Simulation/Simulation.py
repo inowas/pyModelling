@@ -60,11 +60,10 @@ class Simulation(object):
             self.flopy_version, self.model_data, self.simulation_id
         )
         if not flopy_adapter.success:
-            self.logger.error('Error during simulation occured')
-            # raise Exception(
-            #     'Error during simulation occured.'+'\r\n'+\
-            #     flopy_adapter.response_message()
-            # )
+            raise Exception(
+                'Error during simulation occured.'+'\r\n'+\
+                flopy_adapter.response_message()
+            )
 
         fitness = InowasFlopyReadFitness(
             self.optimization_data, flopy_adapter

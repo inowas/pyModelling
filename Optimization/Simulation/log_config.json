@@ -25,12 +25,12 @@
     },
     "loggers": {
         "simulation_server": {
-            "level": "INFO",
+            "level": "DEBUG",
             "handlers": ["console", "file_handler"],
             "propagate": false
         },
         "simulation": {
-            "level": "INFO",
+            "level": "DEBUG",
             "handlers": ["console", "file_handler"],
             "propagate": false
         },
@@ -47,7 +47,7 @@
     },
 
     "root": {
-        "level": "INFO",
+        "level": "DEBUG",
         "handlers": ["console", "file_handler"]
     }
 }
