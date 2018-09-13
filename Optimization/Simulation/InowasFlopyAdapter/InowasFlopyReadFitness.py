@@ -264,21 +264,21 @@ class InowasFlopyReadFitness:
                         dz = float(abs(obj_2['position']['lay']['result'] - obj_1['position']['lay']['result']))
                         distances.append(math.sqrt((dx**2) + (dy**2) + (dz**2)))
                 else:
-                    dx = float(abs(location_2['lay_row_col'][2] - obj_1['position']['col']['result']))
-                    dy = float(abs(location_2['lay_row_col'][1] - obj_1['position']['row']['result']))
-                    dz = float(abs(location_2['lay_row_col'][0] - obj_1['position']['lay']['result']))
+                    dx = float(abs(location_2['col']['min'] - obj_1['position']['col']['result']))
+                    dy = float(abs(location_2['row']['min'] - obj_1['position']['row']['result']))
+                    dz = float(abs(location_2['lay']['min'] - obj_1['position']['lay']['result']))
                     distances.append(math.sqrt((dx**2) + (dy**2) + (dz**2)))
         else:
             if objects_2 is not None:
                 for obj_2 in objects_2:
-                    dx = float(abs(obj_2['position']['col']['result'] - location_1['lay_row_col'][2]))
-                    dy = float(abs(obj_2['position']['row']['result'] - location_1['lay_row_col'][1]))
-                    dz = float(abs(obj_2['position']['lay']['result'] - location_1['lay_row_col'][0]))
+                    dx = float(abs(obj_2['position']['col']['result'] - location_1['col']['min']))
+                    dy = float(abs(obj_2['position']['row']['result'] - location_1['row']['min'][1]))
+                    dz = float(abs(obj_2['position']['lay']['result'] - location_1['lay']['min'][0]))
                     distances.append(math.sqrt((dx**2) + (dy**2) + (dz**2)))
             else:
-                dx = float(abs(location_2['lay_row_col'][2]-location_1['lay_row_col'][2]))
-                dy = float(abs(location_2['lay_row_col'][1]-location_1['lay_row_col'][1]))
-                dz = float(abs(location_2['lay_row_col'][0]-location_1['lay_row_col'][0]))
+                dx = float(abs(location_2['col']['min']-location_1['col']['min']))
+                dy = float(abs(location_2['row']['min']-location_1['row']['min']))
+                dz = float(abs(location_2['lay']['min']-location_1['lay']['min']))
                 distances.append(math.sqrt((dx**2) + (dy**2) + (dz**2)))
 
         distances = np.array(distances)
@@ -296,42 +296,42 @@ class InowasFlopyReadFitness:
 
         if location["type"] == 'bbox':
             try:
-                per_min = location['per_min']
+                per_min = location['ts']['min']
             except KeyError:
                 per_min = 0
 
             try:
-                per_max = location['per_max']
+                per_max = location['ts']['max']
             except KeyError:
                 per_max = nstp_flat
 
             try:
-                lay_min = location['lay_min']
+                lay_min = location['lay']['min']
             except KeyError:
                 lay_min = 0
 
             try:
-                lay_max = location['lay_max']
+                lay_max = location['lay']['max']
             except KeyError:
                 lay_max = nlay
 
             try:
-                col_min = location['col_min']
+                col_min = location['col']['min']
             except KeyError:
                 col_min = 0
 
             try:
-                col_max = location['col_max']
+                col_max = location['col']['max']
             except KeyError:
                 col_max = ncol
 
             try:
-                row_min = location['row_min']
+                row_min = location['row']['min']
             except KeyError:
                 row_min = 0
 
             try:
-                row_max = location['row_max']
+                row_max = location['row']['min']
             except KeyError:
                 row_max = nrow
 
