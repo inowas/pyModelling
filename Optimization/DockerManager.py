@@ -30,7 +30,7 @@ class DockerManager(object):
             # '/mnt/hgfs/GitHub/pyModelling/Optimization/Optimization': {'bind': '/Optimization', 'mode': 'rw'},
             # '/mnt/hgfs/GitHub/pyModelling/Optimization/Simulation': {'bind': '/Simulation', 'mode': 'rw'},
             }
-        self.network = self.configuration['COMPOSE_PROJECT_NAME'].lower() + '_' + self.configuration['RABBITMQ_NETWORK']
+        self.network = self.configuration['COMPOSE_PROJECT_NAME'].lower().replace('_', '') + '_' + self.configuration['RABBITMQ_NETWORK']
 
     def run_container(self, container_type, job_id, number):
         if container_type == "optimization":
