@@ -35,6 +35,7 @@ class InowasFlopyReadFitness:
 
 
     def get_fitness(self):
+        self.logger.info('Fitness of the individual is {}'.format(self.fitness))
 
         return self.fitness
 
@@ -105,14 +106,14 @@ class InowasFlopyReadFitness:
             
             if constraint["operator"] == "less":
                 if value > constraint["value"]:
-                    self.logger.debug("Constraint value {} exceeded max value {}, penalty will be assigned".format(value, constraint["value"]))
+                    self.logger.info("Constraint value {} exceeded max value {}, penalty will be assigned".format(value, constraint["value"]))
                     constraints_exceeded.append(True)
                 else:
                     constraints_exceeded.append(False)
                 
             elif constraint["operator"] == "more":
                 if value < constraint["value"]:
-                    self.logger.debug("Constraint value {} lower than min value {}, penalty will be assigned".format(value, constraint["value"]))
+                    self.logger.info("Constraint value {} lower than min value {}, penalty will be assigned".format(value, constraint["value"]))
                     constraints_exceeded.append(True)
                 else:
                     constraints_exceeded.append(False)
@@ -127,7 +128,7 @@ class InowasFlopyReadFitness:
         elif method == 'min':
             result = np.min(result)
         else:
-            self.logger.debug("Unknown summary method {}. Using max".format(method))
+            self.logger.info("Unknown summary method {}. Using max".format(method))
             result = np.max(result)
         
         return result
@@ -136,7 +137,7 @@ class InowasFlopyReadFitness:
     def read_head(self, data, mask, model_ws, model_name):
         "Reads head file"
 
-        self.logger.debug('Read head values at location: {}'.format(data['location']))
+        self.logger.info('Read head values at location: {}'.format(data['location']))
         
         try:
             head_file_object = flopy.utils.HeadFile(
@@ -150,13 +151,13 @@ class InowasFlopyReadFitness:
 
         except:
             self.logger.error('Head file of the model: '+model_name+' could not be opened')
-
+        self.logger.info('Head value is: {}'.format(head))
         return head
     
     def read_concentration(self, data, mask, model_ws, model_name):
         "Reads concentrations file"
 
-        self.logger.debug('Read concentration values at location: {}'.format(data['location']))
+        self.logger.info('Read concentration values at location: {}'.format(data['location']))
 
         try:
             conc_file_object = flopy.utils.UcnFile(
@@ -171,14 +172,14 @@ class InowasFlopyReadFitness:
         except:
             self.logger.error('Concentrations file of the model: '+model_name+' could not be opened')
             return None
-
+        self.logger.info('Concentration value is: {}'.format(conc))
         return conc
     
 
     def read_flux(self, data, objects):
         "Reads wel fluxes"
 
-        self.logger.debug('Read flux values at location: {}'.format(data['location']))
+        self.logger.info('Read flux values at location: {}'.format(data['location']))
 
         fluxes = np.array([])
 
@@ -198,12 +199,12 @@ class InowasFlopyReadFitness:
                     (fluxes,
                     np.array(obj_fluxes))
                 )
-
+        self.logger.info('Flux value is: {}'.format(fluxes))
         return fluxes
     
     def read_input_concentration(self, data, objects):
 
-        self.logger.debug('Read input_concentration values at location: {}'.format(data['location']))
+        self.logger.info('Read input_concentration values at location: {}'.format(data['location']))
 
         input_concentrations = np.array([])
 
@@ -229,13 +230,13 @@ class InowasFlopyReadFitness:
                     np.array(obj_concentrations))
                 )
         
-
+        self.logger.info('input_concentration value is: {}'.format(input_concentrations))
         return input_concentrations
     
     def read_distance(self, data, objects):
         """Returns distance between two groups of objects"""
 
-        self.logger.debug('Read distance between {} and {}'.format(data['location_1'], data['location_2']))
+        self.logger.info('Read distance between {} and {}'.format(data['location_1'], data['location_2']))
 
         location_1 = data["location_1"]
         location_2 = data["location_2"]
@@ -281,13 +282,13 @@ class InowasFlopyReadFitness:
                 distances.append(math.sqrt((dx**2) + (dy**2) + (dz**2)))
 
         distances = np.array(distances)
-        
+        self.logger.info('distance value is: {}'.format(distances))
         return distances
 
     def make_mask(self, location, objects, dis_package):
         "Returns an array mask of location that has nper,nlay,nrow,ncol dimensions"
 
-        self.logger.debug('Making mask array for location: {}'.format(location))
+        self.logger.info('Making mask array for location: {}'.format(location))
         nstp_flat = dis_package.nstp.array.sum()
         nrow = dis_package.nrow
         ncol = dis_package.ncol
