@@ -293,8 +293,8 @@ class InowasFlopyReadFitness:
                 if objects_2 is not None:
                     for obj_2 in objects_2:
                         dx = float(abs(obj_2['position']['col']['result'] - location_1['col']['min']))
-                        dy = float(abs(obj_2['position']['row']['result'] - location_1['row']['min'][1]))
-                        dz = float(abs(obj_2['position']['lay']['result'] - location_1['lay']['min'][0]))
+                        dy = float(abs(obj_2['position']['row']['result'] - location_1['row']['min']))
+                        dz = float(abs(obj_2['position']['lay']['result'] - location_1['lay']['min']))
                         distances.append(math.sqrt((dx**2) + (dy**2) + (dz**2)))
                 else:
                     dx = float(abs(location_2['col']['min']-location_1['col']['min']))
