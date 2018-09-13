@@ -267,12 +267,12 @@ class InowasFlopyReadFitness:
 
             if location_1['type'] == 'object':
                 objects_1 = [
-                    obj for id_, obj in objects.items() if id_ in location_1['objects_ids']
+                    obj for obj in objects if obj['id'] in location_1['objects']
                 ]
 
             if location_2['type'] == 'object':
                 objects_2 =[
-                    obj for id_, obj in objects.items() if id_ in location_2['objects_ids']
+                    obj for obj in objects if obj['id'] in location_2['objects']
                 ]
             
             distances = []
