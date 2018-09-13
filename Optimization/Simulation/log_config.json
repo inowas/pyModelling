@@ -9,13 +9,13 @@
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
-            "level": "DEBUG",
+            "level": "INFO",
             "formatter": "record_format",
             "stream": "ext://sys.stdout"
         },
         "file_handler": {
             "class": "logging.handlers.RotatingFileHandler",
-            "level": "DEBUG",
+            "level": "INFO",
             "formatter": "record_format",
             "filename": null,
             "maxBytes": 10485760,

@@ -164,7 +164,7 @@ class InowasFlopyReadFitness:
             self.logger.error('Head file of the model: '+model_name+' could not be opened', exc_info=True)
             head = None
 
-        self.logger.info('Head value is: {}'.format(head))
+        self.logger.debug('Head value is: {}'.format(head))
         return head
     
     def read_concentration(self, data, mask, model_ws, model_name):
@@ -186,7 +186,7 @@ class InowasFlopyReadFitness:
             self.logger.error('Concentrations file of the model: '+model_name+' could not be opened', exc_info=True)
             conc = None
 
-        self.logger.info('Concentration value is: {}'.format(conc))
+        self.logger.debug('Concentration value is: {}'.format(conc))
         return conc
     
 
@@ -217,7 +217,7 @@ class InowasFlopyReadFitness:
             self.logger.error('Could not read well flux values', exc_info=True)
             fluxes = None
 
-        self.logger.info('Flux value is: {}'.format(fluxes))
+        self.logger.debug('Flux value is: {}'.format(fluxes))
         return fluxes
     
     def read_input_concentration(self, data, objects):
@@ -251,7 +251,7 @@ class InowasFlopyReadFitness:
             self.logger.error('Could not read well input concentration', exc_info=True)
             input_concentrations = None
 
-        self.logger.info('input_concentration value is: {}'.format(input_concentrations))
+        self.logger.debug('input_concentration value is: {}'.format(input_concentrations))
         return input_concentrations
     
     def read_distance(self, data, objects):
@@ -307,7 +307,7 @@ class InowasFlopyReadFitness:
             self.logger.error('Could not read distance', exc_info=True)
             distances = None
 
-        self.logger.info('distance value is: {}'.format(distances))
+        self.logger.debug('distance value is: {}'.format(distances))
         return distances
 
     def make_mask(self, location, objects, dis_package):
