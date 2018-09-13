@@ -98,7 +98,7 @@ class InowasFlopyReadFitness:
                 )
 
             elif constraint["type"] == "distance":
-                value = self.read_distance(objective, self.objects)
+                value = self.read_distance(constraint, self.objects)
 
             elif constraint["type"] == "flux":
                 value = self.read_flux(
