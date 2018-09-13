@@ -57,6 +57,8 @@ class InowasFlopyReadFitness:
                 )
                 value = self.read_head(objective, mask, self.model_ws, self.model_name)
           
+          elif objective["type"] == "distance":
+                value = self.read_distance(objective, self.objects)
 
             elif objective["type"] == "flux":
                 value = self.read_flux(objective, self.objects)
@@ -94,7 +96,10 @@ class InowasFlopyReadFitness:
                 value = self.read_concentration(
                     constraint, mask, self.model_ws, self.model_name
                 )
-            
+
+            elif constraint["type"] == "distance":
+                value = self.read_distance(objective, self.objects)
+
             elif constraint["type"] == "flux":
                 value = self.read_flux(
                     constraint, self.objects
@@ -105,21 +110,24 @@ class InowasFlopyReadFitness:
                     constraint, self.objects
                 )
             
-            value = self.summary(value, constraint["summary_method"])
-            
-            if constraint["operator"] == "less":
-                if value > constraint["value"]:
-                    self.logger.info("Constraint value {} exceeded max value {}, penalty will be assigned".format(value, constraint["value"]))
-                    constraints_exceeded.append(True)
-                else:
-                    constraints_exceeded.append(False)
-                
-            elif constraint["operator"] == "more":
-                if value < constraint["value"]:
-                    self.logger.info("Constraint value {} lower than min value {}, penalty will be assigned".format(value, constraint["value"]))
-                    constraints_exceeded.append(True)
-                else:
-                    constraints_exceeded.append(False)
+            if value is None:
+                self.logger.info("Constraint value is None, penalty will be assigned")
+                constraints_exceeded.append(True)
+            else:
+                value = self.summary(value, constraint["summary_method"])
+                if constraint["operator"] == "less":
+                    if value > constraint["value"]:
+                        self.logger.info("Constraint value {} exceeded max value {}, penalty will be assigned".format(value, constraint["value"]))
+                        constraints_exceeded.append(True)
+                    else:
+                        constraints_exceeded.append(False)
+                    
+                elif constraint["operator"] == "more":
+                    if value < constraint["value"]:
+                        self.logger.info("Constraint value {} lower than min value {}, penalty will be assigned".format(value, constraint["value"]))
+                        constraints_exceeded.append(True)
+                    else:
+                        constraints_exceeded.append(False)
 
         return constraints_exceeded
     
