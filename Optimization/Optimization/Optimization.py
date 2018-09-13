@@ -295,7 +295,7 @@ class NSGA(OptimizationBase):
                 {
                     'fitness': list(individual.fitness.values),
                     'variables': list(individual),
-                    'objects': self.apply_individual(individual)
+                    'objects': copy.deepcopy(self.apply_individual(individual))
                 }
             )
 
@@ -559,7 +559,7 @@ class NelderMead(OptimizationBase):
             {
                 'fitness': list(self._best_fitness),
                 'variables': list(self._best_individual),
-                'objects': self.apply_individual(self._best_individual)
+                'objects': copy.deepcopy(self.apply_individual(self._best_individual))
             }
         ]
         self.response['progress']['progress_log'] = self._progress_log
