@@ -57,6 +57,8 @@ class InowasFlopyReadFitness:
                 )
                 value = self.read_head(objective, mask, self.model_ws, self.model_name)
           
+            elif objective["type"] == "distance":
+                value = self.read_distance(objective, self.objects)
 
             elif objective["type"] == "flux":
                 value = self.read_flux(objective, self.objects)
@@ -65,8 +67,11 @@ class InowasFlopyReadFitness:
             elif objective["type"] == "input_concentration":
                 value = self.read_input_concentration(objective, self.objects)
             
-            value = self.summary(value, objective["summary_method"])
-            fitness.append(value.item())
+            try:
+                value = self.summary(value, objective["summary_method"])
+                fitness.append(value.item())
+            except:
+                fitness.append(None)
 
         return fitness
     
@@ -91,7 +96,10 @@ class InowasFlopyReadFitness:
                 value = self.read_concentration(
                     constraint, mask, self.model_ws, self.model_name
                 )
-            
+
+            elif constraint["type"] == "distance":
+                value = self.read_distance(constraint, self.objects)
+
             elif constraint["type"] == "flux":
                 value = self.read_flux(
                     constraint, self.objects
@@ -102,21 +110,24 @@ class InowasFlopyReadFitness:
                     constraint, self.objects
                 )
             
-            value = self.summary(value, constraint["summary_method"])
-            
-            if constraint["operator"] == "less":
-                if value > constraint["value"]:
-                    self.logger.info("Constraint value {} exceeded max value {}, penalty will be assigned".format(value, constraint["value"]))
-                    constraints_exceeded.append(True)
-                else:
-                    constraints_exceeded.append(False)
-                
-            elif constraint["operator"] == "more":
-                if value < constraint["value"]:
-                    self.logger.info("Constraint value {} lower than min value {}, penalty will be assigned".format(value, constraint["value"]))
-                    constraints_exceeded.append(True)
-                else:
-                    constraints_exceeded.append(False)
+            if value is None:
+                self.logger.info("Constraint value is None, penalty will be assigned")
+                constraints_exceeded.append(True)
+            else:
+                value = self.summary(value, constraint["summary_method"])
+                if constraint["operator"] == "less":
+                    if value > constraint["value"]:
+                        self.logger.info("Constraint value {} exceeded max value {}, penalty will be assigned".format(value, constraint["value"]))
+                        constraints_exceeded.append(True)
+                    else:
+                        constraints_exceeded.append(False)
+                    
+                elif constraint["operator"] == "more":
+                    if value < constraint["value"]:
+                        self.logger.info("Constraint value {} lower than min value {}, penalty will be assigned".format(value, constraint["value"]))
+                        constraints_exceeded.append(True)
+                    else:
+                        constraints_exceeded.append(False)
 
         return constraints_exceeded
     
@@ -150,7 +161,9 @@ class InowasFlopyReadFitness:
             head_file_object.close()
 
         except:
-            self.logger.error('Head file of the model: '+model_name+' could not be opened')
+            self.logger.error('Head file of the model: '+model_name+' could not be opened', exc_info=True)
+            head = None
+
         self.logger.info('Head value is: {}'.format(head))
         return head
     
@@ -170,8 +183,9 @@ class InowasFlopyReadFitness:
             conc_file_object.close()
         
         except:
-            self.logger.error('Concentrations file of the model: '+model_name+' could not be opened')
-            return None
+            self.logger.error('Concentrations file of the model: '+model_name+' could not be opened', exc_info=True)
+            conc = None
+
         self.logger.info('Concentration value is: {}'.format(conc))
         return conc
     
@@ -186,19 +200,23 @@ class InowasFlopyReadFitness:
         try:
             obj_ids = data["location"]["objects"]
         except KeyError:
-            self.logger.error("ERROR! Objective location of type Flux has to be an Object!")
+            self.logger.error("ERROR! Objective location of type Flux has to be an Object!", exc_info=True)
             return None
+        try:
+            for obj in objects:
+                if obj['id'] in obj_ids:
+                    obj_fluxes = []
+                    for period_data in obj['flux'].values():
+                        obj_fluxes.append(period_data['result'])
+            
+                    fluxes = np.hstack(
+                        (fluxes,
+                        np.array(obj_fluxes))
+                    )
+        except:
+            self.logger.error('Could not read well flux values', exc_info=True)
+            fluxes = None
 
-        for obj in objects:
-            if obj['id'] in obj_ids:
-                obj_fluxes = []
-                for period_data in obj['flux'].values():
-                    obj_fluxes.append(period_data['result'])
-        
-                fluxes = np.hstack(
-                    (fluxes,
-                    np.array(obj_fluxes))
-                )
         self.logger.info('Flux value is: {}'.format(fluxes))
         return fluxes
     
@@ -211,25 +229,28 @@ class InowasFlopyReadFitness:
         try:
             component = data["component"]
         except KeyError:
-            self.logger.error("ERROR! Concentration component for the Objective of type input_concentrations is not defined!")
+            self.logger.error("ERROR! Concentration component for the Objective of type input_concentrations is not defined!", exc_info=True)
             return None
         
         try:
             obj_ids = data["location"]["objects"]
         except KeyError:
-            self.logger.error("ERROR! Objective location of type input_concentrations has to be an Object!")
+            self.logger.error("ERROR! Objective location of type input_concentrations has to be an Object!", exc_info=True)
             return None
-        
-        for obj in objects:
-            if obj['id'] in obj_ids:
-                obj_concentrations = []
-                for period_data in obj['concentration'].values():
-                    obj_concentrations.append(period_data[component]['result'])
-                input_concentrations = np.hstack(
-                    (input_concentrations, 
-                    np.array(obj_concentrations))
-                )
-        
+        try:
+            for obj in objects:
+                if obj['id'] in obj_ids:
+                    obj_concentrations = []
+                    for period_data in obj['concentration'].values():
+                        obj_concentrations.append(period_data[component]['result'])
+                    input_concentrations = np.hstack(
+                        (input_concentrations, 
+                        np.array(obj_concentrations))
+                    )
+        except:
+            self.logger.error('Could not read well input concentration', exc_info=True)
+            input_concentrations = None
+
         self.logger.info('input_concentration value is: {}'.format(input_concentrations))
         return input_concentrations
     
@@ -237,51 +258,55 @@ class InowasFlopyReadFitness:
         """Returns distance between two groups of objects"""
 
         self.logger.info('Read distance between {} and {}'.format(data['location_1'], data['location_2']))
+        try:
+            location_1 = data["location_1"]
+            location_2 = data["location_2"]
+            
+            objects_1 = None
+            objects_2 = None
 
-        location_1 = data["location_1"]
-        location_2 = data["location_2"]
-        
-        objects_1 = None
-        objects_2 = None
+            if location_1['type'] == 'object':
+                objects_1 = [
+                    obj for id_, obj in objects.items() if id_ in location_1['objects_ids']
+                ]
 
-        if location_1['type'] == 'object':
-            objects_1 = [
-                obj for id_, obj in objects.items() if id_ in location_1['objects_ids']
-            ]
-
-        if location_2['type'] == 'object':
-            objects_2 =[
-                obj for id_, obj in objects.items() if id_ in location_2['objects_ids']
-            ]
-        
-        distances = []
-        if objects_1 is not None:
-            for obj_1 in objects_1:
+            if location_2['type'] == 'object':
+                objects_2 =[
+                    obj for id_, obj in objects.items() if id_ in location_2['objects_ids']
+                ]
+            
+            distances = []
+            if objects_1 is not None:
+                for obj_1 in objects_1:
+                    if objects_2 is not None:
+                        for obj_2 in objects_2:
+                            dx = float(abs(obj_2['position']['col']['result'] - obj_1['position']['col']['result']))
+                            dy = float(abs(obj_2['position']['row']['result'] - obj_1['position']['row']['result']))
+                            dz = float(abs(obj_2['position']['lay']['result'] - obj_1['position']['lay']['result']))
+                            distances.append(math.sqrt((dx**2) + (dy**2) + (dz**2)))
+                    else:
+                        dx = float(abs(location_2['col']['min'] - obj_1['position']['col']['result']))
+                        dy = float(abs(location_2['row']['min'] - obj_1['position']['row']['result']))
+                        dz = float(abs(location_2['lay']['min'] - obj_1['position']['lay']['result']))
+                        distances.append(math.sqrt((dx**2) + (dy**2) + (dz**2)))
+            else:
                 if objects_2 is not None:
                     for obj_2 in objects_2:
-                        dx = float(abs(obj_2['position']['col']['result'] - obj_1['position']['col']['result']))
-                        dy = float(abs(obj_2['position']['row']['result'] - obj_1['position']['row']['result']))
-                        dz = float(abs(obj_2['position']['lay']['result'] - obj_1['position']['lay']['result']))
+                        dx = float(abs(obj_2['position']['col']['result'] - location_1['col']['min']))
+                        dy = float(abs(obj_2['position']['row']['result'] - location_1['row']['min'][1]))
+                        dz = float(abs(obj_2['position']['lay']['result'] - location_1['lay']['min'][0]))
                         distances.append(math.sqrt((dx**2) + (dy**2) + (dz**2)))
                 else:
-                    dx = float(abs(location_2['col']['min'] - obj_1['position']['col']['result']))
-                    dy = float(abs(location_2['row']['min'] - obj_1['position']['row']['result']))
-                    dz = float(abs(location_2['lay']['min'] - obj_1['position']['lay']['result']))
+                    dx = float(abs(location_2['col']['min']-location_1['col']['min']))
+                    dy = float(abs(location_2['row']['min']-location_1['row']['min']))
+                    dz = float(abs(location_2['lay']['min']-location_1['lay']['min']))
                     distances.append(math.sqrt((dx**2) + (dy**2) + (dz**2)))
-        else:
-            if objects_2 is not None:
-                for obj_2 in objects_2:
-                    dx = float(abs(obj_2['position']['col']['result'] - location_1['col']['min']))
-                    dy = float(abs(obj_2['position']['row']['result'] - location_1['row']['min'][1]))
-                    dz = float(abs(obj_2['position']['lay']['result'] - location_1['lay']['min'][0]))
-                    distances.append(math.sqrt((dx**2) + (dy**2) + (dz**2)))
-            else:
-                dx = float(abs(location_2['col']['min']-location_1['col']['min']))
-                dy = float(abs(location_2['row']['min']-location_1['row']['min']))
-                dz = float(abs(location_2['lay']['min']-location_1['lay']['min']))
-                distances.append(math.sqrt((dx**2) + (dy**2) + (dz**2)))
 
-        distances = np.array(distances)
+            distances = np.array(distances)
+        except:
+            self.logger.error('Could not read distance', exc_info=True)
+            distances = None
+
         self.logger.info('distance value is: {}'.format(distances))
         return distances
 

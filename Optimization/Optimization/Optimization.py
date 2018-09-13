@@ -299,7 +299,7 @@ class NSGA(OptimizationBase):
                 }
             )
 
-        self.response['progress']['progess_log'] = self._progress_log
+        self.response['progress']['progress_log'] = self._progress_log
         self.response['progress']['simulation'] = self._simulation_count
         self.response['progress']['simulation_total'] = self.request_data['optimization']['parameters']['pop_size']
         self.response['progress']['iteration'] = self._iter_count
@@ -562,7 +562,7 @@ class NelderMead(OptimizationBase):
                 'objects': self.apply_individual(self._best_individual)
             }
         ]
-        self.response['progress']['progess_log'] = self._progress_log
+        self.response['progress']['progress_log'] = self._progress_log
         self.response['progress']['simulation'] = 1
         self.response['progress']['simulation_total'] = 1
         self.response['progress']['iteration'] = self._iter_count
