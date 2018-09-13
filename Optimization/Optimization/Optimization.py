@@ -216,15 +216,22 @@ class NSGA(OptimizationBase):
         self.toolbox.register("individual", tools.initIterate, creator.Individual, self.toolbox.candidate)
         self.toolbox.register("population", tools.initRepeat, list, self.toolbox.individual)
         self.toolbox.register("select", tools.selNSGA2)
+        
+        if len(self.weights) > 1:
+            self.hall_of_fame = tools.ParetoFront()
+        else:
+            self.hall_of_fame = tools.HallOfFame(maxsize=10)
+        
 
         pop = self.toolbox.population(n=mu)
         pop = self.evaluate_population(pop=pop)
         # This is just to assign the crowding distance to the individuals
         # no actual selection is done
         pop = self.toolbox.select(pop, len(pop))
+        self.hall_of_fame.update(pop)
         self.calculate_hypervolume(pop)
         self.logger.info('Generating response for iteration No. {}'.format(0))
-        self.callback(pop=pop, final=False)
+        self.callback(final=False)
 
         # Begin the generational process
         for gen in range(1, ngen):
@@ -242,13 +249,14 @@ class NSGA(OptimizationBase):
             else:
                 pop = self.toolbox.select(combined_pop, mu)
 
+            self.hall_of_fame.update(pop)
             self.calculate_hypervolume(pop)
             self.logger.info('Generating response for iteration No. {}'.format(gen))
-            self.callback(pop=pop, final=gen == ngen - 1)
+            self.callback(final=gen == ngen - 1)
 
         return
 
-    def callback(self, pop=[], final=False, status_code=200):
+    def callback(self, final=False, status_code=200):
         """
         Generate response json of the NSGA algorithm
         exmple of response
@@ -285,17 +293,16 @@ class NSGA(OptimizationBase):
             }
             
         }
-        """
-
+        """ 
         self.response['status_code'] = status_code
         self.response['solutions'] = []
         self.response['progress'] = {}
-        for individual in pop:
+        for individual in self.hall_of_fame:
             self.response['solutions'].append(
                 {
                     'fitness': list(individual.fitness.values),
                     'variables': list(individual),
-                    'objects': self.apply_individual(individual)
+                    'objects': copy.deepcopy(self.apply_individual(individual))
                 }
             )
 
@@ -559,7 +566,7 @@ class NelderMead(OptimizationBase):
             {
                 'fitness': list(self._best_fitness),
                 'variables': list(self._best_individual),
-                'objects': self.apply_individual(self._best_individual)
+                'objects': copy.deepcopy(self.apply_individual(self._best_individual))
             }
         ]
         self.response['progress']['progress_log'] = self._progress_log
