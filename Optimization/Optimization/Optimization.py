@@ -107,22 +107,23 @@ class OptimizationBase(object):
 
     def apply_individual(self, individual):
         """Write individual values to variable template and return the filled template"""
+        var_template = copy.deepcopy(self.var_template)
         for ind_value, keys in zip(individual, self.var_map):
             if keys[1] == 'position':
                 ind_value = int(ind_value)
                 
             if keys[1] == 'concentration':
-                for object_ in self.var_template:
+                for object_ in var_template:
                     if object_['id'] == keys[0]:
                         object_[keys[1]][keys[2]][keys[3]]['result'] = ind_value
                         break
             else:
-                for object_ in self.var_template:
+                for object_ in var_template:
                     if object_['id'] == keys[0]:
                         object_[keys[1]][keys[2]]['result'] = ind_value
                         break
 
-        return self.var_template
+        return var_template
 
     def read_optimization_data(self):
         """
