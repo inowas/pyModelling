@@ -26,7 +26,9 @@ class DockerManager(object):
 
         volume_name = self.configuration['OPTIMIZATION_DATA_VOLUME']
         self.volumes = {
-            volume_name: {'bind': self.configuration['OPTIMIZATION_DATA_FOLDER'], 'mode': 'rw'}
+            volume_name: {'bind': self.configuration['OPTIMIZATION_DATA_FOLDER'], 'mode': 'rw'},
+            # '/mnt/hgfs/GitHub/pyModelling/Optimization/Optimization': {'bind': '/Optimization', 'mode': 'rw'},
+            # '/mnt/hgfs/GitHub/pyModelling/Optimization/Simulation': {'bind': '/Simulation', 'mode': 'rw'},
             }
         self.network = self.configuration['COMPOSE_PROJECT_NAME'].lower() + '_' + self.configuration['RABBITMQ_NETWORK']
 
