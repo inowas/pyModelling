@@ -52,6 +52,7 @@ class OptimizationBase(object):
 
         self.var_template = copy.deepcopy(self.request_data['optimization']['objects'])
         self.weights = [i["weight"] for i in self.request_data["optimization"]["objectives"]]
+
         self.var_map, self.bounds, self.initial_values = self.read_optimization_data()
 
         # Rabbit stuff
@@ -303,7 +304,7 @@ class NSGA(OptimizationBase):
                 {
                     'fitness': list(individual.fitness.values),
                     'variables': list(individual),
-                    'objects': copy.deepcopy(self.apply_individual(individual))
+                    'objects': self.apply_individual(individual)
                 }
             )
 
@@ -499,25 +500,6 @@ class NSGA(OptimizationBase):
 
         return diverse_pop
 
-    # @staticmethod
-    # def scalarization(fitness, reference_point, z_max, z_min):
-    #     # Achevement Based Scalarization of a multidimensional fitness
-    #     p = 10e-6 # augmentation coefficient
-    #     w = [] # weight factors
-    #     for i, j in zip(z_max, z_min):
-    #         w.append(1 / (i - j))
-
-    #     vector = []
-
-    #     for i, j, k in zip(fitness, reference_point, w):
-    #         vector.append(
-    #             k * (i - j)
-    #         )
-    #     vector_augemnted = [i + p * sum(vector) for i in vector]
-    #     scalar = max(vector_augemnted)
-
-    #     return scalar
-
 
 class NelderMead(OptimizationBase):
     def __init__(self, **kwargs):
@@ -525,6 +507,36 @@ class NelderMead(OptimizationBase):
         self._best_scalar_fitness = None
         self._best_fitness = None
         self._best_individual = None
+        self.solutions = []
+        self.target_solution_id = uuid.uuid4()
+        self.objective_targets, self.z_nadir, self.z_utopian = None, None, None
+        self.scalarization_method = 'achievement'
+        
+        try:
+            self.solutions = self.request_data['optimization']['solutions']
+        except KeyError:
+            pass
+        self.logger.info('Number of initial solutions: {}'.format(len(self.solutions)))
+        try:
+            self.target_solution_id =  self.request_data['optimization']['parameters']['solution_id']
+            self.logger.info('Initial solution ID: {}.'.format(self.target_solution_id))
+        except KeyError:
+            self.logger.info('No initial solution id is specified')
+        
+        try:
+            self.objective_targets = [i['target'] for i in self.request_data['optimization']['objectives']]
+            self.logger.info('Objective target values are: {}'.format(self.objective_targets))
+            if len(self.solutions) > 0:
+                fitness_array = np.array([i['fitness'] for i in self.solutions])
+                self.z_nadir, self.z_utopian = self.calculate_z(fitness_array)
+                self.logger.info(
+                    'Nadir and utopian vectors calculated from initial solutions are: {}, {}'.format(self.z_nadir, self.z_utopian)
+                )
+        except KeyError:
+            self.logger.info('No objective target values are given, scalars will be calculated using weights', )
+
+        if None in (self.objective_targets, self.z_nadir, self.z_utopia):
+            self.scalarization_method = 'linear'
 
     def run(self):
         self.logger.info('Start local optimization...')
@@ -534,7 +546,6 @@ class NelderMead(OptimizationBase):
 
         solver = NelderMeadSimplexSolver(len(self.initial_values))
         solver.SetInitialPoints(self.initial_values)
-
         solver.SetStrictRanges([i[0] for i in self.bounds], [i[1] for i in self.bounds])
         solver.SetEvaluationLimits(evaluations=maxf)
         solver.SetTermination(CRT(xtol=ftol, ftol=ftol))
@@ -546,7 +557,6 @@ class NelderMead(OptimizationBase):
         )
         solver.enable_signal_handler()
 
-        # Finally
         self.callback(
             individual=solver.Solution(),
             final=True
@@ -554,22 +564,37 @@ class NelderMead(OptimizationBase):
 
         return
 
+    def set_solutions(self):
+ 
+        for solution in self.solutions:
+            try:
+                if solution['id'] == self.target_solution_id:
+                    del solution
+                    break
+            except KeyError:
+                pass
+            
+        self.solutions.append(
+            {
+                'id': self.target_solution_id,
+                'locally_optimized': True,
+                'fitness': list(self._best_fitness),
+                'variables': list(self._best_individual),
+                'objects': self.apply_individual(self._best_individual)
+            }
+        )
+
     def callback(self, individual, final=False, status_code=200):
         """
         Generate response json of the NSGA algorithm
         """
         self._iter_count += 1
         self._progress_log.append(self._best_scalar_fitness * -1)
+        self.set_solutions()
 
         self.response['status_code'] = status_code
         self.response['progress'] = {}
-        self.response['solutions'] = [
-            {
-                'fitness': list(self._best_fitness),
-                'variables': list(self._best_individual),
-                'objects': copy.deepcopy(self.apply_individual(self._best_individual))
-            }
-        ]
+        self.response['solutions'] = self.solutions
         self.response['progress']['progress_log'] = self._progress_log
         self.response['progress']['simulation'] = 1
         self.response['progress']['simulation_total'] = 1
@@ -608,11 +633,12 @@ class NelderMead(OptimizationBase):
             for i in content['fitness']:
                 fitness.append(i)
 
-            print('Fetched result from the simulation response queue: ' + self.simulation_response_queue)
+            self.logger.info('Fetched result from the simulation response queue: ' + self.simulation_response_queue)
+            self.logger.info('Fitness: {}'.format(fitness))
             self.channel.basic_cancel(consumer_tag=consumer_tag)
             return
 
-        print('Consuming results from the simulation response queue: ' + self.simulation_response_queue)
+        self.logger.info('Consuming results from the simulation response queue: ' + self.simulation_response_queue)
         self.channel.basic_consume(
             consumer_callback=consumer_callback,
             queue=self.simulation_response_queue,
@@ -620,9 +646,12 @@ class NelderMead(OptimizationBase):
         )
         self.channel.start_consuming()
 
-        scalar_fitness = 0
-        for value, weight in zip(fitness, weights):
-            scalar_fitness += value * weight
+        if self.scalarization_method == 'achievement':
+            scalar_fitness = self.achievement_scalarization(fitness)
+        elif self.scalarization_method == 'linear':
+            scalar_fitness = self.linear_sclarization(fitness)
+
+        self.logger.info('Scalar fitness: {}'.format(scalar_fitness))
 
         if self._best_scalar_fitness is not None and scalar_fitness >= self._best_scalar_fitness:
             return scalar_fitness
@@ -631,5 +660,52 @@ class NelderMead(OptimizationBase):
             self._best_scalar_fitness = scalar_fitness
             self._best_fitness = fitness
             self._best_individual = individual
+
+        return scalar_fitness
+    
+    def calculate_z(self, fitness_array):
+        """Calculates nadir and utopian vectors from a fitness array of shape (len(objectives), len(solutions))"""
+        try:
+            z_nadir = []
+            z_utopian = []
+            maxs = np.max(fitness_array, 0)
+            mins = np.min(fitness_array, 0)
+            for i, weight in enumerate(self.weights):
+                if weight <= 0:
+                    z_nadir.append(maxs[i])
+                    z_utopian.append(mins[i])
+                else:
+                    z_nadir.append(mins[i])
+                    z_utopian.append(maxs[i])
+
+            return np.array(z_nadir), np.array(z_utopian)
+        except Exception:
+            self.logger.error('Could not calculate Nadir and Utopian vectors', exc_info=True)
+            return None, None
+    
+    def linear_sclarization(self, fitness):
+        scalar_fitness = 0
+        for value, weight in zip(fitness, self.weights):
+            scalar_fitness += value * weight
+        return scalar_fitness
+    
+    def achievement_scalarization(self, fitness):
+        """Calculates Achevement Based Scalar of a multidimensional fitness"""
+        p = 10e-6 # augmentation coefficient
+        fitness_normalized = []
+        augmentation = []
+
+        for fitness_i, objective_targets_i, z_nadir_i, z_utopian_i in zip(fitness, self.objective_targets, self.z_nadir, self.z_utopian):
+            fitness_normalized.append(
+                (fitness_i - objective_targets_i) / \
+                (z_nadir_i - z_utopian_i)
+            )
+            augmentation.append(
+                fitness_i / \
+                (z_nadir_i - z_utopian)
+            )
+
+        fitness_normalized_augemnted = [i + p * sum(augmentation) for i in fitness_normalized]
+        scalar_fitness = max(fitness_normalized_augemnted)
 
         return scalar_fitness
