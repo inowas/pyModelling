@@ -3,7 +3,7 @@ import json
 import uuid
 
 
-with open('./input_optimization_simplex.json') as f:
+with open('./input_optimization_simplex_initials.json') as f:
     data = json.load(f)
 
 with open('../config.json') as f:
@@ -37,7 +37,7 @@ def consumer_callback(channel, method, properties, body):
     content = json.loads(body.decode())
     print(content)
     channel.basic_ack(delivery_tag = method.delivery_tag)
-    if 'progress' in content and content['progress']['final']:
+    if 'progress_local' in content and content['progress_local']['final']:
         channel.basic_cancel(
             consumer_tag=consumer_tag
         )
