@@ -50,7 +50,18 @@ class OptimizationBase(object):
         self.response = {'optimization_id': self.optimization_id,
                          'message': ''}
 
-        self.var_template = copy.deepcopy(self.request_data['optimization']['objects'])
+        self.initial_solutions = self.request_data['optimization'].get('solutions', [])
+        self.initial_solution_id =  self.request_data['optimization']['parameters'].get('solution_id')
+
+        try:
+            self.var_template = copy.deepcopy(
+                [i['objects'] for i in self.initial_solutions if i['id'] == self.initial_solution_id][0]
+            )
+            self.logger.info('Variables template is build from initial solution')
+        except Exception:
+            self.var_template = copy.deepcopy(self.request_data['optimization']['objects'])
+            self.logger.info('Variables template is build from optimization objects')
+        
         self.weights = [i["weight"] for i in self.request_data["optimization"]["objectives"]]
 
         self.var_map, self.bounds, self.initial_values = self.read_optimization_data()
@@ -133,6 +144,7 @@ class OptimizationBase(object):
         Example of variables map and variables boundaries:
         var_map = [(0, flux, 0), (0, concentration, 0),(0, position, row),(0, position, col)]
         var_bounds = [(0, 10), (0, 1),(0, 30),(0, 30)]
+        initial_values = [None, 0, 10, 10]
         """
 
         var_map = []
@@ -146,8 +158,8 @@ class OptimizationBase(object):
                         if axis_data['min'] != axis_data['max']:
                             var_map.append((object_['id'], 'position', axis))
                             var_bounds.append((axis_data['min'], axis_data['max']))
+                            initial_values.append(axis_data.get('result'))
                             object_['position'][axis]['result'] = None
-                            initial_values.append(axis_data.get('initial'))
                         else:
                             object_['position'][axis]['result'] = axis_data['min']
 
@@ -157,8 +169,8 @@ class OptimizationBase(object):
                         if period_data['min'] != period_data['max']:
                             var_map.append((object_['id'], 'flux', period))
                             var_bounds.append((period_data['min'], period_data['max']))
-                            object_['flux'][period]['result'] = None
-                            initial_values.append(period_data.get('initial'))
+                            initial_values.append(period_data.get('result'))
+                            object_['flux'][period]['result'] = None  
                         else:
                             object_['flux'][period]['result'] = period_data['min']
 
@@ -167,10 +179,10 @@ class OptimizationBase(object):
                     for period, period_data in value.items():
                         for component, component_data in period_data.items():
                             if component_data['min'] != component_data['max']:
-                                var_map.append((object_['id'], parameter, period, component))
+                                var_map.append((object_['id'], 'concentration', period, component))
                                 var_bounds.append((component_data['min'], component_data['max']))
+                                initial_values.append(component_data.get('result'))
                                 object_[parameter][period][component]['result'] = None
-                                initial_values.append(component_data.get('initial'))
                             else:
                                 object_[parameter][period][component]['result'] = component_data['min']
 
@@ -302,6 +314,7 @@ class NSGA(OptimizationBase):
         for individual in self.hall_of_fame:
             self.response['solutions'].append(
                 {
+                    'id': uuid.uuid4(),
                     'fitness': list(individual.fitness.values),
                     'variables': list(individual),
                     'objects': self.apply_individual(individual)
@@ -408,8 +421,9 @@ class NSGA(OptimizationBase):
         def consumer_callback(channel, method, properties, body):
             self._simulation_count += 1
             if self.report_frequency > 0 and \
-               self._simulation_count % int(self.request_data['optimization']['parameters']['pop_size'] \
-                                            /self.report_frequency) == 0:
+                self._simulation_count % \
+                int(self.request_data['optimization']['parameters']['pop_size'] /\
+                self.report_frequency) == 0:
                 self.callback()
 
             channel.basic_ack(delivery_tag=method.delivery_tag)
@@ -507,21 +521,8 @@ class NelderMead(OptimizationBase):
         self._best_scalar_fitness = None
         self._best_fitness = None
         self._best_individual = None
-        self.solutions = []
-        self.target_solution_id = uuid.uuid4()
         self.objective_targets, self.z_nadir, self.z_utopian = None, None, None
         self.scalarization_method = 'achievement'
-        
-        try:
-            self.solutions = self.request_data['optimization']['solutions']
-        except KeyError:
-            pass
-        self.logger.info('Number of initial solutions: {}'.format(len(self.solutions)))
-        try:
-            self.target_solution_id =  self.request_data['optimization']['parameters']['solution_id']
-            self.logger.info('Initial solution ID: {}.'.format(self.target_solution_id))
-        except KeyError:
-            self.logger.info('No initial solution id is specified')
         
         try:
             self.objective_targets = [i['target'] for i in self.request_data['optimization']['objectives']]
@@ -533,10 +534,14 @@ class NelderMead(OptimizationBase):
                     'Nadir and utopian vectors calculated from initial solutions are: {}, {}'.format(self.z_nadir, self.z_utopian)
                 )
         except KeyError:
-            self.logger.info('No objective target values are given, scalars will be calculated using weights', )
+            self.logger.info('No objective target values are given, scalars will be calculated using weights')
 
         if None in (self.objective_targets, self.z_nadir, self.z_utopia):
             self.scalarization_method = 'linear'
+            self.logger.info('Scalarization method: linear')
+        else:
+            self.logger.info('Scalraization method: achievement scalarization')
+                
 
     def run(self):
         self.logger.info('Start local optimization...')
@@ -564,37 +569,36 @@ class NelderMead(OptimizationBase):
 
         return
 
-    def set_solutions(self):
- 
-        for solution in self.solutions:
-            try:
-                if solution['id'] == self.target_solution_id:
-                    del solution
-                    break
-            except KeyError:
-                pass
+    def compose_solutions(self):
+        solutions = []
+        solution_id = uuid.uuid4() if not self.initial_solution_id else self.initial_solution_id
+
+        for initial_solution in self.initial_solutions:
+            if initial_solution['id'] != solution_id:
+                solutions.append(initial_solution)
             
-        self.solutions.append(
+        solutions.append(
             {
-                'id': self.target_solution_id,
+                'id': solution_id,
                 'locally_optimized': True,
                 'fitness': list(self._best_fitness),
                 'variables': list(self._best_individual),
                 'objects': self.apply_individual(self._best_individual)
             }
         )
+        return solutions
 
     def callback(self, individual, final=False, status_code=200):
         """
-        Generate response json of the NSGA algorithm
+        Generate response json of the Siplex algorithm
         """
         self._iter_count += 1
         self._progress_log.append(self._best_scalar_fitness * -1)
-        self.set_solutions()
+        
 
         self.response['status_code'] = status_code
         self.response['progress'] = {}
-        self.response['solutions'] = self.solutions
+        self.response['solutions'] = self.compose_solutions()
         self.response['progress']['progress_log'] = self._progress_log
         self.response['progress']['simulation'] = 1
         self.response['progress']['simulation_total'] = 1
@@ -664,7 +668,9 @@ class NelderMead(OptimizationBase):
         return scalar_fitness
     
     def calculate_z(self, fitness_array):
-        """Calculates nadir and utopian vectors from a fitness array of shape (len(objectives), len(solutions))"""
+        """Calculates nadir and utopian vectors from a fitness 
+        array of shape (len(objectives), len(solutions))
+        """
         try:
             z_nadir = []
             z_utopian = []
