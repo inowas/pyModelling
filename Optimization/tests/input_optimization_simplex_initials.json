@@ -5,8 +5,8 @@
   "optimization": {
     "parameters": {
       "method": "Simplex",
-      "solution_id": 0,
-      "maxf": 30,
+      "initial_solution_id": 0,
+      "maxf": 100,
       "xtol": 0.0001,
       "ftol": 0.0001
     },
@@ -16,82 +16,28 @@
         "conc_file_name": "MT3D001.UCN",
         "summary_method": "max",
         "weight": -1,
-        "target": -1,
+        "target": 0,
         "penalty_value": 999,
         "location": {
           "type": "bbox",
-          "ts": [
-            0,
-            0
-          ],
-          "lay": [
-            0,
-            0
-          ],
-          "row": [
-            40,
-            40
-          ],
-          "col": [
-            40,
-            40
-          ]
+          "ts": {"min": 0, "max": 0},
+          "lay": {"min": 0, "max": 0},
+          "row": {"min": 20, "max": 20},
+          "col": {"min": 20, "max": 20}
         }
       },
       {
         "type": "head",
         "summary_method": "max",
-        "weight": -1,
-        "target": -100,
+        "weight": 1,
+        "target": 100,
         "penalty_value": 999,
         "location": {
           "type": "bbox",
-          "ts": [
-            0,
-            0
-          ],
-          "lay": [
-            0,
-            0
-          ],
-          "row": [
-            40,
-            40
-          ],
-          "col": [
-            40,
-            40
-          ]
-        }
-      },
-      {
-        "type": "flux",
-        "package": "wel",
-        "summary_method": "mean",
-        "target": -100,
-        "weight": -1,
-        "penalty_value": 999,
-        "location": {
-          "type": "object",
-          "objects": [
-            0,
-            1
-          ]
-        }
-      },
-      {
-        "type": "input_concentration",
-        "component": "component1",
-        "package": "wel",
-        "summary_method": "mean",
-        "target": -100,
-        "weight": -1,
-        "penalty_value": 999,
-        "location": {
-          "type": "object",
-          "objects": [
-            0
-          ]
+          "ts": {"min": 0, "max": 0},
+          "lay": {"min": 0, "max": 0},
+          "row": {"min": 20, "max": 20},
+          "col": {"min": 20, "max": 20}
         }
       }
     ],
@@ -104,22 +50,10 @@
         "value": 2,
         "location": {
           "type": "bbox",
-          "ts": [
-            0,
-            0
-          ],
-          "lay": [
-            0,
-            0
-          ],
-          "row": [
-            40,
-            40
-          ],
-          "col": [
-            40,
-            40
-          ]
+          "ts": {"min": 0, "max": 0},
+          "lay": {"min": 0, "max": 0},
+          "row": {"min": 40, "max": 40},
+          "col": {"min": 40, "max": 40}
         }
       }
     ],
@@ -130,13 +64,11 @@
         "position": {
           "row": {
             "min": 10,
-            "max": 80,
-            "initial": 50
+            "max": 80
           },
           "col": {
             "min": 10,
-            "max": 80,
-            "initial": 50
+            "max": 80
           },
           "lay": {
             "min": 0,
@@ -164,47 +96,11 @@
         "position": {
           "row": {
             "min": 10,
-            "max": 80,
-            "initial": 40
+            "max": 80
           },
           "col": {
             "min": 10,
-            "max": 80,
-            "initial": 40
-          },
-          "lay": {
-            "min": 0,
-            "max": 0
-          }
-        },
-        "flux": {
-          "0": {
-            "min": 720,
-            "max": 720
-          }
-        },
-        "concentration": {
-          "0": {
-            "component1": {
-              "min": 0,
-              "max": 0
-            }
-          }
-        }
-      },
-      {
-        "id": 2,
-        "type": "well",
-        "position": {
-          "row": {
-            "min": 10,
-            "max": 80,
-            "initial": 60
-          },
-          "col": {
-            "min": 10,
-            "max": 80,
-            "initial": 60
+            "max": 80
           },
           "lay": {
             "min": 0,
@@ -229,7 +125,8 @@
     ],
     "solutions":[
       {
-        "id": 1,
+        "id": 0,
+        "fitness": [0.165, 9.51],
         "objects": [
           {
             "id": 0,
@@ -237,13 +134,12 @@
             "position": {
               "row": {
                 "min": 10,
-                "max": 80,
-                "result": 50
+                "max": 80
               },
               "col": {
                 "min": 10,
                 "max": 80,
-                "result": 50
+                "result": 40
               },
               "lay": {
                 "min": 0,
@@ -275,49 +171,12 @@
               "row": {
                 "min": 10,
                 "max": 80,
-                "result": 50
+                "result": 40
               },
               "col": {
                 "min": 10,
                 "max": 80,
-                "result": 50
-              },
-              "lay": {
-                "min": 0,
-                "max": 0,
-                "result": 0
-              }
-            },
-            "flux": {
-              "0": {
-                "min": 720,
-                "max": 720,
-                "result": 720
-              }
-            },
-            "concentration": {
-              "0": {
-                "component1": {
-                  "min": 0,
-                  "max": 0,
-                  "result": 0
-                }
-              }
-            }
-          },
-          {
-            "id": 2,
-            "type": "well",
-            "position": {
-              "row": {
-                "min": 10,
-                "max": 80,
-                "result": 50
-              },
-              "col": {
-                "min": 10,
-                "max": 80,
-                "result": 50
+                "result": 40
               },
               "lay": {
                 "min": 0,
@@ -345,7 +204,8 @@
         ]
       },
       {
-        "id": 2,
+        "id": 1,
+        "fitness": [1.9, 6.5],
         "objects": [
           {
             "id": 0,
@@ -354,12 +214,12 @@
               "row": {
                 "min": 10,
                 "max": 80,
-                "result": 50
+                "result": 43
               },
               "col": {
                 "min": 10,
                 "max": 80,
-                "result": 50
+                "result": 40
               },
               "lay": {
                 "min": 0,
@@ -391,49 +251,12 @@
               "row": {
                 "min": 10,
                 "max": 80,
-                "result": 50
+                "result": 40
               },
               "col": {
                 "min": 10,
                 "max": 80,
-                "result": 50
-              },
-              "lay": {
-                "min": 0,
-                "max": 0,
-                "result": 0
-              }
-            },
-            "flux": {
-              "0": {
-                "min": 720,
-                "max": 720,
-                "result": 720
-              }
-            },
-            "concentration": {
-              "0": {
-                "component1": {
-                  "min": 0,
-                  "max": 0,
-                  "result": 0
-                }
-              }
-            }
-          },
-          {
-            "id": 2,
-            "type": "well",
-            "position": {
-              "row": {
-                "min": 10,
-                "max": 80,
-                "result": 50
-              },
-              "col": {
-                "min": 10,
-                "max": 80,
-                "result": 50
+                "result": 40
               },
               "lay": {
                 "min": 0,
