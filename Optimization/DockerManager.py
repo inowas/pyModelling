@@ -27,7 +27,7 @@ class DockerManager(object):
         volume_name = self.configuration['OPTIMIZATION_DATA_VOLUME']
         self.volumes = {
             volume_name: {'bind': self.configuration['OPTIMIZATION_DATA_FOLDER'], 'mode': 'rw'}
-            }
+        }
         self.network = self.configuration['COMPOSE_PROJECT_NAME'].lower().replace('_', '') + '_' + self.configuration['RABBITMQ_NETWORK']
 
     def run_container(self, container_type, job_id, number):
@@ -53,13 +53,26 @@ class DockerManager(object):
                 network=self.network,
                 detach=True
             )
-
+  
             self.logger.info('ContainerId: ' + str(container))
+            
             try:
                 self._running_containers[job_id].append(container)
             except KeyError:
                 self._running_containers[job_id] = [container]
         return
+    
+    def inspect_containers(self, job_id):
+        exited_containers = {}
+        for container in self._running_containers[job_id]:
+            state = self.client.api.inspect_container(container.id)['State']
+            if state['Running'] == False:
+                exited_containers[container.id] = {
+                    'state': state,
+                    'logs': self.client.api.logs(container.id)
+                }
+
+        return exited_containers
 
     def stop_all_job_containers(self, job_id, remove=True):
         not_stopped_containers = []
