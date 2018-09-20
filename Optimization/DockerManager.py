@@ -73,6 +73,20 @@ class DockerManager(object):
                 }
 
         return exited_containers
+    
+    def delete_inactive_jobs(self):
+        for job_id in self._running_containers:
+            job_active = False
+            for container in self._running_containers[job_id]:
+                state = self.client.api.inspect_container(container.id)['State']
+                if state['Running'] == True:
+                    job_active = True
+                else:
+                    container.stop()
+                    container.remove()
+                    del container
+            if not job_active:
+                del self._running_containers[job_id]
 
     def stop_all_job_containers(self, job_id, remove=True):
         not_stopped_containers = []
@@ -96,11 +110,11 @@ class DockerManager(object):
                 container.stop()
                 container.remove()
 
-    def remove_exited_containers(self):
-        containers = self.client.containers.list(
-            filters={
-                'status': 'exited'
-            }
-        )
-        for container in containers:
-            container.remove()
+    # def remove_exited_containers(self):
+    #     containers = self.client.containers.list(
+    #         filters={
+    #             'status': 'exited'
+    #         }
+    #     )
+    #     for container in containers:
+    #         container.remove()

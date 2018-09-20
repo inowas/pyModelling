@@ -104,8 +104,8 @@ class Server(object):
 
     # noinspection PyUnusedLocal
     def on_request(self, channel, method, properties, body):
-        self.logger.info('Deleting inactive containers...')
-        self.docker_manager.remove_exited_containers()
+        self.logger.info('Deleting inactive optimization jobs...')
+        self.docker_manager.delete_inactive_jobs()
 
         content = json.loads(body.decode())
         content = validate_spd(content)
