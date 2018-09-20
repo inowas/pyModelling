@@ -120,11 +120,11 @@ class OptimizationManager(object):
                 'simulation_response_queue': os.environ['SIMULATION_RESPONSE_QUEUE']
             }
 
-            if content['optimization']['parameters']['method'] == 'GA':
+            if content['optimization']['parameters']['method'].lower() in ['ga', 'global']:
                 self.algorithm = NSGA(
                     **kwargs
                 )
-            elif content['optimization']['parameters']['method'] == 'Simplex':
+            elif content['optimization']['parameters']['method'].lower() in ['simplex', 'local']:
                 self.algorithm = NelderMead(
                     **kwargs
                 )
