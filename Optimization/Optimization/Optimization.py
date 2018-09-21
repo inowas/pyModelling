@@ -219,8 +219,14 @@ class NSGA(OptimizationBase):
         indpb = self.request_data['optimization']['parameters']['indpb']
         ncls = self.request_data['optimization']['parameters']['ncls']
         qbound = self.request_data['optimization']['parameters']['qbound']
-        # diversity_flg = self.request_data['optimization']['parameters']['diversity_flg']
-        diversity_flg = False
+        diversity_flg = self.request_data['optimization']['parameters']['diversity_flg']
+        #Ensure that number of clusters not larger that 1/3 pop_size
+        if ncls > pop_size/3:
+            self.logger.warning(
+                'Specified number of clusters is {}, wil be reduced to 1/3 pop_size'.format(ncls)
+            )
+            ncls = int(pop_size/3)
+            
 
         creator.create(
             "Fitnessmulti", base.Fitness,
@@ -328,6 +334,7 @@ class NSGA(OptimizationBase):
             self.response['solutions'].append(
                 {
                     'id': str(uuid.uuid4()),
+                    'locally_optimized': False,
                     'fitness': list(individual.fitness.values),
                     'variables': list(individual),
                     'objects': self.apply_individual(individual)
@@ -373,15 +380,15 @@ class NSGA(OptimizationBase):
         return offspring
 
     def check_diversity(self, pop, ncls, qbound, mu):
+        self.logger.info('Performing clustering and diversity calculation...')
 
-        Q_diversity, cluster_labels = self.project_and_cluster(n_clasters=ncls, pop=pop)
-        if self._diversity_ref_point is None:
-            self._diversity_ref_point = qbound * Q_diversity
+        Q_diversity, cluster_labels = self.project_and_cluster(
+            ncls=ncls, pop=pop, weights=self.weights
+        )
+        self.logger.info('Q_diversity: {}, clusters: {}'. format(Q_diversity, cluster_labels))
 
-        self.logger.info('Performing clustering and diversity calculation...'.format(gen))
-
-        if Q_diversity < Q_diversity_bound:
-            self.logger.info(' Q diversity index {} lower than boundary {}. Diversity will be enhanced...'.format(
+        if self._diversity_ref_point is not None and Q_diversity < self._diversity_ref_point:
+            self.logger.info(' Q diversity index {} lower than boundary {}, population will be diversified'.format(
                 Q_diversity, self._diversity_ref_point
             ))
 
@@ -477,17 +484,25 @@ class NSGA(OptimizationBase):
         ]
 
     @staticmethod
-    def project_and_cluster(n_clasters, pop):
-        # Implementation of the Project And Cluster algorithm proposed by Syndhya et al.
+    def project_and_cluster(ncls, pop, weights):
+        """Implementation of the Project And Cluster algorithm proposed by Syndhya et al."""
         fitnesses = np.array([ind.fitness.values for ind in pop])
         fitnesses_reprojected = np.zeros(fitnesses.shape)
-        maximals = np.max(fitnesses, axis=0)
-        ws = maximals ** -1
+        maxs = np.max(fitnesses, 0)
+        mins = np.min(fitnesses, 0)
+        worst_values = []
+        for i, weight in enumerate(weights):
+            if weight <= 0:
+                worst_values.append(maxs[i])
+            else:
+                worst_values.append(mins[i])
+        ws = np.array(worst_values) ** -1
+
         for i, fitness in enumerate(fitnesses):
             fitnesses_reprojected[i] = ((1 - np.dot(ws, fitness)) / np.dot(ws, ws)) * ws + fitness
 
         # Applying K-means clustering
-        kmeans = KMeans(n_clusters=n_clasters, random_state=0).fit(fitnesses_reprojected)
+        kmeans = KMeans(n_clusters=ncls, random_state=0).fit(fitnesses_reprojected)
         cluster_labels = kmeans.labels_
         centroids = kmeans.cluster_centers_
 
@@ -495,8 +510,6 @@ class NSGA(OptimizationBase):
         Q_diversity = 0
         for cluster_label, centroid in zip(np.unique(cluster_labels), centroids):
             cluster_inds = [i for i, j in zip(pop, cluster_labels) if j == cluster_label]
-            # print('Cluster inds of cluster '+str(cluster))
-            # print(cluster_inds)
             sum_of_distances = 0
             for ind in cluster_inds:
                 sum_of_distances += np.linalg.norm(centroid - ind.fitness.values)

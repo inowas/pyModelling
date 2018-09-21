@@ -6,6 +6,7 @@ import json
 import shutil
 import logging
 import logging.config
+import time
 
 from DockerManager import DockerManager
 from Validator import validate_spd
@@ -13,6 +14,7 @@ from Validator import validate_spd
 
 class Server(object):
     logger = logging.getLogger('main')
+    inspection_wait_time = 5
 
     def __init__(self):
 
@@ -75,8 +77,9 @@ class Server(object):
             durable=True
         )
 
-    def send_response(self, success, optimization_id, message):
-        status_code = "200" if success else "500"
+    def send_response(self, success, optimization_id, message, status_code=None):
+        if status_code is None:
+            status_code = "200" if success else "500"
         response = json.dumps({
             'status_code': status_code,
             'message': message,
@@ -101,27 +104,21 @@ class Server(object):
 
     # noinspection PyUnusedLocal
     def on_request(self, channel, method, properties, body):
-
-        self.logger.info('Deleting inactive containers...')
-        self.docker_manager.remove_exited_containers()
+        self.logger.info('Deleting inactive optimization jobs...')
+        self.docker_manager.delete_inactive_jobs()
 
         content = json.loads(body.decode())
         content = validate_spd(content)
-        try:
-            optimization_id = content['optimization_id']
-        except KeyError:
-            message = "Error. Failed to read optimization ID"
-            self.logger.info(message)
-            self.send_response(
-                success=False,
-                optimization_id=None,
-                message=message
-            )
-            return
-
-        self.logger.info('Received {} request'.format(content['type']))
+        optimization_id = content['optimization_id']
+        self.logger.info('Received {} request. ID: {}'.format(content['type'], optimization_id))
 
         if content['type'] == 'optimization_start':
+            self.send_response(
+                success=True,
+                optimization_id=optimization_id,
+                message='Received "optimization_start" request. Staring workers...',
+                status_code='202'
+            )
             if optimization_id in self.docker_manager._running_containers:
                 success, message = self.stop_optimization(content['optimization_id'])
                 response_message = 'Optimization with id {} already in progress. Will be restarted'.format(optimization_id)+'\r\n'+message
@@ -130,12 +127,17 @@ class Server(object):
                     optimization_id=optimization_id,
                     message=response_message
                 )
+            
             success, message = self.start_optimization(content)
-            self.send_response(
-                success=success,
-                optimization_id=optimization_id,
-                message=message
-            )
+
+            if success == False:
+                self.send_response(
+                    success=success,
+                    optimization_id=optimization_id,
+                    message=message
+                )
+                self.stop_optimization(content['optimization_id'])
+
         elif content['type'] == 'optimization_stop':
             success, message = self.stop_optimization(content['optimization_id'])
             self.send_response(
@@ -191,28 +193,44 @@ class Server(object):
             return False, message
 
         try:
+            self.logger.info('Starting optimization container...')
             self.docker_manager.run_container(
                 container_type="optimization",
                 job_id=optimization_id,
                 number=1
             )
-            self.logger.info('Accepted Optimization request. Optimization container started')
-
+            
+            self.logger.info('Starting {} simulation container(s)...'.format(solvers_per_job))
             self.docker_manager.run_container(
                 container_type="simulation",
                 job_id=optimization_id,
                 number=solvers_per_job
             )
 
-            self.logger.info('{} Simulation container(s) started'.format(solvers_per_job))
         except Exception as e:
             message = "Error. Failed to start workers. " + str(e)
             self.logger.error(message)
             return False, message
 
-        message = 'Successfully started 1 optimization and {} model solver containers.'.format(solvers_per_job)
+        try:
+            self.logger.info('Inspecting containers...')
+            time.sleep(self.inspection_wait_time)
+            exited_containers = self.docker_manager.inspect_containers(optimization_id)
+            if len(exited_containers) > 0:
+                for container_id, container_info in exited_containers.items():
+                    self.logger.error('Container: {} exited. Optimization will be terminated'.format(container_id))
+                    self.logger.error('Container logs: {}'.format(container_info['logs']))
 
-        return True, message
+                message = 'Failed to start containers: {}. Check logs for details'.format([i for i in exited_containers])
+                
+                return False, message
+
+        except Exception as e:
+            message = "Error. Failed to inspect containers. " + str(e)
+            self.logger.error(message)
+            return False, message
+
+        return True, 'Successfully started workers'
 
     def stop_optimization(self, optimization_id):
         message = ""
