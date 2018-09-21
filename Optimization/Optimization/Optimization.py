@@ -147,7 +147,7 @@ class OptimizationBase(object):
         Example of variables map and variables boundaries:
         var_map = [(0, flux, 0), (0, concentration, 0),(0, position, row),(0, position, col)]
         var_bounds = [(0, 10), (0, 1),(0, 30),(0, 30)]
-        initial_values = [None, 0, 10, 10]
+        initial_values = [0, 0, 10, 10]
         """
 
         var_map = []
@@ -161,10 +161,11 @@ class OptimizationBase(object):
                         if axis_data['min'] != axis_data['max']:
                             var_map.append((object_['id'], 'position', axis))
                             var_bounds.append((axis_data['min'], axis_data['max']))
-                            initial_values.append(axis_data.get(
-                                'result',
-                                int((axis_data['max']+axis_data['min'])/2)
-                            ))
+                            initial_value = axis_data.get('result')
+                            if initial_value is None:
+                                initial_values.append(int((axis_data['max']+axis_data['min'])/2))
+                            else:
+                                initial_values.append(initial_value)
                             object_['position'][axis]['result'] = None
                         else:
                             object_['position'][axis]['result'] = axis_data['min']
@@ -175,10 +176,11 @@ class OptimizationBase(object):
                         if period_data['min'] != period_data['max']:
                             var_map.append((object_['id'], 'flux', period))
                             var_bounds.append((period_data['min'], period_data['max']))
-                            initial_values.append(period_data.get(
-                                'result',
-                                (period_data['max']+period_data['min'])/2
-                            ))
+                            initial_value = period_data.get('result')
+                            if initial_value is None:
+                                initial_values.append((period_data['max']+period_data['min'])/2)
+                            else:
+                                initial_values.append(initial_value)
                             object_['flux'][period]['result'] = None  
                         else:
                             object_['flux'][period]['result'] = period_data['min']
@@ -190,10 +192,11 @@ class OptimizationBase(object):
                             if component_data['min'] != component_data['max']:
                                 var_map.append((object_['id'], 'concentration', period, component))
                                 var_bounds.append((component_data['min'], component_data['max']))
-                                initial_values.append(component_data.get(
-                                    'result',
-                                    (component_data['max']+component_data['min'])/2
-                                ))
+                                initial_value = component_data.get('result')
+                                if initial_value is None:
+                                    initial_values.append((component_data['max']+component_data['min'])/2)
+                                else:
+                                    initial_values.append(initial_value)
                                 object_[parameter][period][component]['result'] = None
                             else:
                                 object_[parameter][period][component]['result'] = component_data['min']
@@ -560,7 +563,7 @@ class NelderMead(OptimizationBase):
                     'Nadir and utopian vectors calculated from initial solutions are: {}, {}'.format(self.z_nadir, self.z_utopian)
                 )
         except KeyError:
-            self.logger.info('Missing objective target values are given, scalars will be calculated using weights')
+            self.logger.info('Missing objective target values, scalars will be calculated using weights')
         except:
             self.logger.error('Unknown error', exc_info=True)
 
