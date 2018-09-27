@@ -53,8 +53,11 @@ class OptimizationBase(object):
         self.initial_solutions = self.request_data['optimization'].get('solutions', [])
         self.initial_solution_id =  self.request_data['optimization']['parameters'].get('initial_solution_id')
         self.logger.info('Initial solution: {}'.format(self.initial_solution_id))
-        self.progress_global = self.request_data['optimization'].get('progress')
-        self.progress_local = self.request_data['optimization'].get('progress_local')
+        try:
+            self.progress_global = self.request_data['optimization']['progress']['GA']
+        except:
+            self.progress_global = {}
+        self.progress_local = {}
 
         try:
             self.var_template = copy.deepcopy(
@@ -302,6 +305,7 @@ class NSGA(OptimizationBase):
                 {
                     fitness: [1.0, 2.0],
                     variables: [1,2,3,1,2,3...],
+                    locally_optimized: False,
                     objects: [
                         {
                             id: 1,
@@ -319,20 +323,31 @@ class NSGA(OptimizationBase):
                 .....
             ],
             progress: {
-                progress_log: [1,2,3...],
-                simulation: 12,
-                simulation_total: 50,
-                iteration: 30,
-                iteration_total: 30,
-                final: true
+                GA: {
+                    progress_log: [1,2,3...],
+                    simulation: 12,
+                    simulation_total: 50,
+                    iteration: 30,
+                    iteration_total: 30,
+                    final: true
+                },
+                Simplex: {}
+                
             }
             
         }
         """ 
         self.response['status_code'] = status_code
-        self.response['solutions'] = []
-        self.response['progress_local'] = self.progress_local
         self.response['progress'] = {}
+        self.response['progress']['Simplex'] = self.progress_local
+        self.response['progress']['GA'] = {}
+        self.response['progress']['GA']['progress_log'] = self._progress_log
+        self.response['progress']['GA']['simulation'] = self._simulation_count
+        self.response['progress']['GA']['simulation_total'] = self.request_data['optimization']['parameters']['pop_size']
+        self.response['progress']['GA']['iteration'] = self._iter_count
+        self.response['progress']['GA']['iteration_total'] = self.request_data['optimization']['parameters']['ngen']
+        self.response['progress']['GA']['final'] = final
+        self.response['solutions'] = []
         for individual in self.hall_of_fame:
             self.response['solutions'].append(
                 {
@@ -343,13 +358,6 @@ class NSGA(OptimizationBase):
                     'objects': self.apply_individual(individual)
                 }
             )
-
-        self.response['progress']['progress_log'] = self._progress_log
-        self.response['progress']['simulation'] = self._simulation_count
-        self.response['progress']['simulation_total'] = self.request_data['optimization']['parameters']['pop_size']
-        self.response['progress']['iteration'] = self._iter_count
-        self.response['progress']['iteration_total'] = self.request_data['optimization']['parameters']['ngen']
-        self.response['progress']['final'] = final
 
         self.response_channel.basic_publish(
             exchange='',
@@ -627,15 +635,15 @@ class NelderMead(OptimizationBase):
         self._iter_count += 1
         self._progress_log.append(self._best_scalar_fitness)
         
-
         self.response['status_code'] = status_code
-        self.response['progress_local'] = {}
+        self.response['progress'] = {}
+        self.response['progress']['GA'] = self.progress_global
+        self.response['progress']['Simplex'] = {}
+        self.response['progress']['Simplex']['progress_log'] = self._progress_log
+        self.response['progress']['Simplex']['iteration'] = self._iter_count
+        self.response['progress']['Simplex']['iteration_total'] = self.request_data['optimization']['parameters']['maxf']
+        self.response['progress']['Simplex']['final'] = final
         self.response['solutions'] = self.compose_solutions()
-        self.response['progress'] = self.progress_global
-        self.response['progress_local']['progress_log'] = self._progress_log
-        self.response['progress_local']['iteration'] = self._iter_count
-        self.response['progress_local']['iteration_total'] = self.request_data['optimization']['parameters']['maxf']
-        self.response['progress_local']['final'] = final
 
         self.response_channel.basic_publish(
             exchange='',
