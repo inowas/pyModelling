@@ -731,7 +731,7 @@ class NelderMead(OptimizationBase):
     def linear_sclarization(self, fitness):
         scalar_fitness = 0
         for value, weight in zip(fitness, self.weights):
-            scalar_fitness += value * weight
+            scalar_fitness += value * weight * -1
         return scalar_fitness
     
     def achievement_scalarization(self, fitness):
