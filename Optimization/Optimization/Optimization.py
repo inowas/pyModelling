@@ -301,7 +301,8 @@ class NSGA(OptimizationBase):
         response = {
             optimization_id: 1,
             status_code: 200,
-            solutions: [
+            GA: {
+                solutions: [
                 {
                     fitness: [1.0, 2.0],
                     variables: [1,2,3,1,2,3...],
@@ -322,34 +323,52 @@ class NSGA(OptimizationBase):
                 },
                 .....
             ],
-            progress: {
-                GA: {
-                    progress_log: [1,2,3...],
-                    simulation: 12,
-                    simulation_total: 50,
-                    iteration: 30,
-                    iteration_total: 30,
-                    final: true
+                progress: {}
+            },
+            Simplex: {
+                solutions: [
+                {
+                    fitness: [1.0, 2.0],
+                    variables: [1,2,3,1,2,3...],
+                    locally_optimized: False,
+                    objects: [
+                        {
+                            id: 1,
+                            lay: {
+                                "min": 0,
+                                "max": 5,
+                                "result: 3
+                            },
+                            row... etc.
+                            
+                        },
+                        .....
+                    ]
                 },
-                Simplex: {}
-                
+                .....
+            ],
+                progress: {}
             }
             
         }
         """ 
         self.response['status_code'] = status_code
-        self.response['progress'] = {}
-        self.response['progress']['Simplex'] = self.progress_local
-        self.response['progress']['GA'] = {}
-        self.response['progress']['GA']['progress_log'] = self._progress_log
-        self.response['progress']['GA']['simulation'] = self._simulation_count
-        self.response['progress']['GA']['simulation_total'] = self.request_data['optimization']['parameters']['pop_size']
-        self.response['progress']['GA']['iteration'] = self._iter_count
-        self.response['progress']['GA']['iteration_total'] = self.request_data['optimization']['parameters']['ngen']
-        self.response['progress']['GA']['final'] = final
-        self.response['solutions'] = []
+        self.response['Simplex'] = {}
+        self.response['Simplex']['progress'] = self.progress_local
+        self.response['Simplex']['solutions'] = []
+
+        self.response['GA'] = {}
+        self.response['GA']['progress'] = {}
+        self.response['GA']['progress']['progress_log'] = self._progress_log
+        self.response['GA']['progress']['simulation'] = self._simulation_count
+        self.response['GA']['progress']['simulation_total'] = self.request_data['optimization']['parameters']['pop_size']
+        self.response['GA']['progress']['iteration'] = self._iter_count
+        self.response['GA']['progress']['iteration_total'] = self.request_data['optimization']['parameters']['ngen']
+        self.response['GA']['progress']['final'] = final
+        self.response['GA']['solutions'] = []
+        
         for individual in self.hall_of_fame:
-            self.response['solutions'].append(
+            self.response['GA']['solutions'].append(
                 {
                     'id': str(uuid.uuid4()),
                     'locally_optimized': False,
@@ -606,44 +625,56 @@ class NelderMead(OptimizationBase):
 
         return
 
-    def compose_solutions(self):
-        solutions = []
-        if self.initial_solution_id is None:
-            solution_id = str(uuid.uuid4())
-        else:
-            solution_id = self.initial_solution_id
+    # def compose_solutions(self):
+    #     solutions = []
+    #     if self.initial_solution_id is None:
+    #         solution_id = str(uuid.uuid4())
+    #     else:
+    #         solution_id = self.initial_solution_id
 
-        for initial_solution in self.initial_solutions:
-            if initial_solution['id'] != solution_id:
-                solutions.append(initial_solution)
+    #     for initial_solution in self.initial_solutions:
+    #         if initial_solution['id'] != solution_id:
+    #             solutions.append(initial_solution)
             
-        solutions.append(
-            {
-                'id': solution_id,
-                'locally_optimized': True,
-                'fitness': list(self._best_fitness),
-                'variables': list(self._best_individual),
-                'objects': self.apply_individual(self._best_individual)
-            }
-        )
-        return solutions
+    #     solutions.append(
+    #         {
+    #             'id': solution_id,
+    #             'locally_optimized': True,
+    #             'fitness': list(self._best_fitness),
+    #             'variables': list(self._best_individual),
+    #             'objects': self.apply_individual(self._best_individual)
+    #         }
+    #     )
+    #     return solutions
 
     def callback(self, individual, final=False, status_code=200):
         """
         Generate response json of the Siplex algorithm
         """
+
         self._iter_count += 1
         self._progress_log.append(self._best_scalar_fitness)
         
         self.response['status_code'] = status_code
-        self.response['progress'] = {}
-        self.response['progress']['GA'] = self.progress_global
-        self.response['progress']['Simplex'] = {}
-        self.response['progress']['Simplex']['progress_log'] = self._progress_log
-        self.response['progress']['Simplex']['iteration'] = self._iter_count
-        self.response['progress']['Simplex']['iteration_total'] = self.request_data['optimization']['parameters']['maxf']
-        self.response['progress']['Simplex']['final'] = final
-        self.response['solutions'] = self.compose_solutions()
+        self.response['GA'] = {}
+        self.response['GA']['progress'] = self.progress_global
+        self.response['GA']['solutions'] = self.initial_solutions
+
+        self.response['Simplex'] = {}
+        self.response['Simplex']['progress'] = {}
+        self.response['Simplex']['progress']['progress_log'] = self._progress_log
+        self.response['Simplex']['progress']['iteration'] = self._iter_count
+        self.response['Simplex']['progress']['iteration_total'] = self.request_data['optimization']['parameters']['maxf']
+        self.response['Simplex']['progress']['final'] = final
+        self.response['Simplex']['solutions'] = []
+
+        self.response['solutions'].append({
+            'id': str(uuid.uuid4()),
+            'locally_optimized': True,
+            'fitness': list(self._best_fitness),
+            'variables': list(self._best_individual),
+            'objects': self.apply_individual(self._best_individual)
+        })
 
         self.response_channel.basic_publish(
             exchange='',
