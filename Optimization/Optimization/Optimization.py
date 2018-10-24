@@ -668,7 +668,7 @@ class NelderMead(OptimizationBase):
         self.response['Simplex']['progress']['final'] = final
         self.response['Simplex']['solutions'] = []
 
-        self.response['solutions'].append({
+        self.response['Simplex']['solutions'].append({
             'id': str(uuid.uuid4()),
             'locally_optimized': True,
             'fitness': list(self._best_fitness),
