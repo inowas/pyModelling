@@ -47,8 +47,12 @@ class OptimizationBase(object):
         self._progress_log = []
         self._simulation_count = 0
         self._iter_count = 0
-        self.response = {'optimization_id': self.optimization_id,
-                         'message': ''}
+        self.response = {
+            'optimization_id': self.optimization_id,
+            'status_code': None,
+            'message': '',
+            'methods':[]
+        }
 
         self.initial_solutions = self.request_data['optimization'].get('solutions', [])
         self.initial_solution_id =  self.request_data['optimization']['parameters'].get('initial_solution_id')
@@ -301,55 +305,51 @@ class NSGA(OptimizationBase):
         response = {
             optimization_id: 1,
             status_code: 200,
-            solutions: [
+            methods: [
                 {
-                    fitness: [1.0, 2.0],
-                    variables: [1,2,3,1,2,3...],
-                    locally_optimized: False,
-                    objects: [
+                    "name": "GA",
+                    "progress": {
+
+                    },
+                    "solutions": [
                         {
-                            id: 1,
-                            lay: {
-                                "min": 0,
-                                "max": 5,
-                                "result: 3
-                            },
-                            row... etc.
-                            
-                        },
-                        .....
+                            fitness: [1.0, 2.0],
+                            variables: [1,2,3,1,2,3...],
+                            locally_optimized: False,
+                            objects: [
+                                {
+                                    id: 1,
+                                    lay: {
+                                        "min": 0,
+                                        "max": 5,
+                                        "result: 3
+                                    },
+                                    row... etc.
+                                    
+                                },
+                            .....
+                            ]
+                        }
                     ]
                 },
-                .....
-            ],
-            progress: {
-                GA: {
-                    progress_log: [1,2,3...],
-                    simulation: 12,
-                    simulation_total: 50,
-                    iteration: 30,
-                    iteration_total: 30,
-                    final: true
-                },
-                Simplex: {}
-                
-            }
-            
+            ]
         }
         """ 
-        self.response['status_code'] = status_code
-        self.response['progress'] = {}
-        self.response['progress']['Simplex'] = self.progress_local
-        self.response['progress']['GA'] = {}
-        self.response['progress']['GA']['progress_log'] = self._progress_log
-        self.response['progress']['GA']['simulation'] = self._simulation_count
-        self.response['progress']['GA']['simulation_total'] = self.request_data['optimization']['parameters']['pop_size']
-        self.response['progress']['GA']['iteration'] = self._iter_count
-        self.response['progress']['GA']['iteration_total'] = self.request_data['optimization']['parameters']['ngen']
-        self.response['progress']['GA']['final'] = final
-        self.response['solutions'] = []
+        result = {
+            'name': 'GA',
+            'progress': {
+                'progress_log': self._progress_log,
+                'simulation': self._simulation_count,
+                'simulation_total': self.request_data['optimization']['parameters']['pop_size'],
+                'iteration': self._iter_count,
+                'iteration_total': self.request_data['optimization']['parameters']['ngen'],
+                'final': final,
+            },
+            'solutions': []
+        }
+        
         for individual in self.hall_of_fame:
-            self.response['solutions'].append(
+            result['solutions'].append(
                 {
                     'id': str(uuid.uuid4()),
                     'locally_optimized': False,
@@ -358,6 +358,9 @@ class NSGA(OptimizationBase):
                     'objects': self.apply_individual(individual)
                 }
             )
+        
+        self.response['status_code'] = status_code
+        self.response['methods'] = [result]
 
         self.response_channel.basic_publish(
             exchange='',
@@ -606,44 +609,55 @@ class NelderMead(OptimizationBase):
 
         return
 
-    def compose_solutions(self):
-        solutions = []
-        if self.initial_solution_id is None:
-            solution_id = str(uuid.uuid4())
-        else:
-            solution_id = self.initial_solution_id
+    # def compose_solutions(self):
+    #     solutions = []
+    #     if self.initial_solution_id is None:
+    #         solution_id = str(uuid.uuid4())
+    #     else:
+    #         solution_id = self.initial_solution_id
 
-        for initial_solution in self.initial_solutions:
-            if initial_solution['id'] != solution_id:
-                solutions.append(initial_solution)
+    #     for initial_solution in self.initial_solutions:
+    #         if initial_solution['id'] != solution_id:
+    #             solutions.append(initial_solution)
             
-        solutions.append(
-            {
-                'id': solution_id,
-                'locally_optimized': True,
-                'fitness': list(self._best_fitness),
-                'variables': list(self._best_individual),
-                'objects': self.apply_individual(self._best_individual)
-            }
-        )
-        return solutions
+    #     solutions.append(
+    #         {
+    #             'id': solution_id,
+    #             'locally_optimized': True,
+    #             'fitness': list(self._best_fitness),
+    #             'variables': list(self._best_individual),
+    #             'objects': self.apply_individual(self._best_individual)
+    #         }
+    #     )
+    #     return solutions
 
     def callback(self, individual, final=False, status_code=200):
         """
         Generate response json of the Siplex algorithm
         """
+
         self._iter_count += 1
         self._progress_log.append(self._best_scalar_fitness)
+
+        result = {
+            'name': 'Simplex',
+            'progress': {
+                'progress_log': self._progress_log,
+                'iteration': self._iter_count,
+                'iteration_total': self.request_data['optimization']['parameters']['maxf'],
+                'final': final,
+            },
+            'solutions': [{
+                'id': str(uuid.uuid4()),
+                'locally_optimized': True,
+                'fitness': list(self._best_fitness),
+                'variables': list(self._best_individual),
+                'objects': self.apply_individual(self._best_individual)
+            }]
+        }
         
         self.response['status_code'] = status_code
-        self.response['progress'] = {}
-        self.response['progress']['GA'] = self.progress_global
-        self.response['progress']['Simplex'] = {}
-        self.response['progress']['Simplex']['progress_log'] = self._progress_log
-        self.response['progress']['Simplex']['iteration'] = self._iter_count
-        self.response['progress']['Simplex']['iteration_total'] = self.request_data['optimization']['parameters']['maxf']
-        self.response['progress']['Simplex']['final'] = final
-        self.response['solutions'] = self.compose_solutions()
+        self.response['methods'] = [result]
 
         self.response_channel.basic_publish(
             exchange='',
@@ -731,7 +745,7 @@ class NelderMead(OptimizationBase):
     def linear_sclarization(self, fitness):
         scalar_fitness = 0
         for value, weight in zip(fitness, self.weights):
-            scalar_fitness += value * weight
+            scalar_fitness += value * weight * -1
         return scalar_fitness
     
     def achievement_scalarization(self, fitness):
