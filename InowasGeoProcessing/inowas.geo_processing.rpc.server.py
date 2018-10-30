@@ -22,10 +22,12 @@ def get_config_parameter(name):
 def process(content):
     m_type = content.get("type")
     data = content.get("data")
+    datafolder = os.path.realpath(sys.argv[1])
     result = False
 
     print('Summary:')
     print('Type: %s' % m_type)
+    print('Datafolder: %s' % datafolder)
 
     if m_type == 'geoProcessing':
         print('Running geoProcessing:')
@@ -68,7 +70,6 @@ connection = pika.BlockingConnection(
 
 channel = connection.channel()
 channel.queue_declare(queue=get_config_parameter('GEO_PROCESSING_QUEUE'))
-datafolder = os.path.realpath(sys.argv[1])
 
 channel.basic_qos(prefetch_count=1)
 channel.basic_consume(on_request, queue=get_config_parameter('GEO_PROCESSING_QUEUE'))

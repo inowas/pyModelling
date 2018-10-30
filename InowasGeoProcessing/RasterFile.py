@@ -3,15 +3,16 @@ from scipy.misc import imresize
 
 
 class RasterFile:
-
     _filename = None
     _dataset = None
 
     def __init__(self, filename):
         self._filename = filename
+        print('RasterFile filename: %s' % filename)
 
     def open_file(self):
         self._dataset = gdal.Open(self._filename, gdal.GA_ReadOnly)
+        print('RasterFile dataset: %s' % self._dataset)
 
     def is_valid(self):
         self.open_file()
@@ -46,7 +47,7 @@ class RasterFile:
             raise FileNotFoundError('File not valid.')
 
         data = []
-        for iBand in range(1, self._dataset.RasterCount+1):
+        for iBand in range(1, self._dataset.RasterCount + 1):
             band = self._dataset.GetRasterBand(iBand)
             band_data = band.ReadAsArray()
 
