@@ -1,5 +1,5 @@
 from osgeo import gdal
-from scipy.misc import imresize
+from skimage.transform import resize
 
 
 class RasterFile:
@@ -41,7 +41,7 @@ class RasterFile:
 
         return metadata
 
-    def get_data(self, width=False, height=False, method='nearest'):
+    def get_data(self, width=False, height=False, method='wrap'):
         self.open_file()
         if not self.is_valid():
             raise FileNotFoundError('File not valid.')
@@ -60,4 +60,4 @@ class RasterFile:
 
     @staticmethod
     def interpolate(data2d, target_width, target_height, method):
-        return imresize(arr=data2d, size=(int(target_height), int(target_width)), interp=method)
+        return resize(data2d, (int(target_height), int(target_width)), mode=method)

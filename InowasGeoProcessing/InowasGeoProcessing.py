@@ -10,7 +10,6 @@ EMail: ralf.junghanns@gmail.com
 
 
 class InowasGeoProcessing:
-
     _data = None
     _datafolder = None
 
@@ -56,18 +55,12 @@ class InowasGeoProcessing:
                 height = parameters['height']
 
             available_interpolation_methods = [
-                'nearest', 'lanczos', 'bilinear', 'bicubic', 'cubic'
+                'constant', 'edge', 'wrap', 'reflect', 'symmetric'
             ]
 
-            method = available_interpolation_methods[0]
-            if 'method' in parameters:
+            method = available_interpolation_methods[2]
+            if 'method' in parameters and parameters['method'] in available_interpolation_methods:
                 method = parameters['method']
-                if parameters['method'] not in available_interpolation_methods:
-                    return dict(
-                        status_code=422,
-                        body="Invalid argument exception, interpolation method: {} not available. "
-                             "Available methods are {}.".format(method, ', '.join(available_interpolation_methods))
-                    )
 
             return dict(
                 status_code=200,
