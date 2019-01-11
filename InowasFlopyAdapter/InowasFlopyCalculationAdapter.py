@@ -38,6 +38,9 @@ from .SftAdapter import SftAdapter
 from .SsmAdapter import SsmAdapter
 from .TobAdapter import TobAdapter
 from .UztAdapter import UztAdapter
+from .SwtAdapter import SwtAdapter
+from .VdfAdapter import VdfAdapter
+from .VscAdapter import VscAdapter
 
 
 class InowasFlopyCalculationAdapter:
@@ -47,6 +50,7 @@ class InowasFlopyCalculationAdapter:
     _uuid = None
     _mf = None
     _mt = None
+    _swt = None
     _report = ''
 
     mf_package_order = [
@@ -60,9 +64,14 @@ class InowasFlopyCalculationAdapter:
         "phc", "rct", "sft", "tob", "uzt"
     ]
 
+    swt_package_order = [
+        "swt", "vdf", "vsc"
+    ]
+
     def __init__(self, version, data, uuid):
         self._mf_data = data.get("mf")
         self._mt_data = data.get("mt")
+        self._swt_data = data.get("swt")
         self._version = version
         self._uuid = uuid
         self.success = False
@@ -83,6 +92,13 @@ class InowasFlopyCalculationAdapter:
                 self.create_model(self.mt_package_order, package_content)
                 self.write_input_model(self._mt)
                 self.success, report = self.run_model(self._mt, model_type='mt')
+                self._report += report
+
+            if self._swt_data is not None:
+                package_content = self.read_packages(self._swt_data)
+                self.create_model(self.swt_package_order, package_content)
+                self.write_input_model(self._swt)
+                self.success, report = self.run_model(self._swt, model_type='swt')
                 self._report += report
 
     @staticmethod
@@ -129,6 +145,8 @@ class InowasFlopyCalculationAdapter:
             self._mf.check()
         if self._mt is not None:
             self._mt.check()
+        if self._swt is not None:
+            self._swt.check()
 
     def create_package(self, name, content):
         # Modflow packages
@@ -188,6 +206,14 @@ class InowasFlopyCalculationAdapter:
             TobAdapter(content).get_package(self._mt)
         if name == 'uzt':
             UztAdapter(content).get_package(self._mt)
+
+        # SEAWAT packages
+        if name == 'swt':
+            self._swt = SwtAdapter(content).get_package(self._swt)
+        if name == 'vdf':
+            VdfAdapter(content).get_package(self._swt)
+        if name == 'vsc'
+            VscAdapter(content).get_package(self._swt)
 
     def response(self):
         key = 'mf'
