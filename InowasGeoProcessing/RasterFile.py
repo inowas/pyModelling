@@ -60,4 +60,4 @@ class RasterFile:
 
     @staticmethod
     def interpolate(data2d, target_width, target_height, method):
-        return resize(data2d, (int(target_height), int(target_width)), mode=method)
+        return resize(data2d, (int(target_height), int(target_width)), mode=method, preserve_range=True)
